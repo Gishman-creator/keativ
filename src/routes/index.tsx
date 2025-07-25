@@ -35,15 +35,17 @@ export const router = createBrowserRouter([
       { path: 'contact', element: <Contact /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
+      { path: 'settings', element: <Settings /> },
     ],
   },
   {
     path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <PrivateLayout />
-      </ProtectedRoute>
-    ),
+    element: <PrivateLayout />,
+    // element: (
+    //   <ProtectedRoute>
+    //     <PrivateLayout />
+    //   </ProtectedRoute>
+    // ),
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'calendar', element: <Calendar /> },

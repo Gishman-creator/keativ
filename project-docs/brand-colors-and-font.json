@@ -1,0 +1,13 @@
+{
+  "colors": {
+    "text": "#2D3748",
+    "background": "#FFFFFF",
+    "primary": "#EF4444",
+    "secondary": "#8B5CF6",
+    "accent": "#F3F4F6"
+  },
+  "fonts": {
+    "body": "Poppins",
+    "headers": "Roboto Slab"
+  }
+}

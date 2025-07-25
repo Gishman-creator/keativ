@@ -1,16 +1,54 @@
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Share2, 
-  Bell, 
-  ChevronDown
+import SocialSetShowcase from './SocialSetShowcase';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Share2,
+  Bell,
+  ChevronDown,
+  Users,
+  LogOut
 } from 'lucide-react';
 import { RootState } from '../redux/store';
+import { logout } from '../redux/slices/authSlice';
 
 const Header = () => {
+  const user = useSelector((state: RootState) => state.auth.user);
   const activeSocialSet = useSelector((state: RootState) => state.socialSets.activeSocialSet);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [showSocialSetShowcase, setShowSocialSetShowcase] = useState(false);
+  const [hideTimer, setHideTimer] = useState<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      setHideTimer(null);
+    }
+    setShowSocialSetShowcase(true);
+  };
+
+  const handleMouseLeave = () => {
+    const timer = setTimeout(() => {
+      setShowSocialSetShowcase(false);
+    }, 200);
+    setHideTimer(timer);
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 fixed top-0 right-0 left-0 z-50">
@@ -24,21 +62,64 @@ const Header = () => {
           </Link>
         </div>
 
-        <div className="flex items-center space-x-6">
-          <div className="hidden md:flex items-center space-x-2">
-            <span className="text-sm text-gray-500">Active Set:</span>
-            <Badge variant="outline" className="px-3 py-1">
-              {activeSocialSet?.name || 'No Set Selected'}
-            </Badge>
+        <div className="flex items-center space-x-2">
+          <div 
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <Button variant="ghost" className="flex items-center px-1">
+              <Avatar className="h-8 w-8 border-2 border-white">
+                <AvatarImage src="https://picsum.photos/id/1005/200/200" alt="User 1" className="object-cover" />
+                <AvatarFallback>U1</AvatarFallback>
+              </Avatar>
+              <Avatar className="h-8 w-8 border-2 border-white" style={{ marginLeft: '-1rem' }}>
+                <AvatarImage src="https://picsum.photos/id/1011/200/200" alt="User 2" className="object-cover" />
+                <AvatarFallback>U2</AvatarFallback>
+              </Avatar>
+              <Avatar className="h-8 w-8 border-2 border-white" style={{ marginLeft: '-1rem' }}>
+                <AvatarImage src="https://picsum.photos/id/1012/200/200" alt="User 3" className="object-cover" />
+                <AvatarFallback>U3</AvatarFallback>
+              </Avatar>
+            </Button>
+            {showSocialSetShowcase && (
+              <div 
+                className="absolute top-full mt-2 z-50 right-0"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <SocialSetShowcase />
+              </div>
+            )}
           </div>
           
-          <div className="text-sm text-gray-500">
-            {activeSocialSet?.platforms.filter(p => p.isConnected).length || 0} platforms connected
-          </div>
-          
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="p-2 justify-start rounded-full">
             <Bell className="h-4 w-4" />
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.avatar} alt={user?.name} className="object-cover" />
+                  <AvatarFallback>
+                    {user?.name?.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem>
+                <Users className="mr-2 h-4 w-4" />
+                Profile Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

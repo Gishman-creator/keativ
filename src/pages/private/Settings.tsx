@@ -9,10 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  User, 
-  Bell, 
-  Shield, 
+import {
+  User,
+  Bell,
+  Shield,
   Settings as SettingsIcon,
   UserCheck,
   CreditCard,
@@ -124,11 +124,10 @@ const Settings = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeSection === item.id
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${activeSection === item.id
                       ? 'bg-gray-100 text-gray-900'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
@@ -149,7 +148,7 @@ const Settings = () => {
 
               <div className="bg-white rounded-lg border border-gray-200 p-8">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">My Profile</h3>
-                
+
                 <div className="flex items-center space-x-6 mb-8">
                   <Avatar className="h-20 w-20">
                     <AvatarImage src={user?.avatar} alt={user?.name} />
@@ -317,7 +316,7 @@ const Settings = () => {
               {/* Billing History */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">Billing History</h3>
-                
+
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>

@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Calendar, 
-  BarChart3, 
-  Users, 
-  Zap, 
-  Shield, 
+import {
+  Calendar,
+  BarChart3,
+  Users,
+  Zap,
+  Shield,
   Clock,
   ArrowRight,
   Play,
@@ -21,6 +21,8 @@ import {
   Bell,
   Layers
 } from 'lucide-react';
+import Integrations from '@/components/landing/Integrations';
+import TrustedBy from '@/components/landing/TrustedBy';
 
 const Landing = () => {
   const [currentFeatureSlide, setCurrentFeatureSlide] = useState(0);
@@ -98,15 +100,6 @@ const Landing = () => {
   const featuresPerSlide = 3;
   const brandsPerSlide = 4;
   const totalFeatureSlides = Math.ceil(features.length / featuresPerSlide);
-  const integrations = [
-    { name: 'Gmail', logo: 'Gmail', description: 'Email management' },
-    { name: 'Loom', logo: 'Loom', description: 'Video feedback & communication' },
-    { name: 'Notion', logo: 'Notion', description: 'All-in-one workspace' },
-    { name: 'Outlook', logo: 'Outlook', description: 'Email & calendar' },
-    { name: 'Slack', logo: 'Slack', description: 'Team communication' },
-    { name: 'Trello', logo: 'Trello', description: 'Project management' },
-    { name: 'Zoom', logo: 'Zoom', description: 'Video conferencing' }
-  ];
 
   // Auto-scroll features every 4 seconds
   useEffect(() => {
@@ -116,17 +109,8 @@ const Landing = () => {
     return () => clearInterval(interval);
   }, [totalFeatureSlides]);
 
-  const [currentIntegration, setCurrentIntegration] = useState(2); // Start with middle item (Notion)
   const [brandRow1Position, setBrandRow1Position] = useState(0);
   const [brandRow2Position, setBrandRow2Position] = useState(0);
-
-  // Auto-scroll integrations every 3 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIntegration((prev) => (prev + 1) % integrations.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [integrations.length]);
 
   // Auto-scroll brand rows continuously
   useEffect(() => {
@@ -157,7 +141,7 @@ const Landing = () => {
     <div className="bg-white">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-b from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-10 lg:pb-32">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="mb-6">
@@ -165,19 +149,19 @@ const Landing = () => {
                   Social Media Management
                 </span>
               </div>
-              
+
               <h1 className="font-heading text-4xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 Manage all your
                 <span className="text-red-500"> social media</span>
                 <br />
                 from one place
               </h1>
-              
+
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Streamline your social media workflow with Zenith's minimalist dashboard. 
+                Streamline your social media workflow with Zenith's minimalist dashboard.
                 Schedule posts, analyze performance, and collaborate with your team seamlessly.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Link to="/signup">
                   <Button size="lg" className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 text-lg">
@@ -190,7 +174,7 @@ const Landing = () => {
                   Watch Demo
                 </Button>
               </div>
-              
+
               <div className="flex items-center space-x-6 text-sm text-gray-600">
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
@@ -202,7 +186,7 @@ const Landing = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="relative">
               <div className="bg-white rounded-2xl shadow-2xl p-6 border border-gray-100">
                 {/* Mock Dashboard Preview */}
@@ -215,13 +199,13 @@ const Landing = () => {
                       <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-7 gap-2 text-xs text-gray-500 mb-2">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                       <div key={day} className="text-center font-medium">{day}</div>
                     ))}
                   </div>
-                  
+
                   <div className="grid grid-cols-7 gap-2">
                     {Array.from({ length: 35 }, (_, i) => (
                       <div key={i} className="aspect-square border border-gray-100 rounded text-xs flex items-center justify-center relative">
@@ -234,7 +218,7 @@ const Landing = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">This month</span>
@@ -243,7 +227,7 @@ const Landing = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Floating Analytics Card */}
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-4 border border-gray-100">
                 <div className="flex items-center space-x-3">
@@ -290,7 +274,7 @@ const Landing = () => {
               <span className="text-red-500">grow your presence</span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Powerful features designed to help you manage, analyze, and grow your social media presence 
+              Powerful features designed to help you manage, analyze, and grow your social media presence
               with the simplicity you deserve.
             </p>
           </div>
@@ -298,7 +282,7 @@ const Landing = () => {
           {/* Features Carousel */}
           <div className="relative mb-16">
             <div className="overflow-hidden">
-              <div 
+              <div
                 className="flex transition-transform duration-500 ease-in-out"
                 style={{ transform: `translateX(-${currentFeatureSlide * 100}%)` }}
               >
@@ -325,16 +309,15 @@ const Landing = () => {
                 ))}
               </div>
             </div>
-            
+
             {/* Feature Pagination Dots */}
             <div className="flex justify-center space-x-2 mt-8">
               {Array.from({ length: totalFeatureSlides }, (_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentFeatureSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                    index === currentFeatureSlide ? 'bg-red-500' : 'bg-gray-300'
-                  }`}
+                  className={`w-3 h-3 rounded-full transition-colors duration-200 ${index === currentFeatureSlide ? 'bg-red-500' : 'bg-gray-300'
+                    }`}
                 />
               ))}
             </div>
@@ -356,14 +339,14 @@ const Landing = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="relative">
                 <div className="bg-white rounded-2xl shadow-xl p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h4 className="font-semibold text-gray-900">Analytics Overview</h4>
                     <span className="text-sm text-gray-500">Last 30 days</span>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
                       <div className="text-2xl font-bold text-gray-900">45.2K</div>
@@ -374,7 +357,7 @@ const Landing = () => {
                       <div className="text-sm text-gray-600">Growth</div>
                     </div>
                   </div>
-                  
+
                   <div className="h-24 bg-gradient-to-r from-red-500 to-purple-600 rounded-lg opacity-20"></div>
                 </div>
               </div>
@@ -383,100 +366,9 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-20 bg-gray-900 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-heading text-3xl font-bold text-white mb-12">
-            Trusted by growing brands worldwide
-          </h2>
-          
-          {/* Brand Rows */}
-          <div className="space-y-8">
-            {/* First Row - Moving Right */}
-            <div className="relative overflow-hidden">
-              <div 
-                className="flex space-x-12 animate-none"
-                style={{ 
-                  transform: `translateX(${brandRow1Position}px)`,
-                  width: 'fit-content'
-                }}
-              >
-                {[...brands[0], ...brands[0], ...brands[0]].map((brand, index) => (
-                  <div key={index} className="flex-shrink-0 w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm text-center px-2">{brand.logo}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Second Row - Moving Left */}
-            <div className="relative overflow-hidden">
-              <div 
-                className="flex space-x-12 animate-none"
-                style={{ 
-                  transform: `translateX(${brandRow2Position}px)`,
-                  width: 'fit-content'
-                }}
-              >
-                {[...brands[1], ...brands[1], ...brands[1]].map((brand, index) => (
-                  <div key={index} className="flex-shrink-0 w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm text-center px-2">{brand.logo}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <TrustedBy />
 
-      {/* Integrations Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-heading text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-            Integrate with your existing
-            <br />
-            <span className="text-red-500">tools in seconds</span>
-          </h2>
-          
-          <div className="relative mt-16 overflow-hidden">
-            {/* Horizontal Scrolling Integration Icons */}
-            <div className="flex justify-center items-center mb-8">
-              <div className="flex space-x-6 transition-transform duration-500 ease-in-out"
-                   style={{ transform: `translateX(-${currentIntegration * 120}px)` }}>
-                {[...integrations, ...integrations, ...integrations].map((integration, index) => {
-                  const actualIndex = index % integrations.length;
-                  const isMiddle = index === currentIntegration + integrations.length;
-                  
-                  return (
-                    <div
-                      key={`${integration.name}-${index}`}
-                      className={`flex-shrink-0 transition-all duration-500 ${
-                        isMiddle ? 'scale-110 z-10' : 'scale-90 z-0'
-                      }`}
-                    >
-                      <div className={`w-20 h-20 rounded-2xl flex items-center justify-center shadow-md ${
-                        isMiddle ? 'bg-red-500 text-white shadow-lg' : 'bg-white border border-gray-200'
-                      }`}>
-                        <span className="font-bold text-sm">{integration.logo}</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {/* Active Integration Info */}
-            <div className="text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                {integrations[currentIntegration].name}
-              </h3>
-              <p className="text-gray-600">
-                {integrations[currentIntegration].description}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Integrations />
 
       {/* CTA Section */}
       <section className="py-20">
@@ -485,16 +377,16 @@ const Landing = () => {
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white mb-6">
               Ready to get started?
             </span>
-            
+
             <h2 className="font-heading text-3xl lg:text-4xl font-bold mb-6">
               Transform your social media strategy today
             </h2>
-            
+
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Join thousands of businesses already using Zenith to streamline their social media 
+              Join thousands of businesses already using Zenith to streamline their social media
               management and grow their online presence.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/signup">
                 <Button size="lg" className="bg-white text-red-500 hover:bg-gray-100 px-8 py-4 text-lg">
@@ -506,7 +398,7 @@ const Landing = () => {
                 Schedule Demo
               </Button>
             </div>
-            
+
             <div className="flex items-center justify-center space-x-6 mt-8 text-sm text-white/80">
               <div className="flex items-center">
                 <CheckCircle className="h-4 w-4 mr-2" />

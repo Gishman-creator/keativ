@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 
 const PrivateLayout = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);

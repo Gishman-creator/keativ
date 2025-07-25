@@ -29,7 +29,6 @@ const Integrations = () => {
               <div
                 key={integration.name}
                 onMouseEnter={() => setHovered(integration)}
-                onMouseLeave={() => setHovered(integrations[0])}
                 className={`absolute w-32 h-32 bg-gray-50 rounded-2xl flex items-center justify-center transform transition-transform duration-300 hover:scale-110 hover:shadow-xl border border-gray-100 ${integration.position} ${integration.rotation}`}
               >
                 <img src={integration.logo} alt={integration.name} className="h-16 w-16 object-contain" />

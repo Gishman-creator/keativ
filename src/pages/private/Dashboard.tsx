@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { 
   BarChart3, 
   Calendar, 
@@ -15,10 +14,19 @@ import {
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { mockAnalytics, mockPosts } from '../../data/mockData';
+import EngagementChart from '../../components/EngagementChart';
 
 const Dashboard = () => {
   const activeSocialSet = useSelector((state: RootState) => state.socialSets.activeSocialSet);
   const posts = useSelector((state: RootState) => state.posts.posts);
+
+  const platformLogos: { [key: string]: string } = {
+    instagram: '/src/public/social media/instagram-logo.png',
+    twitter: '/src/public/social media/x-logo.png',
+    facebook: '/src/public/social media/facebook-logo.png',
+    linkedin: '/src/public/social media/linkedin-logo.png',
+    tiktok: '/src/public/social media/tiktok-logo.png',
+  };
 
   const stats = [
     {
@@ -104,14 +112,8 @@ const Dashboard = () => {
               View Analytics
             </Button>
           </CardHeader>
-          <CardContent>
-            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Chart visualization would go here</p>
-                <p className="text-sm text-gray-400 mt-2">Using Recharts in production</p>
-              </div>
-            </div>
+          <CardContent className='px-0'>
+            <EngagementChart />
           </CardContent>
         </Card>
 
@@ -129,21 +131,32 @@ const Dashboard = () => {
               <div key={post.id} className="border border-gray-200 rounded-lg p-3">
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium text-sm text-gray-900">{post.title}</h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {post.status}
-                  </Badge>
                 </div>
                 <p className="text-xs text-gray-600 mb-2 line-clamp-2">{post.content}</p>
                 <div className="flex justify-between items-center">
-                  <div className="flex space-x-1">
+                  <div className="flex space-x-2">
                     {post.platforms.map((platform) => (
-                      <Badge key={platform} variant="outline" className="text-xs">
-                        {platform}
-                      </Badge>
+                      <img
+                        key={platform}
+                        src={platformLogos[platform]}
+                        alt={platform}
+                        className="h-5 w-5"
+                      />
                     ))}
                   </div>
                   <span className="text-xs text-gray-500">
-                    {new Date(post.scheduledDate).toLocaleDateString()}
+                    {(() => {
+                      const currentYear = new Date().getFullYear();
+                      const postYear = new Date(post.scheduledDate).getFullYear();
+                      const dateOptions: Intl.DateTimeFormatOptions = {
+                        month: 'short',
+                        day: 'numeric',
+                      };
+                      if (currentYear !== postYear) {
+                        dateOptions.year = 'numeric';
+                      }
+                      return new Date(post.scheduledDate).toLocaleDateString('en-US', dateOptions);
+                    })()}
                   </span>
                 </div>
               </div>
@@ -158,29 +171,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-              <Calendar className="h-6 w-6 mb-2" />
-              <span>Schedule Post</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-              <MessageCircle className="h-6 w-6 mb-2" />
-              <span>Check Messages</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-              <BarChart3 className="h-6 w-6 mb-2" />
-              <span>View Reports</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

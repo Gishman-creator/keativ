@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import EngagementChart from '@/components/EngagementChart';
 
 const Analytics = () => {
   const analyticsData = useSelector((state: RootState) => state.analytics.data);
@@ -176,14 +177,8 @@ const Analytics = () => {
               View Details
             </Button>
           </CardHeader>
-          <CardContent>
-            <div className="h-80 bg-gray-50 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 font-medium">Engagement Chart</p>
-                <p className="text-sm text-gray-400 mt-2">Recharts integration would display here</p>
-              </div>
-            </div>
+          <CardContent className="px-0">
+            <EngagementChart height={600} />
           </CardContent>
         </Card>
 

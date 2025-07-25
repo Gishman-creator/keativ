@@ -1,13 +1,13 @@
 import React from 'react';
-import americanGreetingsLogo from '@/public/brands/american-greetings-logo.webp';
-import brandFetchLogo from '@/public/brands/brand-fetch-logo.png';
-import brandfetch from '@/public/brands/brandfetch.svg';
-import chobaniLogo from '@/public/brands/chobani-logo.webp';
-import crumblLogo from '@/public/brands/crumbl-logo.webp';
-import elPolloLocoLogo from '@/public/brands/el-pollo-loco-logo.webp';
-import kraftHeinzLogo from '@/public/brands/kraft-heinz-logo.webp';
-import rareBeautyLogo from '@/public/brands/rare-beauty-logo.png';
-import skimsLogo from '@/public/brands/skims-logo.png';
+import americanGreetingsLogo from '/brands/american-greetings-logo.webp';
+import brandFetchLogo from '/brands/brand-fetch-logo.png';
+import brandfetch from '/brands/brandfetch.svg';
+import chobaniLogo from '/brands/chobani-logo.webp';
+import crumblLogo from '/brands/crumbl-logo.webp';
+import elPolloLocoLogo from '/brands/el-pollo-loco-logo.webp';
+import kraftHeinzLogo from '/brands/kraft-heinz-logo.webp';
+import rareBeautyLogo from '/brands/rare-beauty-logo.png';
+import skimsLogo from '/brands/skims-logo.png';
 
 const brands = [
   { name: 'American Greetings', logo: americanGreetingsLogo },

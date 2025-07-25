@@ -21,11 +21,11 @@ const Dashboard = () => {
   const posts = useSelector((state: RootState) => state.posts.posts);
 
   const platformLogos: { [key: string]: string } = {
-    instagram: '/src/public/social media/instagram-logo.png',
-    twitter: '/src/public/social media/x-logo.png',
-    facebook: '/src/public/social media/facebook-logo.png',
-    linkedin: '/src/public/social media/linkedin-logo.png',
-    tiktok: '/src/public/social media/tiktok-logo.png',
+    instagram: '/social media/instagram-logo.png',
+    twitter: '/social media/x-logo.png',
+    facebook: '/social media/facebook-logo.png',
+    linkedin: '/social media/linkedin-logo.png',
+    tiktok: '/social media/tiktok-logo.png',
   };
 
   const stats = [

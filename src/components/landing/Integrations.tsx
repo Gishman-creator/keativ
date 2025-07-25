@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import slackLogo from '@/public/integrated apps/slack-logo.png';
-import canvaLogo from '@/public/integrated apps/canva-logo.png';
-import googleDriveLogo from '@/public/integrated apps/google-drive-logo.png';
-import dropboxLogo from '@/public/integrated apps/dropbox-logo.png';
+import slackLogo from '/integrated apps/slack-logo.png';
+import canvaLogo from '/integrated apps/canva-logo.png';
+import googleDriveLogo from '/integrated apps/google-drive-logo.png';
+import dropboxLogo from '/integrated apps/dropbox-logo.png';
 
 const integrations = [
   { name: 'Slack', logo: slackLogo, description: 'Team Communication', position: 'left-[5%] top-[35%]', rotation: '-rotate-12' },

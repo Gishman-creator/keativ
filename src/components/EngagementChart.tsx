@@ -38,9 +38,9 @@ export default function EngagementChart({ height = 300 }: { height?: number }) {
       <ResponsiveContainer width="100%" height={height}>
           <LineChart data={data} margin={{ left: 0, right: 10, top: 10, bottom: 10 }}>
             {/* Remove grid and axis lines */}
-            <CartesianGrid stroke="transparent" />
+            <CartesianGrid horizontal={true} vertical={false} stroke="#e0e0e0" />
             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-            <YAxis axisLine={false} tickLine={false} domain={[0, 100]} tickFormatter={(value) => `${value}%`} tick={{ fontSize: 12 }} width={40} />
+            <YAxis axisLine={false} tickLine={false} domain={[0, 65]} ticks={[0, 13, 26, 39, 52, 65]} tickFormatter={(value) => `${value}%`} tick={{ fontSize: 12 }} width={40} />
 
             <Tooltip content={<CustomTooltip />} />
 

@@ -15,7 +15,7 @@ const PrivateLayout = () => {
       <Header />
       <div className="flex">
         <Sidebar isCollapsed={sidebarCollapsed} onToggle={toggleSidebar} />
-        <main className={`flex-1 p-6 ${sidebarCollapsed ? 'ml-20' : 'ml-64'} mt-16 transition-all duration-300`}>
+        <main className={`flex-1 ${sidebarCollapsed ? 'ml-20' : 'ml-64'} mt-16 transition-all duration-300`}>
           <Outlet />
         </main>
       </div>

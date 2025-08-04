@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import Profile from '@/components/settings/Profile';
 import Notifications from '@/components/settings/Notifications';
 import Billing from '@/components/settings/Billing';
+import Integrations from '@/components/settings/Integrations'; // Import the new Integrations component
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
 import { RootState } from '../../redux/store';
 import { Button } from '@/components/ui/button';
@@ -22,16 +23,11 @@ const brandFonts = {
   headers: 'Roboto Slab, serif',
 };
 
-const tabOptions = [
-  { key: 'profile', label: 'Profile' },
-  { key: 'notifications', label: 'Notifications' },
-  { key: 'billing', label: 'Billing' },
-];
-
 const sidebarTabMap = {
   account: 'profile',
   notification: 'notifications',
   billing: 'billing',
+  integrations: 'integrations', // Add new mapping for integrations
 };
 
 const Settings = () => {
@@ -121,6 +117,9 @@ const Settings = () => {
               )}
               {activeTab === 'billing' && (
                 <Billing billingData={billingData} />
+              )}
+              {activeTab === 'integrations' && (
+                <Integrations />
               )}
             </div>
           </div>

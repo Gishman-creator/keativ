@@ -1,10 +1,11 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { AppWindow, Bell, Globe, Settings, Users, CreditCard } from 'lucide-react';
+import { AppWindow, Bell, CreditCard, Globe } from 'lucide-react';
 
 const sidebarItems = [
   { key: 'account', label: 'Account', icon: AppWindow },
   { key: 'notification', label: 'Notification', icon: Bell },
+  { key: 'integrations', label: 'Integrations', icon: Globe },
   { key: 'billing', label: 'Billing', icon: CreditCard },
 ];
 

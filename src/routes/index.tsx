@@ -1,7 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import PublicLayout from '../layouts/PublicLayout';
 import PrivateLayout from '../layouts/PrivateLayout';
-import ProtectedRoute from '../components/ProtectedRoute';
 
 // Public pages
 import Landing from '../pages/public/Landing';
@@ -12,6 +11,9 @@ import Contact from '../pages/public/Contact';
 import Login from '../pages/public/Login';
 import Signup from '../pages/public/Signup';
 import NotFound from '../pages/public/NotFound';
+
+// Email verification components
+import { EmailVerification, VerificationPending, ResendVerification } from '../components/auth';
 
 // Private pages
 import Dashboard from '../pages/private/Dashboard';
@@ -35,6 +37,9 @@ export const router = createBrowserRouter([
       { path: 'contact', element: <Contact /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
+      { path: 'verify-email/:token', element: <EmailVerification /> },
+      { path: 'verification-pending', element: <VerificationPending /> },
+      { path: 'resend-verification', element: <ResendVerification /> },
       { path: 'settings', element: <Settings /> },
     ],
   },

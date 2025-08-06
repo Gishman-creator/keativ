@@ -4,6 +4,7 @@ import { store } from './redux/store';
 import { router } from './routes';
 import './styles/globals.css';
 
+
 function App() {
   return (
     <Provider store={store}>

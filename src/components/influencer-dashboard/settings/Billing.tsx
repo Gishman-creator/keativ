@@ -32,7 +32,7 @@ const Billing: React.FC<BillingProps> = ({ billingData }) => {
       </div>
 
       {/* Billing Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Basic Plan */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Basic Plan</h3>
@@ -84,22 +84,22 @@ const Billing: React.FC<BillingProps> = ({ billingData }) => {
         </div>
 
         {/* Professional Plan - Active */}
-        <div className="bg-teal-600 rounded-lg p-6 text-white">
+        <div className="bg-secondary rounded-lg p-6 text-white md:col-span-2 lg:col-span-1">
           <h3 className="text-lg font-semibold mb-2">Professional Plan</h3>
-          <p className="text-teal-100 text-sm mb-4">Suitable plan for starter</p>
+          <p className="text-secondary-foreground text-sm mb-4">Suitable plan for starter</p>
           <div className="mb-6">
             <span className="text-3xl font-bold">{billingData.price}</span>
-            <span className="text-teal-100 ml-1">/{billingData.period}</span>
+            <span className="text-secondary-foreground ml-1">/{billingData.period}</span>
           </div>
           <ul className="space-y-3 mb-6">
             {billingData.features.map((feature, index) => (
-              <li key={index} className="flex items-center text-sm text-teal-100">
+              <li key={index} className="flex items-center text-sm text-secondary-foreground">
                 <Check className="w-4 h-4 mr-3" />
                 {feature}
               </li>
             ))}
           </ul>
-          <Button className="w-full bg-white text-teal-600 hover:bg-gray-100">Active plan</Button>
+          <Button className="w-full bg-white text-secondary hover:bg-gray-100">Active plan</Button>
         </div>
       </div>
 
@@ -117,7 +117,6 @@ const Billing: React.FC<BillingProps> = ({ billingData }) => {
                 <th className="text-left py-3 px-4 font-medium text-gray-600">Amount</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">Plan</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -129,17 +128,7 @@ const Billing: React.FC<BillingProps> = ({ billingData }) => {
                   <td className="py-4 px-4">{item.amount}</td>
                   <td className="py-4 px-4">{item.plan}</td>
                   <td className="py-4 px-4">
-                    <Badge className="bg-green-100 text-green-800">{item.status}</Badge>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex space-x-2">
-                      <Button size="sm" className="bg-teal-600 hover:bg-teal-700 w-8 h-8 p-0">
-                        <Check className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="w-8 h-8 p-0">
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Badge className="bg-secondary/10 text-secondary hover:bg-secondary/20">{item.status}</Badge>
                   </td>
                 </tr>
               ))}

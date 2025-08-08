@@ -17,10 +17,12 @@ import {
   Bell,
   ChevronDown,
   Users,
-  LogOut
+  LogOut,
+  Menu
 } from 'lucide-react';
-import { RootState } from '../redux/store';
-import { logout } from '../redux/slices/authSlice';
+import { RootState } from '../../redux/store';
+import { logout } from '../../redux/slices/authSlice';
+import MobileSidebar from './MobileSidebar';
 
 const Header = () => {
   const user = useSelector((state: RootState) => state.auth.user);
@@ -54,6 +56,9 @@ const Header = () => {
     <header className="bg-white border-b border-gray-200 fixed top-0 right-0 left-0 z-50">
       <div className="px-6 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-4">
+          <div className="md:hidden">
+            <MobileSidebar isCollapsed={false} onToggle={() => { }} />
+          </div>
           <Link to="/dashboard" className="flex items-center space-x-2">
             <Share2 className="h-6 w-6 text-red-500" />
             <span className="font-heading text-lg font-bold text-gray-900">
@@ -63,7 +68,7 @@ const Header = () => {
         </div>
 
         <div className="flex items-center space-x-2">
-          <div 
+          <div
             className="relative"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -83,7 +88,7 @@ const Header = () => {
               </Avatar>
             </Button>
             {showSocialSetShowcase && (
-              <div 
+              <div
                 className="absolute top-full mt-2 z-50 right-0"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -92,7 +97,7 @@ const Header = () => {
               </div>
             )}
           </div>
-          
+
           <Button variant="ghost" size="sm" className="p-2 justify-start rounded-full">
             <Bell className="h-4 w-4" />
           </Button>

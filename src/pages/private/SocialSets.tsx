@@ -70,12 +70,12 @@ const SocialSets = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+        <div className="mb-4 sm:mb-0">
           <h1 className="font-heading text-3xl font-bold text-gray-900">Social Sets</h1>
           <p className="text-gray-600 mt-1">Organize your social media accounts into manageable groups</p>
         </div>
-        <Button className="bg-red-500 hover:bg-red-600">
+        <Button className="bg-red-500 hover:bg-red-600 w-1/2 sm:w-auto mb-5 md:mb-0">
           <Plus className="mr-2 h-4 w-4" />
           Create New Set
         </Button>
@@ -214,64 +214,6 @@ const SocialSets = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* Create New Set Card */}
-      <Card className="border-2 border-dashed border-gray-300 hover:border-red-400 transition-colors">
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="bg-gray-100 p-4 rounded-full mb-4">
-            <Plus className="h-8 w-8 text-gray-400" />
-          </div>
-          <h3 className="font-semibold text-gray-900 mb-2">Create New Social Set</h3>
-          <p className="text-gray-600 mb-4 max-w-sm">
-            Group your social media accounts together to manage them more efficiently
-          </p>
-          <Button className="bg-red-500 hover:bg-red-600">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Social Set
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <Layers className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{socialSets.length}</p>
-            <p className="text-sm text-gray-600">Total Sets</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <LinkIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
-              {socialSets.reduce((total, set) => total + set.platforms.length, 0)}
-            </p>
-            <p className="text-sm text-gray-600">Total Platforms</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <div className="h-3 w-3 bg-green-500 rounded-full"></div>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">
-              {socialSets.reduce((total, set) => total + set.platforms.filter(p => p.isConnected).length, 0)}
-            </p>
-            <p className="text-sm text-gray-600">Connected</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <Users className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">45.2K</p>
-            <p className="text-sm text-gray-600">Total Followers</p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

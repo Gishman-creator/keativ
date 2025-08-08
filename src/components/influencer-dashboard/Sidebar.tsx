@@ -17,9 +17,10 @@ import {
 interface SidebarProps {
   isCollapsed: boolean;
   onToggle: () => void;
+  className?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) => {
   const location = useLocation();
 
   const navItems = [
@@ -66,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   };
 
   return (
-    <div className={`bg-gray-50 ${isCollapsed ? 'w-20' : 'w-64'} h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-gray-200 transition-all duration-300 z-40 flex flex-col`}>
+    <div className={cn(`bg-gray-50 ${isCollapsed ? 'w-20' : 'w-64'} h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-gray-200 transition-all duration-300 z-40 flex flex-col`, className)}>
       {/* Toggle Button */}
       <div className="absolute -right-3 top-6 z-50">
         <Button

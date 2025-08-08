@@ -15,6 +15,13 @@ import {
   Target
 } from 'lucide-react';
 
+import facebookLogo from '/social media/facebook-logo.png';
+import instagramLogo from '/social media/instagram-logo.png';
+import linkedinLogo from '/social media/linkedin-logo.png';
+import tiktokLogo from '/social media/tiktok-logo.png';
+import xLogo from '/social media/x-logo.png';
+import youtubeLogo from '/social media/youtube-logo.png';
+
 const Features = () => {
   const mainFeatures = [
     {
@@ -129,7 +136,7 @@ const Features = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {additionalFeatures.map((feature, index) => (
-              <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+              <Card key={index} className="bg-transparent border-none shadow-none">
                 <CardHeader className="pb-4">
                   <div className="bg-red-100 p-3 rounded-lg w-fit">
                     <feature.icon className="h-6 w-6 text-red-600" />
@@ -147,91 +154,25 @@ const Features = () => {
 
       {/* Platform Support */}
       <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="relative min-h-[400px] flex items-center justify-center">
-            <h2 className="font-heading text-3xl font-bold text-gray-900 mb-4 relative z-10">
-              Connect All Your Favorite Platforms
-            </h2>
-            <p className="text-xl text-gray-600 mb-12 relative z-10">
-              Keativ supports all major social media platforms,<br />so you can manage everything from one dashboard.
-            </p>
-            
-            {/* Platforms arranged in a circle around the text */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="relative w-[500px] h-[500px]">
-                {[
-                  { name: 'Instagram', color: '#E4405F', logo: '📷' },
-                  { name: 'Twitter', color: '#1DA1F2', logo: '🐦' },
-                  { name: 'Facebook', color: '#1877F2', logo: '👥' },
-                  { name: 'LinkedIn', color: '#0A66C2', logo: '💼' },
-                  { name: 'TikTok', color: '#000000', logo: '🎵' },
-                  { name: 'YouTube', color: '#FF0000', logo: '📺' },
-                  { name: 'Pinterest', color: '#BD081C', logo: '📌' },
-                  { name: 'Snapchat', color: '#FFFC00', logo: '👻' }
-                ].map((platform, index) => {
-                  const angle = (index * 45) * (Math.PI / 180); // 45 degrees apart
-                  const radius = 200;
-                  const x = Math.cos(angle) * radius;
-                  const y = Math.sin(angle) * radius;
-                  
-                  return (
-                    <div
-                      key={platform.name}
-                      className="absolute w-20 h-20 rounded-full flex items-center justify-center shadow-lg animate-pulse"
-                      style={{ 
-                        backgroundColor: `${platform.color}20`,
-                        left: `calc(50% + ${x}px - 40px)`,
-                        top: `calc(50% + ${y}px - 40px)`,
-                        animationDelay: `${index * 0.2}s`
-                      }}
-                    >
-                      <div 
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl"
-                        style={{ backgroundColor: platform.color }}
-                      >
-                        {platform.logo}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {/* Curved connecting lines */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <svg width="500" height="500" className="opacity-20">
-                <circle 
-                  cx="250" 
-                  cy="250" 
-                  r="200" 
-                  fill="none" 
-                  stroke="#ef4444" 
-                  strokeWidth="2" 
-                  strokeDasharray="10,5"
-                  className="animate-spin"
-                  style={{ animationDuration: '20s' }}
-                />
-              </svg>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center mt-20">
+        <div className="flex flex-col items-center justify-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="font-heading text-3xl font-bold text-gray-900 mb-4">
+            Connect All Your Favorite Platforms
+          </h2>
+          <p className="text-lg text-center text-gray-600 w-3/4">
+            Keativ supports all major social media platforms, so you can manage everything from one dashboard.
+          </p>
+
+          <div className="flex flex-wrap justify-center items-center gap-14 mt-10 mb-10 w-4/5">
             {[
-              { name: 'Instagram', color: '#E4405F', logo: '📷' },
-              { name: 'Twitter', color: '#1DA1F2', logo: '🐦' },
-              { name: 'Facebook', color: '#1877F2', logo: '👥' },
-              { name: 'LinkedIn', color: '#0A66C2', logo: '💼' },
-              { name: 'TikTok', color: '#000000', logo: '🎵' },
-              { name: 'YouTube', color: '#FF0000', logo: '📺' }
-            ].map((platform, index) => (
-              <div key={index} className="text-center">
-                <div 
-                  className="w-16 h-16 rounded-xl mx-auto mb-3 flex items-center justify-center text-white text-2xl"
-                  style={{ backgroundColor: platform.color }}
-                >
-                  {platform.logo}
-                </div>
-                <p className="text-sm font-medium text-gray-700">{platform.name}</p>
+              { name: 'Facebook', logo: facebookLogo },
+              { name: 'Instagram', logo: instagramLogo },
+              { name: 'LinkedIn', logo: linkedinLogo },
+              { name: 'TikTok', logo: tiktokLogo },
+              { name: 'X', logo: xLogo },
+              { name: 'YouTube', logo: youtubeLogo },
+            ].map((platform) => (
+              <div key={platform.name} className="flex flex-col items-center">
+                <img src={platform.logo} alt={platform.name} className="h-8 w-8 object-contain" />
               </div>
             ))}
           </div>

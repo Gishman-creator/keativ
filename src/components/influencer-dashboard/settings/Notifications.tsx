@@ -25,12 +25,12 @@ const Notifications: React.FC<NotificationsProps> = ({ notificationSettings, onN
 
       <div className="space-y-8">
         {/* Notifications from us */}
-        <div className="flex justify-between items-start">
-          <div className="w-1/2 pr-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start">
+          <div className="w-full sm:w-1/2 pr-4 mb-5 sm:mb-0">
             <h3 className="text-lg font-semibold text-gray-900">Notifications from us</h3>
             <p className="text-gray-600 text-sm">Receive the latest news, updates and industry tutorials from us.</p>
           </div>
-          <div className="w-1/2 space-y-4">
+          <div className="w-full sm:w-1/2 space-y-4">
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="newsAndUpdates"
@@ -73,12 +73,12 @@ const Notifications: React.FC<NotificationsProps> = ({ notificationSettings, onN
         <div className="border-t border-gray-200 pt-8"></div>
 
         {/* Comments */}
-        <div className="flex justify-between items-start">
-          <div className="w-1/2 pr-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start">
+          <div className="w-full sm:w-1/2 pr-4 mb-5 sm:mb-0">
             <h3 className="text-lg font-semibold text-gray-900">Comments</h3>
             <p className="text-gray-600 text-sm">These are notifications for comments on your posts and replies to your comments.</p>
           </div>
-          <div className="w-1/2 space-y-4">
+          <div className="w-full sm:w-1/2 space-y-4">
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="comments-doNotNotify"
@@ -118,12 +118,12 @@ const Notifications: React.FC<NotificationsProps> = ({ notificationSettings, onN
         <div className="border-t border-gray-200 pt-8"></div>
 
         {/* Reminders */}
-        <div className="flex justify-between items-start">
-          <div className="w-1/2 pr-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start">
+          <div className="w-full sm:w-1/2 pr-4 mb-5 sm:mb-0">
             <h3 className="text-lg font-semibold text-gray-900">Reminders</h3>
             <p className="text-gray-600 text-sm">These are notifications to remind you of updates you might have missed.</p>
           </div>
-          <div className="w-1/2 space-y-4">
+          <div className="w-full sm:w-1/2 space-y-4">
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="reminders-doNotNotify"
@@ -163,12 +163,12 @@ const Notifications: React.FC<NotificationsProps> = ({ notificationSettings, onN
         <div className="border-t border-gray-200 pt-8"></div>
 
         {/* More activity about you */}
-        <div className="flex justify-between items-start">
-          <div className="w-1/2 pr-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start">
+          <div className="w-full sm:w-1/2 pr-4 mb-5 sm:mb-0">
             <h3 className="text-lg font-semibold text-gray-900">More activity about you</h3>
             <p className="text-gray-600 text-sm">These are notifications for posts on your profile, likes and other reactions to your posts, and more.</p>
           </div>
-          <div className="w-1/2 space-y-4">
+          <div className="w-full sm:w-1/2 space-y-4">
             <div className="flex items-start space-x-2">
               <Checkbox
                 id="activity-doNotNotify"

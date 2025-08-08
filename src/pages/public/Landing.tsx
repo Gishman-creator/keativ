@@ -27,6 +27,7 @@ import TrustedBy from '@/components/landing/TrustedBy';
 const Landing = () => {
   const [currentFeatureSlide, setCurrentFeatureSlide] = useState(0);
   const [currentBrandSlide, setCurrentBrandSlide] = useState(0);
+  const [featuresPerSlide, setFeaturesPerSlide] = useState(3); // Default to largest
 
   const features = [
     {
@@ -97,17 +98,34 @@ const Landing = () => {
     ]
   ];
 
-  const featuresPerSlide = 3;
   const brandsPerSlide = 4;
   const totalFeatureSlides = Math.ceil(features.length / featuresPerSlide);
+
+  // Update featuresPerSlide based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setFeaturesPerSlide(3);
+      } else if (window.innerWidth >= 640) { // sm breakpoint
+        setFeaturesPerSlide(2);
+      } else {
+        setFeaturesPerSlide(1);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Set initial value
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Auto-scroll features every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentFeatureSlide((prev) => (prev + 1) % totalFeatureSlides);
+      setCurrentFeatureSlide((prev) => (prev + 1) % Math.ceil(features.length / featuresPerSlide));
     }, 4000);
     return () => clearInterval(interval);
-  }, [totalFeatureSlides]);
+  }, [features.length, featuresPerSlide]);
 
   const [brandRow1Position, setBrandRow1Position] = useState(0);
   const [brandRow2Position, setBrandRow2Position] = useState(0);
@@ -288,7 +306,7 @@ const Landing = () => {
               >
                 {Array.from({ length: totalFeatureSlides }, (_, slideIndex) => (
                   <div key={slideIndex} className="w-full flex-shrink-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                       {features
                         .slice(slideIndex * featuresPerSlide, (slideIndex + 1) * featuresPerSlide)
                         .map((feature, index) => (
@@ -316,7 +334,7 @@ const Landing = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentFeatureSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-colors duration-200 ${index === currentFeatureSlide ? 'bg-red-500' : 'bg-gray-300'
+                  className={`w-2 h-2 rounded-full transition-colors duration-200 ${index === currentFeatureSlide ? 'bg-red-500' : 'bg-gray-300'
                     }`}
                 />
               ))}
@@ -387,14 +405,14 @@ const Landing = () => {
               management and grow their online presence.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
               <Link to="/signup">
                 <Button size="lg" className="bg-white text-red-500 hover:bg-gray-100 px-8 py-4 text-lg">
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg">
+              <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 w-fit px-8 py-4 text-lg">
                 Schedule Demo
               </Button>
             </div>

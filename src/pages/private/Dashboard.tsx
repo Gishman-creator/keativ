@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  BarChart3, 
-  Calendar, 
-  MessageCircle, 
+import {
+  BarChart3,
+  Calendar,
+  MessageCircle,
   TrendingUp,
   Users,
   Eye,
@@ -14,7 +14,12 @@ import {
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 import { mockAnalytics, mockPosts } from '../../data/mockData';
-import EngagementChart from '../../components/EngagementChart';
+import EngagementChart from '../../components/influencer-dashboard/EngagementChart';
+import SchedulePostPage from '@/components/influencer-dashboard/dashboard/schedule-post-page'; // Import the SchedulePostPage component
+import React, { useState } from 'react';
+import { X } from 'lucide-react'; // Import X icon for close button
+import { cn } from '@/lib/utils'; // Import cn for conditional class names
+import UpcomingPostsCard from '@/components/influencer-dashboard/UpcomingPostsCard'; // Import the new component
 
 const Dashboard = () => {
   const activeSocialSet = useSelector((state: RootState) => state.socialSets.activeSocialSet);
@@ -59,24 +64,31 @@ const Dashboard = () => {
     }
   ];
 
-  const upcomingPosts = posts
-    .filter(post => post.status === 'scheduled')
-    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
-    .slice(0, 3);
+  const [showSchedulePostPage, setShowSchedulePostPage] = useState(false);
+
+  const handleCreatePostClick = () => {
+    setShowSchedulePostPage(true);
+  };
+
+  const handleCloseSchedulePostPage = () => {
+    setShowSchedulePostPage(false);
+  };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div>
+    <div className="flex flex-col h-full overflow-y-auto space-y-6 p-6">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center flex-shrink-0">
+        <div className="mb-3 md:mb-0">
           <h1 className="font-heading text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-1">
             Welcome back! Here's what's happening with {activeSocialSet?.name || 'your social media'}.
           </p>
         </div>
-        <Button className="bg-red-500 hover:bg-red-600">
-          <Plus className="mr-2 h-4 w-4" />
-          Create Post
-        </Button>
+        <div className="mb-5 md:mb-0"> {/* Added a div to contain the button and align it to the right on small screens */}
+          <Button className="bg-red-500 hover:bg-red-600" onClick={handleCreatePostClick}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Post
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -105,9 +117,9 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Analytics Chart */}
         <Card className="lg:col-span-2 border-0 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 pb-2">
             <CardTitle className="text-lg font-semibold">Engagement Overview</CardTitle>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <BarChart3 className="mr-2 h-4 w-4" />
               View Analytics
             </Button>
@@ -119,57 +131,27 @@ const Dashboard = () => {
 
         {/* Upcoming Posts */}
         <Card className="border-0 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 pb-2">
             <CardTitle className="text-lg font-semibold">Upcoming Posts</CardTitle>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <Calendar className="mr-2 h-4 w-4" />
               View Calendar
             </Button>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {upcomingPosts.map((post) => (
-              <div key={post.id} className="border border-gray-200 rounded-lg p-3">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-medium text-sm text-gray-900">{post.title}</h4>
-                </div>
-                <p className="text-xs text-gray-600 mb-2 line-clamp-2">{post.content}</p>
-                <div className="flex justify-between items-center">
-                  <div className="flex space-x-2">
-                    {post.platforms.map((platform) => (
-                      <img
-                        key={platform}
-                        src={platformLogos[platform]}
-                        alt={platform}
-                        className="h-5 w-5"
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    {(() => {
-                      const currentYear = new Date().getFullYear();
-                      const postYear = new Date(post.scheduledDate).getFullYear();
-                      const dateOptions: Intl.DateTimeFormatOptions = {
-                        month: 'short',
-                        day: 'numeric',
-                      };
-                      if (currentYear !== postYear) {
-                        dateOptions.year = 'numeric';
-                      }
-                      return new Date(post.scheduledDate).toLocaleDateString('en-US', dateOptions);
-                    })()}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {upcomingPosts.length === 0 && (
-              <div className="text-center text-gray-500 py-8">
-                <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p>No upcoming posts</p>
-                <Button className="mt-2" size="sm">Create Your First Post</Button>
-              </div>
-            )}
-          </CardContent>
+          <UpcomingPostsCard handleCreatePostClick={handleCreatePostClick} />
         </Card>
+      </div>
+
+      {/* Schedule Post Modal Overlay */}
+      <div
+        className={cn(
+          "fixed inset-0 z-50 flex items-center h-screen justify-center transition-opacity duration-300",
+          showSchedulePostPage ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+      >
+        <div className="relative rounded-lg shadow-xl w-fit max-w-6xl max-h-[90vh] overflow-hidden">
+          <SchedulePostPage onClose={handleCloseSchedulePostPage} />
+        </div>
       </div>
     </div>
   );

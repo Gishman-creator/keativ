@@ -23,7 +23,8 @@ const Integrations = () => {
           <span className="text-red-500">tools in seconds</span>
         </h2>
 
-        <div className="relative h-96 flex flex-col items-center justify-center mt-0">
+        {/* Desktop and larger screens layout */}
+        <div className="relative h-96 flex flex-col items-center justify-center mt-0 hidden md:flex">
           <div className="relative w-full h-full max-w-3xl mx-auto">
             {integrations.map((integration) => (
               <div
@@ -46,6 +47,23 @@ const Integrations = () => {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Mobile and small screens layout */}
+        <div className="grid grid-cols-2 gap-8 mt-12 md:hidden">
+          {integrations.map((integration) => (
+            <div>
+              <div
+                key={integration.name}
+                className="flex flex-col items-center p-4  rounded-2xl"
+              >
+                <img src={integration.logo} alt={integration.name} className="h-20 w-20 object-contain mb-2" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">
+                {integration.name}
+              </h3>
+            </div>
+          ))}
         </div>
       </div>
     </section>

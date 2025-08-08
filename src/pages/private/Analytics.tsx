@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Users, 
-  Eye, 
-  Heart, 
+import {
+  BarChart3,
+  TrendingUp,
+  Users,
+  Eye,
+  Heart,
   MessageCircle,
   Share,
   Download,
@@ -15,10 +15,12 @@ import {
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import EngagementChart from '@/components/EngagementChart';
+import EngagementChart from '@/components/influencer-dashboard/EngagementChart';
+import { useNavigate } from 'react-router-dom';
 
 const Analytics = () => {
   const analyticsData = useSelector((state: RootState) => state.analytics.data);
+  const navigate = useNavigate();
 
   const overviewStats = [
     {
@@ -118,21 +120,23 @@ const Analytics = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+        <div className="mb-4 md:mb-0">
           <h1 className="font-heading text-3xl font-bold text-gray-900">Analytics</h1>
           <p className="text-gray-600 mt-1">Track your social media performance and insights</p>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline">
-            <Calendar className="mr-2 h-4 w-4" />
-            Last 30 Days
-          </Button>
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
-          <Button className="bg-red-500 hover:bg-red-600">
+        <div className="flex flex-col sm:flex-row sm:space-x-2">
+          <div className="flex flex-row space-x-2 w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto">
+              <Calendar className="mr-2 h-4 w-4" />
+              Last 30 Days
+            </Button>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <Filter className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
+          </div>
+          <Button className="mt-2 mb-5 sm:my-0 bg-red-500 hover:bg-red-600 w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" />
             Export Report
           </Button>
@@ -149,12 +153,10 @@ const Analytics = () => {
                   <p className="text-sm font-medium text-gray-600">{stat.title}</p>
                   <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
                   <div className="flex items-center mt-2">
-                    <TrendingUp className={`h-4 w-4 mr-1 ${
-                      stat.changeType === 'positive' ? 'text-green-500' : 'text-red-500'
-                    }`} />
-                    <span className={`text-sm font-medium ${
-                      stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                    <TrendingUp className={`h-4 w-4 mr-1 ${stat.changeType === 'positive' ? 'text-green-500' : 'text-red-500'
+                      }`} />
+                    <span className={`text-sm font-medium ${stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
+                      }`}>
                       {stat.change}
                     </span>
                   </div>
@@ -192,7 +194,7 @@ const Analytics = () => {
               <div key={index} className="border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <div 
+                    <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: platform.color }}
                     ></div>
@@ -227,9 +229,13 @@ const Analytics = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {topPosts.map((post) => (
-              <div key={post.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                <img 
-                  src={post.image} 
+              <div
+                key={post.id}
+                className="border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/dashboard/analytics/posts/${post.id}`)}
+              >
+                <img
+                  src={post.image}
                   alt={post.title}
                   className="w-full h-32 object-cover"
                 />
@@ -277,13 +283,13 @@ const Analytics = () => {
                   <div>
                     <h4 className="font-medium text-blue-900 mb-1">Best Posting Time</h4>
                     <p className="text-sm text-blue-700">
-                      Your audience is most active on weekdays between 2-4 PM. 
+                      Your audience is most active on weekdays between 2-4 PM.
                       Consider scheduling more posts during this time.
                     </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="bg-green-100 p-2 rounded-lg">
@@ -292,14 +298,14 @@ const Analytics = () => {
                   <div>
                     <h4 className="font-medium text-green-900 mb-1">Content Performance</h4>
                     <p className="text-sm text-green-700">
-                      Behind-the-scenes content performs 40% better than product posts. 
+                      Behind-the-scenes content performs 40% better than product posts.
                       Try sharing more process content.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
@@ -309,13 +315,13 @@ const Analytics = () => {
                   <div>
                     <h4 className="font-medium text-purple-900 mb-1">Hashtag Strategy</h4>
                     <p className="text-sm text-purple-700">
-                      Posts with 5-10 hashtags get 25% more engagement. 
+                      Posts with 5-10 hashtags get 25% more engagement.
                       Consider using trending hashtags in your niche.
                     </p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                 <div className="flex items-start space-x-3">
                   <div className="bg-orange-100 p-2 rounded-lg">
@@ -324,7 +330,7 @@ const Analytics = () => {
                   <div>
                     <h4 className="font-medium text-orange-900 mb-1">Audience Growth</h4>
                     <p className="text-sm text-orange-700">
-                      Your follower growth has increased 15% this month. 
+                      Your follower growth has increased 15% this month.
                       Keep up the consistent posting schedule!
                     </p>
                   </div>

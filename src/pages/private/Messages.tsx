@@ -55,17 +55,17 @@ const Messages = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+        <div className="mb-4 sm:mb-0">
           <h1 className="font-heading text-3xl font-bold text-gray-900">Messages</h1>
           <p className="text-gray-600 mt-1">Manage all your social media conversations in one place</p>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline">
+        <div className="flex space-x-2 w-full sm:w-auto mb-5 md:mb-0">
+          <Button variant="outline" className="w-full sm:w-auto">
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button className="bg-red-500 hover:bg-red-600">
+          <Button className="bg-red-500 hover:bg-red-600 w-full sm:w-auto">
             Mark All Read
           </Button>
         </div>
@@ -236,45 +236,6 @@ const Messages = () => {
               </div>
             </CardContent>
           )}
-        </Card>
-      </div>
-
-      {/* Message Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <MessageCircle className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">24</p>
-            <p className="text-sm text-gray-600">Total Messages</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <div className="h-3 w-3 bg-red-500 rounded-full"></div>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">3</p>
-            <p className="text-sm text-gray-600">Unread</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <Reply className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">18</p>
-            <p className="text-sm text-gray-600">Replied</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-purple-600 font-bold text-sm">2h</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">2h</p>
-            <p className="text-sm text-gray-600">Avg Response</p>
-          </CardContent>
         </Card>
       </div>
     </div>

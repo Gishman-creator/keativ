@@ -22,6 +22,7 @@ import MediaLibrary from '../pages/private/MediaLibrary';
 import Influencers from '../pages/private/Influencers';
 import SocialSets from '../pages/private/SocialSets';
 import Settings from '../pages/private/Settings';
+import PostAnalyticsPage from '../pages/private/PostAnalyticsPage';
 
 export const router = createBrowserRouter([
   {
@@ -50,6 +51,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'calendar', element: <Calendar /> },
       { path: 'analytics', element: <Analytics /> },
+      { path: 'analytics/posts/:id', element: <PostAnalyticsPage /> },
       { path: 'messages', element: <Messages /> },
       { path: 'media', element: <MediaLibrary /> },
       { path: 'influencers', element: <Influencers /> },

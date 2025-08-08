@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarIcon, Plus, Filter } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import UpcomingPostsCard from '@/components/influencer-dashboard/UpcomingPostsCard'; // Import UpcomingPostsCard
 
 const Calendar = () => {
   const posts = useSelector((state: RootState) => state.posts.posts);
@@ -62,19 +63,25 @@ const Calendar = () => {
     });
   };
 
+  const handleCreatePostClick = () => {
+    // Placeholder for creating a new post.
+    // In a real app, this would navigate to the post creation page/modal.
+    console.log("Create new post clicked from Calendar page!");
+  };
+
   return (
     <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+        <div className="mb-4 sm:mb-0">
           <h1 className="font-heading text-3xl font-bold text-gray-900">Content Calendar</h1>
           <p className="text-gray-600 mt-1">Plan and schedule your social media posts</p>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline">
+        <div className="flex mb-5 md:mb-0 space-x-2 w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto">
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button className="bg-red-500 hover:bg-red-600">
+          <Button className="bg-red-500 hover:bg-red-600 w-full sm:w-auto" onClick={handleCreatePostClick}>
             <Plus className="mr-2 h-4 w-4" />
             New Post
           </Button>
@@ -138,45 +145,10 @@ const Calendar = () => {
 
       {/* Upcoming Posts List */}
       <Card className="border-0 shadow-sm">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-lg font-semibold">Upcoming Posts</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {posts
-              .filter(post => post.status === 'scheduled')
-              .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
-              .map((post) => (
-                <div key={post.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{post.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{post.content}</p>
-                    </div>
-                    <Badge variant="secondary">{post.status}</Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex space-x-2">
-                      {post.platforms.map((platform) => (
-                        <Badge key={platform} variant="outline" className="text-xs">
-                          {platform}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      <CalendarIcon className="inline h-4 w-4 mr-1" />
-                      {new Date(post.scheduledDate).toLocaleDateString()} at{' '}
-                      {new Date(post.scheduledDate).toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        </CardContent>
+        <UpcomingPostsCard handleCreatePostClick={handleCreatePostClick} />
       </Card>
     </div>
   );

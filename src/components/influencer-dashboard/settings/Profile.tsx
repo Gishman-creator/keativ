@@ -34,11 +34,11 @@ const Profile: React.FC<ProfileProps> = ({ profileData, onProfileChange, userAva
             <AvatarImage src={userAvatar} alt="User Avatar" className="object-cover" />
             <AvatarFallback className="text-xl">{userInitials}</AvatarFallback>
           </Avatar>
-          <div className="flex gap-2">
-            <Button style={{ backgroundColor: '#8B5CF6' }} className="text-white text-sm px-4 py-2 flex items-center gap-1">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button style={{ backgroundColor: '#8B5CF6' }} className="text-white text-sm px-4 py-2 flex items-center gap-1 w-full sm:w-auto">
               <User size={16} /> Change Image
             </Button>
-            <Button variant="outline" className="text-gray-700 text-sm px-4 py-2">Remove Image</Button>
+            <Button variant="outline" className="text-gray-700 text-sm px-4 py-2 w-full sm:w-auto">Remove Image</Button>
           </div>
         </div>
 
@@ -69,7 +69,7 @@ const Profile: React.FC<ProfileProps> = ({ profileData, onProfileChange, userAva
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Security</h2>
         <p className="text-gray-600">Manage your account security settings.</p>
         <div className="space-y-4 mt-6">
-          <div className="flex items-center justify-between">
+          <div className="flex  flex-col sm:flex-row items-start sm:items-center justify-between">
             <div>
               <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
               <Input
@@ -81,9 +81,9 @@ const Profile: React.FC<ProfileProps> = ({ profileData, onProfileChange, userAva
                 readOnly
               />
             </div>
-            <Button variant="outline" className="text-sm px-4 py-2">Change email</Button>
+            <Button variant="outline" className="text-sm px-4 py-2 mt-2 sm:mt-0">Change email</Button>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
             <div>
               <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
               <Input
@@ -94,10 +94,10 @@ const Profile: React.FC<ProfileProps> = ({ profileData, onProfileChange, userAva
                 readOnly
               />
             </div>
-            <Button variant="outline" className="text-sm px-4 py-2">Change password</Button>
+            <Button variant="outline" className="text-sm px-4 py-2 mt-2 sm:mt-0">Change password</Button>
           </div>
-          <div className="flex items-center justify-between pt-4">
-            <div>
+          <div className="flex items-start justify-between pt-4">
+            <div className='w-3/4'>
               <h3 className="text-base font-medium text-gray-900">2-Step Verifications</h3>
               <p className="text-gray-500 text-sm">Add an additional layer of security to your account during login.</p>
             </div>
@@ -113,9 +113,9 @@ const Profile: React.FC<ProfileProps> = ({ profileData, onProfileChange, userAva
       <div className="pt-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Log out of all devices</h2>
         <p className="text-gray-600">Log out of all other active sessions on other devices besides this one.</p>
-        <div className="flex items-center justify-between mt-6">
-          <p className="text-gray-500 max-w-2xl text-sm">Protect your account by logging out from all active sessions on other devices, ensuring your data remains secure.</p>
-          <Button variant="outline" className="text-sm px-4 py-2">Log out</Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-6">
+          <p className="text-gray-500 max-w-2xl text-sm mb-2 sm:mb-0">Protect your account by logging out from all active sessions on other devices, ensuring your data remains secure.</p>
+          <Button variant="outline" className="text-sm px-4 py-2 w-1/2 sm:w-auto mt-2 md:mt-0">Log out</Button>
         </div>
       </div>
 
@@ -123,9 +123,9 @@ const Profile: React.FC<ProfileProps> = ({ profileData, onProfileChange, userAva
       <div className="pt-8">
         <h2 className="text-2xl font-bold text-red-600 mb-2">Delete my account</h2>
         <p className="text-gray-600">Permanently delete your account and all associated data.</p>
-        <div className="flex items-center justify-between mt-6">
-          <p className="text-gray-500 max-w-2xl text-sm">This action is irreversible. All your data, including posts, messages, and settings, will be permanently removed from our platform.</p>
-          <Button variant="destructive" className="text-sm px-4 py-2">Delete Account</Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-6">
+          <p className="text-gray-500 max-w-2xl text-sm mb-2 sm:mb-0">This action is irreversible. All your data, including posts, messages, and settings, will be permanently removed from our platform.</p>
+          <Button variant="destructive" className="text-sm px-4 py-2 w-1/2 sm:w-auto mt-2 md:mt-0">Delete Account</Button>
         </div>
       </div>
     </div>

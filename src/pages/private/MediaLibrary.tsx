@@ -50,12 +50,12 @@ const MediaLibrary = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+        <div className="mb-4 sm:mb-0">
           <h1 className="font-heading text-3xl font-bold text-gray-900">Media Library</h1>
           <p className="text-gray-600 mt-1">Manage your images, videos, and other media files</p>
         </div>
-        <Button className="bg-red-500 hover:bg-red-600">
+        <Button className="bg-red-500 hover:bg-red-600 w-full sm:w-auto mb-5 md:mb-0">
           <Upload className="mr-2 h-4 w-4" />
           Upload Media
         </Button>
@@ -244,49 +244,6 @@ const MediaLibrary = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Storage Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <ImageIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
-              {mockMediaItems.filter(item => item.type === 'image').length}
-            </p>
-            <p className="text-sm text-gray-600">Images</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <Video className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
-              {mockMediaItems.filter(item => item.type === 'video').length}
-            </p>
-            <p className="text-sm text-gray-600">Videos</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <Upload className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
-              {formatFileSize(mockMediaItems.reduce((total, item) => total + item.size, 0))}
-            </p>
-            <p className="text-sm text-gray-600">Total Size</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-gray-600 font-bold text-sm">5GB</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">5GB</p>
-            <p className="text-sm text-gray-600">Storage Limit</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };

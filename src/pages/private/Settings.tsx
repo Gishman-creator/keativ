@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import Profile from '@/components/settings/Profile';
-import Notifications from '@/components/settings/Notifications';
-import Billing from '@/components/settings/Billing';
-import Integrations from '@/components/settings/Integrations'; // Import the new Integrations component
-import SettingsSidebar from '@/components/settings/SettingsSidebar';
+import Profile from '@/components/influencer-dashboard/settings/Profile';
+import Notifications from '@/components/influencer-dashboard/settings/Notifications';
+import Billing from '@/components/influencer-dashboard/settings/Billing';
+import Integrations from '@/components/influencer-dashboard/settings/Integrations'; // Import the new Integrations component
+import SettingsSidebar from '@/components/influencer-dashboard/settings/SettingsSidebar';
+import SettingsTopNav from '@/components/influencer-dashboard/settings/SettingsTopNav';
 import { RootState } from '../../redux/store';
 import { Button } from '@/components/ui/button';
 
@@ -91,18 +92,19 @@ const Settings = () => {
   return (
     <>
       {/* Header for the page */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 md:px-6 py-4 md:border-b md:border-gray-200 w-full sm:w-auto">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: brandFonts.headers, color: brandColors.text }}>Settings</h1>
           <p className="text-gray-600 text-sm">Customize until match to your workflows</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">Cancel</Button>
-          <Button className="bg-red-500 text-white">Save</Button>
+        <div className="flex gap-2 mt-2 sm:mt-0 w-full sm:w-auto mb-5 sm:mb-0">
+          <Button variant="outline" className="w-full sm:w-auto">Cancel</Button>
+          <Button className="bg-red-500 text-white w-full sm:w-auto">Save</Button>
         </div>
       </div>
-      <div className="flex min-h-screen" style={{ fontFamily: brandFonts.body, color: brandColors.text }}>
-        <div className="sticky top-16 h-full">
+      <SettingsTopNav activeKey={activeSidebarKey} onSelect={(key) => setActiveSidebarKey(key as keyof typeof sidebarTabMap)} />
+      <div className="flex min-h-screen">
+        <div className="sticky top-16 h-full hidden md:block">
           <SettingsSidebar activeKey={activeSidebarKey} onSelect={(key) => setActiveSidebarKey(key as keyof typeof sidebarTabMap)} />
         </div>
         <main className="flex-1 overflow-y-auto">

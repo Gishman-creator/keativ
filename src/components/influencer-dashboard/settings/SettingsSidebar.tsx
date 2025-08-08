@@ -20,7 +20,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeKey, onSelect }
   };
 
   return (
-    <aside className="w-64 border-r border-gray-200 min-h-screen py-8 px-4 flex flex-col gap-8">
+    <aside className="w-64 border-r border-gray-200 min-h-screen py-8 px-4 flex-col gap-8 hidden md:flex">
       <nav className="flex flex-col gap-1">
         {sidebarItems.map(item => (
           <li key={item.key} className="list-none">

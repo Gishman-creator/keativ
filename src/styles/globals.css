@@ -11,7 +11,7 @@
   --zenith-primary: #EF4444;
   --zenith-secondary: #8B5CF6;
   --zenith-accent: #F3F4F6;
-  
+
   /* shadcn/ui variables */
   --background: 0 0% 100%;
   --foreground: 210 40% 22%;
@@ -39,11 +39,18 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground font-body;
     font-family: 'Poppins', sans-serif;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Roboto Slab', serif;
   }
 }
@@ -52,24 +59,31 @@
   .font-body {
     font-family: 'Poppins', sans-serif;
   }
+
   .font-heading {
     font-family: 'Roboto Slab', serif;
   }
+
   .text-zenith-primary {
     color: var(--zenith-primary);
   }
+
   .text-zenith-secondary {
     color: var(--zenith-secondary);
   }
+
   .text-zenith-text {
     color: var(--zenith-text);
   }
+
   .bg-zenith-accent {
     background-color: var(--zenith-accent);
   }
+
   .bg-zenith-primary {
     background-color: var(--zenith-primary);
   }
+
   .bg-zenith-secondary {
     background-color: var(--zenith-secondary);
   }

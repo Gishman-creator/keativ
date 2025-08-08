@@ -33,6 +33,8 @@ export const API_ENDPOINTS = {
     POSTS: `${API_BASE_URL}/api/analytics/posts/`,
     ENGAGEMENT: `${API_BASE_URL}/api/analytics/engagement/`,
     REPORTS: `${API_BASE_URL}/api/analytics/reports/`,
+    BEST_POSTS: `${API_BASE_URL}/api/analytics/best-posts/`,
+    PLATFORM_AVERAGES: `${API_BASE_URL}/api/analytics/platform-averages/`,
   },
   
   // Social Media Accounts

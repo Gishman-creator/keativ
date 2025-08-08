@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Post } from '../../types';
-import { mockPosts } from '../../data/mockData';
 
 interface PostsState {
   posts: Post[];
@@ -9,7 +8,7 @@ interface PostsState {
 }
 
 const initialState: PostsState = {
-  posts: mockPosts,
+  posts: [],
   isLoading: false,
   error: null,
 };

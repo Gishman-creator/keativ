@@ -23,6 +23,9 @@ export const API_ENDPOINTS = {
     DASHBOARD: `${API_BASE_URL}/api/posts/dashboard/`,
     // Added: calendar endpoint for upcoming posts
     CALENDAR: `${API_BASE_URL}/api/posts/calendar/`,
+    // Added: scheduled posts endpoints
+    SCHEDULED_LIST: `${API_BASE_URL}/api/posts/scheduled/`,
+    SCHEDULED_DETAIL: (id: string) => `${API_BASE_URL}/api/posts/scheduled/${id}/`,
   },
   
   // Analytics
@@ -105,6 +108,10 @@ export const API_ENDPOINTS = {
   TWITTER_DELETE: `${API_BASE_URL}/api/integrations/twitter/delete`, // Note: tweet_id is appended in the API call
   TWITTER_MY_POSTS: `${API_BASE_URL}/api/integrations/twitter/my-posts/`,
   TWITTER_RATE_LIMIT: `${API_BASE_URL}/api/integrations/twitter/rate-limit/`,
+  // Added OAuth endpoints
+  TWITTER_AUTHORIZE: `${API_BASE_URL}/api/integrations/twitter/authorize/`,
+  TWITTER_CALLBACK: `${API_BASE_URL}/api/integrations/twitter/callback/`,
+  TWITTER_BIND_TOKENS: `${API_BASE_URL}/api/integrations/twitter/bind-tokens/`,
   
   // Messaging
   MESSAGING: {

@@ -1,11 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
+import { api, ApiResponse, TwitterAccount } from '@/lib/api';
+import { useNavigate } from 'react-router-dom';
+
+interface VerifyResp { success: boolean; message: string; account?: TwitterAccount }
 
 const IntegrationsPage = () => {
+  const navigate = useNavigate();
+  const [isTwitterConnected, setIsTwitterConnected] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check connection status
+    const check = async () => {
+      const res: ApiResponse<VerifyResp> = await api.verifyTwitterCredentials();
+      setIsTwitterConnected(Boolean(res.success && res.data && res.data.account));
+    };
+    check();
+  }, []);
+
+  const handleConnectTwitter = async () => {
+    setLoading(true);
+    const res = await api.getTwitterAuthorizeUrl();
+    setLoading(false);
+    if (res.success && res.data?.authorize_url) {
+      window.location.href = res.data.authorize_url;
+    }
+  };
+
+  const handleDisconnectTwitter = () => {
+    // Optional: implement disconnect endpoint later
+    navigate('/dashboard/integrations');
+  };
+
   const integrations = [
-    { name: 'Twitter', logo: '/social media/x-logo.png', connected: true },
+    { name: 'Twitter', logo: '/social media/x-logo.png', connected: isTwitterConnected },
     { name: 'Facebook', logo: '/social media/facebook-logo.png', connected: false },
     { name: 'Instagram', logo: '/social media/instagram-logo.png', connected: false },
     { name: 'LinkedIn', logo: '/social media/linkedin-logo.png', connected: false },
@@ -29,13 +60,24 @@ const IntegrationsPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              {integration.connected ? (
-                <Button variant="destructive" className="w-full">Disconnect</Button>
+              {integration.name === 'Twitter' ? (
+                integration.connected ? (
+                  <Button variant="destructive" className="w-full" onClick={handleDisconnectTwitter}>Disconnect</Button>
+                ) : (
+                  <Button className="w-full bg-blue-500 hover:bg-blue-600" onClick={handleConnectTwitter} disabled={loading}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {loading ? 'Redirecting...' : 'Connect'}
+                  </Button>
+                )
               ) : (
-                <Button className="w-full bg-blue-500 hover:bg-blue-600">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Connect
-                </Button>
+                integration.connected ? (
+                  <Button variant="destructive" className="w-full">Disconnect</Button>
+                ) : (
+                  <Button className="w-full" disabled>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Connect
+                  </Button>
+                )
               )}
             </CardContent>
           </Card>

@@ -27,6 +27,8 @@ import SettingsPage from '../pages/private/SettingsPage';
 import IntegrationsPage from '../pages/private/IntegrationsPage';
 import Notifications from '../pages/private/Notifications';
 import Automations from '../pages/private/Automations';
+import TwitterCallback from '../pages/private/integrations/TwitterCallback';
+import CreatePost from '../pages/private/CreatePost';
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +53,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'calendar', element: <Calendar /> },
+      { path: 'calendar/new', element: <CreatePost /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'messages', element: <Messages /> },
       { path: 'automations', element: <Automations /> },
@@ -59,6 +62,7 @@ export const router = createBrowserRouter([
       { path: 'social-sets', element: <SocialSets /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'integrations', element: <IntegrationsPage /> },
+      { path: 'integrations/twitter/callback', element: <TwitterCallback /> },
       { path: 'notifications', element: <Notifications /> },
     ],
   },

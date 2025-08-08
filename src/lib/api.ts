@@ -156,6 +156,73 @@ export interface PostTweetPayload {
     [key: string]: unknown;
 }
 
+export interface TwitterOAuthTokens {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  [key: string]: unknown;
+}
+
+export interface TwitterCallbackAccount {
+  id: string;
+  username: string;
+  name?: string;
+  profile_image_url?: string;
+  [key: string]: unknown;
+}
+
+export interface TwitterCallbackResponse {
+  account: TwitterCallbackAccount;
+  tokens: TwitterOAuthTokens;
+}
+
+export interface BindTwitterTokensPayload extends Record<string, unknown> {
+  account: TwitterCallbackAccount;
+  tokens: TwitterOAuthTokens;
+}
+
+export interface CalendarPostItem {
+  id: string;
+  title: string;
+  content: string;
+  platforms: string[];
+  scheduledDate: string; // ISO
+  status: string;
+}
+
+// Scheduled Post types
+export interface ScheduledPost {
+  id: string;
+  social_account: string | null;
+  social_set: string | null;
+  content: string;
+  caption?: string;
+  hashtags?: string;
+  media_url?: string;
+  scheduled_time: string; // ISO string
+  timezone?: string;
+  post_type?: 'post' | 'story' | 'reel' | 'video';
+  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  platform?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Extra types for file uploads
+export type PostCreateWithMedia = Omit<Partial<Post>, 'image' | 'video'> & {
+  image?: File;
+  video?: File;
+};
+
+// Type guards
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
+const isFileLike = (v: unknown): v is File => {
+  if (!isRecord(v)) return false;
+  return typeof v.name === 'string' && typeof v.size === 'number' && typeof v.type === 'string';
+};
+
 // API Client Class
 class ApiClient {
   private baseURL: string;
@@ -163,7 +230,16 @@ class ApiClient {
 
   constructor() {
     this.baseURL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-    this.token = localStorage.getItem('auth_token');
+    this.token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+    // Keep in sync if another tab updates auth_token
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'auth_token') {
+          this.token = e.newValue;
+        }
+      });
+    }
   }
 
   private getHeaders(): HeadersInit {
@@ -171,10 +247,21 @@ class ApiClient {
       'Content-Type': 'application/json',
     };
 
-    if (this.token) {
-      headers['Authorization'] = `Token ${this.token}`;
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Token ${token}`;
     }
 
+    return headers;
+  }
+
+  // Authorization-only headers (no Content-Type) for FormData requests
+  private getAuthHeaders(): HeadersInit {
+    const headers: HeadersInit = {};
+    const token = this.getToken();
+    if (token) {
+      headers['Authorization'] = `Token ${token}`;
+    }
     return headers;
   }
 
@@ -270,39 +357,55 @@ class ApiClient {
     }
   }
 
+  // Multipart helpers for file uploads
+  async postForm<T>(url: string, form: FormData): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: form,
+      });
+        return this.handleResponse<T>(response);
+    } catch {
+      return { success: false, error: 'Network error' };
+    }
+  }
+
+  async putForm<T>(url: string, form: FormData): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: this.getAuthHeaders(),
+        body: form,
+      });
+      return this.handleResponse<T>(response);
+    } catch {
+      return { success: false, error: 'Network error' };
+    }
+  }
+
   // Authentication methods
   setToken(token: string) {
     this.token = token;
-    localStorage.setItem('auth_token', token);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
   }
 
   clearToken() {
     this.token = null;
-    localStorage.removeItem('auth_token');
-  }
-
-  getToken() {
-    return this.token;
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit): Promise<ApiResponse<T>> {
-    const url = `${this.baseURL}${endpoint}`;
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: this.getHeaders(),
-      });
-      return this.handleResponse<T>(response);
-    } catch (error) {
-      console.error(`Request failed for ${endpoint}:`, error);
-      return {
-        error: 'Network error or request failed',
-        success: false,
-      };
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
     }
   }
 
-  // ... existing methods ...
+  getToken() {
+    if (!this.token && typeof window !== 'undefined') {
+      const stored = localStorage.getItem('auth_token');
+      if (stored) this.token = stored;
+    }
+    return this.token;
+  }
 
   // Twitter Integration Methods
 
@@ -341,12 +444,119 @@ class ApiClient {
   async getTwitterRateLimit(): Promise<ApiResponse<TwitterRateLimit>> {
     return this.get<TwitterRateLimit>(API_ENDPOINTS.TWITTER_RATE_LIMIT);
   }
+
+  async getTwitterAuthorizeUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
+    return this.get<{ authorize_url: string }>(API_ENDPOINTS.TWITTER_AUTHORIZE);
+  }
+
+  async twitterCallback(params: { code: string; state?: string }): Promise<ApiResponse<TwitterCallbackResponse>> {
+    const url = new URL(API_ENDPOINTS.TWITTER_CALLBACK);
+    url.searchParams.set('code', params.code);
+    if (params.state) url.searchParams.set('state', params.state);
+    return this.get<TwitterCallbackResponse>(url.toString());
+  }
+
+  async bindTwitterTokens(payload: BindTwitterTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
+    return this.post<{ success: boolean }>(API_ENDPOINTS.TWITTER_BIND_TOKENS, payload);
+  }
+
+  // Posts API Methods
+  async getPosts(params?: { page?: number; status?: string; platform?: string }): Promise<ApiResponse<{ results: Post[]; count: number }>> {
+    const url = new URL(API_ENDPOINTS.POSTS.LIST);
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          url.searchParams.append(key, value.toString());
+        }
+      });
+    }
+    return api.get<{ results: Post[]; count: number }>(url.toString());
+  }
+
+  async createPost(postData: Partial<Post>): Promise<ApiResponse<Post>> {
+    return api.post<Post>(API_ENDPOINTS.POSTS.CREATE, postData);
+  }
+
+  // Create post with files using FormData
+  async createPostWithFiles(data: PostCreateWithMedia): Promise<ApiResponse<Post>> {
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (v === undefined || v === null) return;
+      if (k === 'image' || k === 'video') {
+        if (isFileLike(v)) {
+          fd.append(k, v);
+        } else {
+          fd.append(k, String(v));
+        }
+      } else {
+        fd.append(k, String(v));
+      }
+    });
+    return api.postForm<Post>(API_ENDPOINTS.POSTS.CREATE, fd);
+  }
+
+  async updatePost(id: string, postData: Partial<Post>): Promise<ApiResponse<Post>> {
+    return api.put<Post>(API_ENDPOINTS.POSTS.DETAIL(id), postData);
+  }
+
+  // Update post with files using FormData
+  async updatePostWithFiles(id: string, data: PostCreateWithMedia): Promise<ApiResponse<Post>> {
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (v === undefined || v === null) return;
+      if (k === 'image' || k === 'video') {
+        if (isFileLike(v)) {
+          fd.append(k, v);
+        } else {
+          fd.append(k, String(v));
+        }
+      } else {
+        fd.append(k, String(v));
+      }
+    });
+    return api.putForm<Post>(API_ENDPOINTS.POSTS.DETAIL(id), fd);
+  }
+
+  async deletePost(id: string): Promise<ApiResponse<void>> {
+    return api.delete(API_ENDPOINTS.POSTS.DETAIL(id));
+  }
+
+  async getTemplates(): Promise<ApiResponse<Post[]>> {
+    return api.get<Post[]>(API_ENDPOINTS.POSTS.TEMPLATES);
+  }
+
+  async getCalendarPosts(): Promise<ApiResponse<unknown>> {
+    return api.get<unknown>(API_ENDPOINTS.POSTS.CALENDAR);
+  }
+
+  async schedulePost(id: string, scheduled_at_iso: string): Promise<ApiResponse<void>> {
+    return api.post(API_ENDPOINTS.POSTS.SCHEDULE(id), { scheduled_at: scheduled_at_iso });
+  }
+
+  // Scheduled posts
+  async getScheduledPosts(): Promise<ApiResponse<ScheduledPost[]>> {
+    return api.get<ScheduledPost[]>(API_ENDPOINTS.POSTS.SCHEDULED_LIST);
+  }
+
+  async createScheduledPost(payload: Partial<ScheduledPost>): Promise<ApiResponse<ScheduledPost>> {
+    return api.post<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_LIST, payload as Record<string, unknown>);
+  }
+
+  async updateScheduledPost(id: string, payload: Partial<ScheduledPost>): Promise<ApiResponse<ScheduledPost>> {
+    return api.put<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id), payload as Record<string, unknown>);
+  }
 }
 
 export const api = new ApiClient();
 
+// Small helper to ensure token is loaded early in app startup
+export const bootstrapAuth = () => !!api.getToken();
+
 // Specific API functions
 export const authApi = {
+  // Quick check for guards
+  isAuthenticated: () => !!api.getToken(),
+
   login: async (credentials: { username: string; password: string }) => {
     const response = await api.post<{ token: string; user: User }>(
       API_ENDPOINTS.AUTH.LOGIN,
@@ -420,17 +630,68 @@ export const postsApi = {
     return api.post<Post>(API_ENDPOINTS.POSTS.CREATE, postData);
   },
 
+  // New: create post with media files
+  createPostWithMedia: async (data: PostCreateWithMedia) => {
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (v === undefined || v === null) return;
+      if (k === 'image' || k === 'video') {
+        if (isFileLike(v)) {
+          fd.append(k, v);
+        } else {
+          fd.append(k, String(v));
+        }
+      } else {
+        fd.append(k, String(v));
+      }
+    });
+    return api.postForm<Post>(API_ENDPOINTS.POSTS.CREATE, fd);
+  },
+
   updatePost: async (id: string, postData: Partial<Post>) => {
     return api.put<Post>(API_ENDPOINTS.POSTS.DETAIL(id), postData);
+  },
+
+  // New: update post with media files
+  updatePostWithMedia: async (id: string, data: PostCreateWithMedia) => {
+    const fd = new FormData();
+    Object.entries(data).forEach(([k, v]) => {
+      if (v === undefined || v === null) return;
+      if (k === 'image' || k === 'video') {
+        if (isFileLike(v)) {
+          fd.append(k, v);
+        } else {
+          fd.append(k, String(v));
+        }
+      } else {
+        fd.append(k, String(v));
+      }
+    });
+    return api.putForm<Post>(API_ENDPOINTS.POSTS.DETAIL(id), fd);
   },
 
   deletePost: async (id: string) => {
     return api.delete(API_ENDPOINTS.POSTS.DETAIL(id));
   },
 
-  getTemplates: async () => {
+  getTemplates: async (): Promise<ApiResponse<Post[]>> => {
     return api.get<Post[]>(API_ENDPOINTS.POSTS.TEMPLATES);
   },
+
+  getCalendarPosts: async (): Promise<ApiResponse<unknown>> => {
+    return api.get<unknown>(API_ENDPOINTS.POSTS.CALENDAR);
+  },
+
+  schedulePost: async (id: string, scheduled_at_iso: string): Promise<ApiResponse<void>> => {
+    return api.post(API_ENDPOINTS.POSTS.SCHEDULE(id), { scheduled_at: scheduled_at_iso });
+  },
+
+  // Scheduled posts
+  listScheduled: async () => api.get<ScheduledPost[]>(API_ENDPOINTS.POSTS.SCHEDULED_LIST),
+  createScheduled: async (payload: Partial<ScheduledPost>) =>
+    api.post<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_LIST, payload as Record<string, unknown>),
+  updateScheduled: async (id: string, payload: Partial<ScheduledPost>) =>
+    api.put<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id), payload as Record<string, unknown>),
 };
 
 export const analyticsApi = {

@@ -19,12 +19,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export default function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const cached = localStorage.getItem('auth_user');
+      return cached ? (JSON.parse(cached) as User) : null;
+    } catch {
+      return null;
+    }
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
     const checkAuth = async () => {
       const token = localStorage.getItem('auth_token');
       if (token) {
@@ -32,14 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const response = await authApi.getCurrentUser();
           if (response.success && response.data) {
             setUser(response.data);
+            localStorage.setItem('auth_user', JSON.stringify(response.data));
           } else {
-            // Invalid token, remove it
             localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+            setUser(null);
           }
         } catch (error) {
           console.error('Auth check failed:', error);
           localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
+          setUser(null);
         }
+      } else {
+        localStorage.removeItem('auth_user');
+        setUser(null);
       }
       setIsLoading(false);
     };
@@ -52,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.login({ username, password });
       if (response.success && response.data) {
         setUser(response.data.user);
+        localStorage.setItem('auth_user', JSON.stringify(response.data.user));
         return true;
       }
       return false;
@@ -67,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      localStorage.removeItem('auth_user');
       setUser(null);
     }
   };
@@ -85,7 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Registration response:', response);
       
       if (response.success && response.data) {
-        // Don't set user here - they need to verify email first
         return { 
           success: true, 
           data: { 
@@ -107,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = {
     user,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!(user || localStorage.getItem('auth_token')),
     login,
     logout,
     register,

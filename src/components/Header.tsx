@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import SocialSetShowcase from './SocialSetShowcase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -15,7 +14,6 @@ import {
 import {
   Share2,
   Bell,
-  ChevronDown,
   Users,
   LogOut
 } from 'lucide-react';
@@ -24,7 +22,6 @@ import { logout } from '../redux/slices/authSlice';
 
 const Header = () => {
   const user = useSelector((state: RootState) => state.auth.user);
-  const activeSocialSet = useSelector((state: RootState) => state.socialSets.activeSocialSet);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showSocialSetShowcase, setShowSocialSetShowcase] = useState(false);
@@ -93,7 +90,14 @@ const Header = () => {
             )}
           </div>
           
-          <Button variant="ghost" size="sm" className="p-2 justify-start rounded-full">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-2 justify-start rounded-full"
+            onClick={() => navigate('/dashboard/notifications')}
+            aria-label="Notifications"
+            title="Notifications"
+          >
             <Bell className="h-4 w-4" />
           </Button>
 
@@ -109,7 +113,7 @@ const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
                 <Users className="mr-2 h-4 w-4" />
                 Profile Settings
               </DropdownMenuItem>

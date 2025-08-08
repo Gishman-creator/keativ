@@ -349,6 +349,7 @@ export default function Signup() {
         first_name: formData.firstName,
         last_name: formData.lastName,
         company_name: formData.companyName, // Maps to company_name in backend
+        role: formData.role,
       };
 
       const response = await authApi.register(registrationData);

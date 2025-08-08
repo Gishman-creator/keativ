@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { RootState } from '../../redux/store';
 import { setActiveSocialSet } from '../../redux/slices/socialSetsSlice';
+import type { SocialSet } from '@/types';
 
 const SocialSets = () => {
   const dispatch = useDispatch();
@@ -60,7 +61,7 @@ const SocialSets = () => {
     }
   };
 
-  const handleSetActiveSocialSet = (socialSet: any) => {
+  const handleSetActiveSocialSet = (socialSet: SocialSet) => {
     dispatch(setActiveSocialSet(socialSet));
   };
 

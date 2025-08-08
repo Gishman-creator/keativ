@@ -1,29 +1,60 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  MessageCircle, 
-  Search, 
-  Filter, 
-  Reply, 
+import {
+  MessageCircle,
+  Search,
+  Filter,
+  Reply,
   Heart,
   Share,
   MoreHorizontal,
   Instagram,
   Twitter,
-  Facebook
+  Facebook,
+  Loader2,
 } from 'lucide-react';
-import { mockMessages } from '../../data/mockData';
+import { api, ApiResponse } from '@/lib/api';
+import { API_ENDPOINTS } from '@/config/constants';
+
+interface MessageItem {
+  id: string;
+  user: number;
+  platform: string;
+  recipient: string;
+  content: string;
+  status: 'pending' | 'sent' | 'failed' | 'delivered';
+  message_type: 'direct' | 'automated' | 'broadcast';
+  priority: 'high' | 'normal' | 'low';
+  created_at: string;
+  sent_at?: string | null;
+}
 
 const Messages = () => {
-  const [selectedMessage, setSelectedMessage] = useState(mockMessages[0]);
+  const [messages, setMessages] = useState<MessageItem[]>([]);
+  const [selectedMessage, setSelectedMessage] = useState<MessageItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const fetchMessages = async () => {
+    setLoading(true);
+    const res: ApiResponse<MessageItem[]> = await api.get(API_ENDPOINTS.MESSAGING.MESSAGES.LIST);
+    if (res.success && Array.isArray(res.data)) {
+      setMessages(res.data);
+      setSelectedMessage(res.data[0] ?? null);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
 
   const getPlatformIcon = (platform: string) => {
-    switch (platform.toLowerCase()) {
+    switch (platform?.toLowerCase()) {
       case 'instagram':
         return <Instagram className="h-4 w-4" />;
       case 'twitter':
@@ -36,7 +67,7 @@ const Messages = () => {
   };
 
   const getPlatformColor = (platform: string) => {
-    switch (platform.toLowerCase()) {
+    switch (platform?.toLowerCase()) {
       case 'instagram':
         return 'bg-pink-100 text-pink-700';
       case 'twitter':
@@ -48,10 +79,12 @@ const Messages = () => {
     }
   };
 
-  const filteredMessages = mockMessages.filter(message =>
-    message.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    message.content.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMessages = useMemo(() => {
+    return messages.filter((m) =>
+      m.recipient?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.content?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [messages, searchTerm]);
 
   return (
     <div className="space-y-6 p-6">
@@ -61,12 +94,9 @@ const Messages = () => {
           <p className="text-gray-600 mt-1">Manage all your social media conversations in one place</p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
-          <Button className="bg-red-500 hover:bg-red-600">
-            Mark All Read
+          <Button variant="outline" onClick={fetchMessages}>
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Filter className="mr-2 h-4 w-4" />}
+            {loading ? 'Refreshing' : 'Refresh'}
           </Button>
         </div>
       </div>
@@ -77,9 +107,7 @@ const Messages = () => {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg font-semibold">Inbox</CardTitle>
-              <Badge variant="secondary">
-                {mockMessages.filter(m => !m.isRead).length} unread
-              </Badge>
+              <Badge variant="secondary">{messages.length}</Badge>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -93,48 +121,54 @@ const Messages = () => {
           </CardHeader>
           <CardContent className="p-0">
             <div className="space-y-1">
-              {filteredMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`p-4 cursor-pointer hover:bg-gray-50 border-l-4 transition-colors ${
-                    selectedMessage?.id === message.id
-                      ? 'bg-red-50 border-l-red-500'
-                      : message.isRead
-                      ? 'border-l-transparent'
-                      : 'border-l-blue-500 bg-blue-50'
-                  }`}
-                  onClick={() => setSelectedMessage(message)}
-                >
-                  <div className="flex items-start space-x-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src={message.avatar} alt={message.from} />
-                      <AvatarFallback>
-                        {message.from.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {message.from}
-                        </p>
-                        <div className={`px-2 py-1 rounded-full text-xs ${getPlatformColor(message.platform)}`}>
-                          {getPlatformIcon(message.platform)}
+              {loading ? (
+                <div className="p-4 text-gray-600 flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading messages...
+                </div>
+              ) : filteredMessages.length === 0 ? (
+                <div className="p-4 text-gray-600">No messages</div>
+              ) : (
+                filteredMessages.map((message: MessageItem) => (
+                  <div
+                    key={message.id}
+                    className={`p-4 cursor-pointer hover:bg-gray-50 border-l-4 transition-colors ${
+                      selectedMessage?.id === message.id
+                        ? 'bg-red-50 border-l-red-500'
+                        : 'border-l-transparent'
+                    }`}
+                    onClick={() => setSelectedMessage(message)}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={''} alt={message.recipient} />
+                        <AvatarFallback>
+                          {message.recipient?.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {message.recipient}
+                          </p>
+                          <div className={`px-2 py-1 rounded-full text-xs ${getPlatformColor(message.platform)}`}>
+                            {getPlatformIcon(message.platform)}
+                          </div>
                         </div>
+                        <p className="text-sm text-gray-600 line-clamp-2 mb-1">
+                          {message.content}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(message.created_at).toLocaleDateString()} at{' '}
+                          {new Date(message.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-1">
-                        {message.content}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(message.timestamp).toLocaleDateString()} at{' '}
-                        {new Date(message.timestamp).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -147,23 +181,23 @@ const Messages = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={selectedMessage.avatar} alt={selectedMessage.from} />
+                      <AvatarImage src={''} alt={selectedMessage.recipient} />
                       <AvatarFallback>
-                        {selectedMessage.from.substring(0, 2).toUpperCase()}
+                        {selectedMessage.recipient?.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{selectedMessage.from}</h3>
+                      <h3 className="font-semibold text-gray-900">{selectedMessage.recipient}</h3>
                       <div className="flex items-center space-x-2">
                         <div className={`px-2 py-1 rounded-full text-xs ${getPlatformColor(selectedMessage.platform)}`}>
                           {getPlatformIcon(selectedMessage.platform)}
                           <span className="ml-1">{selectedMessage.platform}</span>
                         </div>
                         <span className="text-sm text-gray-500">
-                          {new Date(selectedMessage.timestamp).toLocaleDateString()} at{' '}
-                          {new Date(selectedMessage.timestamp).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
+                          {new Date(selectedMessage.created_at).toLocaleDateString()} at{' '}
+                          {new Date(selectedMessage.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
                           })}
                         </span>
                       </div>
@@ -212,15 +246,10 @@ const Messages = () => {
                           Let me check on that for you.
                         </Button>
                       </div>
-                      
+
                       <div className="flex space-x-2">
-                        <Input 
-                          placeholder="Type your reply..." 
-                          className="flex-1"
-                        />
-                        <Button className="bg-red-500 hover:bg-red-600">
-                          Send
-                        </Button>
+                        <Input placeholder="Type your reply..." className="flex-1" />
+                        <Button className="bg-red-500 hover:bg-red-600">Send</Button>
                       </div>
                     </div>
                   </div>
@@ -244,35 +273,35 @@ const Messages = () => {
         <Card className="border-0 shadow-sm">
           <CardContent className="p-6 text-center">
             <MessageCircle className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">24</p>
+            <p className="text-2xl font-bold text-gray-900">{messages.length}</p>
             <p className="text-sm text-gray-600">Total Messages</p>
           </CardContent>
         </Card>
-        
+
         <Card className="border-0 shadow-sm">
           <CardContent className="p-6 text-center">
             <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
               <div className="h-3 w-3 bg-red-500 rounded-full"></div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">3</p>
-            <p className="text-sm text-gray-600">Unread</p>
+            <p className="text-2xl font-bold text-gray-900">{messages.filter(m => m.status !== 'delivered' && m.status !== 'sent').length}</p>
+            <p className="text-sm text-gray-600">Pending/Failed</p>
           </CardContent>
         </Card>
-        
+
         <Card className="border-0 shadow-sm">
           <CardContent className="p-6 text-center">
             <Reply className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">18</p>
-            <p className="text-sm text-gray-600">Replied</p>
+            <p className="text-2xl font-bold text-gray-900">{messages.filter(m => m.status === 'sent' || m.status === 'delivered').length}</p>
+            <p className="text-sm text-gray-600">Delivered</p>
           </CardContent>
         </Card>
-        
+
         <Card className="border-0 shadow-sm">
           <CardContent className="p-6 text-center">
             <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-purple-600 font-bold text-sm">2h</span>
+              <span className="text-purple-600 font-bold text-sm">—</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">2h</p>
+            <p className="text-2xl font-bold text-gray-900">—</p>
             <p className="text-sm text-gray-600">Avg Response</p>
           </CardContent>
         </Card>

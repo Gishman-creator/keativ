@@ -12,6 +12,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Bell,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
     { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
+    { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },

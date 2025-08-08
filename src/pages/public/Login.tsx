@@ -56,7 +56,6 @@ const Login = () => {
           email: response.data.user.email,
           avatar: response.data.user.profile?.avatar || '',
           businessName: response.data.user.profile?.company_name || '',
-          role: '',
           isLoggedIn: true
         }));
         navigate('/dashboard');

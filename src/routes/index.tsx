@@ -23,7 +23,10 @@ import Messages from '../pages/private/Messages';
 import MediaLibrary from '../pages/private/MediaLibrary';
 import Influencers from '../pages/private/Influencers';
 import SocialSets from '../pages/private/SocialSets';
-import Settings from '../pages/private/Settings';
+import SettingsPage from '../pages/private/SettingsPage';
+import IntegrationsPage from '../pages/private/IntegrationsPage';
+import Notifications from '../pages/private/Notifications';
+import Automations from '../pages/private/Automations';
 
 export const router = createBrowserRouter([
   {
@@ -40,26 +43,23 @@ export const router = createBrowserRouter([
       { path: 'verify-email/:token', element: <EmailVerification /> },
       { path: 'verification-pending', element: <VerificationPending /> },
       { path: 'resend-verification', element: <ResendVerification /> },
-      { path: 'settings', element: <Settings /> },
     ],
   },
   {
     path: '/dashboard',
     element: <PrivateLayout />,
-    // element: (
-    //   <ProtectedRoute>
-    //     <PrivateLayout />
-    //   </ProtectedRoute>
-    // ),
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'calendar', element: <Calendar /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'messages', element: <Messages /> },
+      { path: 'automations', element: <Automations /> },
       { path: 'media', element: <MediaLibrary /> },
       { path: 'influencers', element: <Influencers /> },
       { path: 'social-sets', element: <SocialSets /> },
-      { path: 'settings', element: <Settings /> },
+      { path: 'settings', element: <SettingsPage /> },
+      { path: 'integrations', element: <IntegrationsPage /> },
+      { path: 'notifications', element: <Notifications /> },
     ],
   },
   {

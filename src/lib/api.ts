@@ -73,6 +73,89 @@ export interface SocialAccountCredentials {
   [key: string]: unknown;
 }
 
+export interface TwitterAccount {
+  id: string;
+  username: string;
+  name: string;
+  followers_count: number;
+  following_count: number;
+  verified: boolean;
+  created: boolean;
+}
+
+export interface TwitterPost {
+  id: string;
+  tweet_id: string;
+  text: string;
+  url: string;
+  published_at: string;
+}
+
+export interface Tweet {
+    id: string;
+    text: string;
+    created_at: string;
+    retweet_count: number;
+    like_count: number;
+    reply_count: number;
+    quote_count: number;
+    url: string;
+    has_media: boolean;
+    media_keys?: string[];
+}
+
+export interface TweetAnalytics {
+    success: boolean;
+    tweet_id: string;
+    metrics: {
+        retweet_count: number;
+        like_count: number;
+        reply_count: number;
+        quote_count: number;
+        impression_count: number;
+    };
+    created_at: string;
+    text: string;
+    url: string;
+}
+
+export interface MyTwitterPost {
+    id: string;
+    user: number;
+    social_media_account: string;
+    tweet_text: string;
+    tweet_id: string;
+    media_paths: string[];
+    retweet_count: number;
+    like_count: number;
+    reply_count: number;
+    quote_count: number;
+    impression_count: number;
+    status: string;
+    scheduled_at: string | null;
+    published_at: string | null;
+    created_at: string;
+    updated_at: string;
+    error_message: string | null;
+    last_analytics_update: string | null;
+    twitter_url?: string;
+    engagement_rate?: number;
+    total_engagements?: number;
+}
+
+export interface TwitterRateLimit {
+    success: boolean;
+    data: unknown;
+    timestamp: string;
+}
+
+export interface PostTweetPayload {
+    tweet_text: string;
+    media_paths?: string[];
+    scheduled_at?: string;
+    [key: string]: unknown;
+}
+
 // API Client Class
 class ApiClient {
   private baseURL: string;
@@ -201,6 +284,63 @@ class ApiClient {
   getToken() {
     return this.token;
   }
+
+  private async request<T>(endpoint: string, options: RequestInit): Promise<ApiResponse<T>> {
+    const url = `${this.baseURL}${endpoint}`;
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: this.getHeaders(),
+      });
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      console.error(`Request failed for ${endpoint}:`, error);
+      return {
+        error: 'Network error or request failed',
+        success: false,
+      };
+    }
+  }
+
+  // ... existing methods ...
+
+  // Twitter Integration Methods
+
+  async verifyTwitterCredentials(): Promise<ApiResponse<{ success: boolean; message: string; account: TwitterAccount }>> {
+    return this.get<{ success: boolean; message: string; account: TwitterAccount }>(API_ENDPOINTS.TWITTER_VERIFY);
+  }
+
+  async postTweet(payload: PostTweetPayload): Promise<ApiResponse<{ success: boolean; message: string; tweet: TwitterPost }>> {
+    return this.post<{ success: boolean; message: string; tweet: TwitterPost }>(API_ENDPOINTS.TWITTER_POST, payload);
+  }
+
+  async getUserTweets(count: number = 10): Promise<ApiResponse<{ success: boolean; tweets: Tweet[]; count: number }>> {
+    return this.get<{ success: boolean; tweets: Tweet[]; count: number }>(`${API_ENDPOINTS.TWITTER_USER_TWEETS}?count=${count}`);
+  }
+
+  async getTweetAnalytics(tweetId: string): Promise<ApiResponse<{ success: boolean; analytics: TweetAnalytics }>> {
+    return this.get<{ success: boolean; analytics: TweetAnalytics }>(`${API_ENDPOINTS.TWITTER_TWEET_ANALYTICS}/${tweetId}/`);
+  }
+
+  async searchTweets(query: string, count: number = 10): Promise<ApiResponse<{ success: boolean; query: string; tweets: Tweet[]; count: number }>> {
+    return this.get<{ success: boolean; query: string; tweets: Tweet[]; count: number }>(`${API_ENDPOINTS.TWITTER_SEARCH}?query=${encodeURIComponent(query)}&count=${count}`);
+  }
+
+  async deleteTweet(tweetId: string): Promise<ApiResponse<{ success: boolean; message: string; tweet_id: string }>> {
+    return this.delete<{ success: boolean; message: string; tweet_id: string }>(`${API_ENDPOINTS.TWITTER_DELETE}/${tweetId}/`);
+  }
+
+  async getMyTwitterPosts(status?: string, limit: number = 20): Promise<ApiResponse<{ success: boolean; posts: MyTwitterPost[]; count: number }>> {
+    let url = `${API_ENDPOINTS.TWITTER_MY_POSTS}?limit=${limit}`;
+    if (status) {
+      url += `&status=${status}`;
+    }
+    return this.get<{ success: boolean; posts: MyTwitterPost[]; count: number }>(url);
+  }
+
+  async getTwitterRateLimit(): Promise<ApiResponse<TwitterRateLimit>> {
+    return this.get<TwitterRateLimit>(API_ENDPOINTS.TWITTER_RATE_LIMIT);
+  }
 }
 
 export const api = new ApiClient();
@@ -230,6 +370,8 @@ export const authApi = {
     password_confirm: string;
     first_name?: string;
     last_name?: string;
+    company_name?: string;
+    role?: string;
   }) => {
     console.log('🚀 Attempting registration with data:', userData);
     const response = await api.post<{ message: string; user_id: number; username: string; profile_uuid: string }>(

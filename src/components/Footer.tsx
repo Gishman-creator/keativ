@@ -58,9 +58,12 @@ const Footer = () => {
               Support
             </h3>
             <ul className="mt-4 space-y-2">
-              {['Help Center', 'Contact', 'API Docs', 'Status'].map((item) => (
+              {['Help Center', 'Contact', 'API Docs', 'Status', 'Privacy Policy'].map((item) => (
                 <li key={item}>
-                  <Link to="#" className="text-sm text-gray-600 hover:text-gray-900">
+                  <Link 
+                    to={item === 'Privacy Policy' ? '/privacy' : '#'} 
+                    className="text-sm text-gray-600 hover:text-gray-900"
+                  >
                     {item}
                   </Link>
                 </li>
@@ -70,9 +73,25 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 pt-8 border-t border-gray-200">
-          <p className="text-center text-sm text-gray-500">
-            © 2025 Keativ. All rights reserved.
-          </p>
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+            <p className="text-center text-sm text-gray-500">
+              © 2025 Keativ. All rights reserved.
+            </p>
+            <div className="flex space-x-6">
+              <Link 
+                to="/privacy" 
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Privacy Policy
+              </Link>
+              <Link 
+                to="/terms" 
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Terms of Service
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

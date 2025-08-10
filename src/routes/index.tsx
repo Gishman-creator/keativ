@@ -10,6 +10,8 @@ import About from '../pages/public/About';
 import Contact from '../pages/public/Contact';
 import Login from '../pages/public/Login';
 import Signup from '../pages/public/Signup';
+import PrivacyPolicy from '../pages/public/PrivacyPolicy';
+import TermsOfService from '../pages/public/TermsOfService';
 import NotFound from '../pages/public/NotFound';
 
 // Email verification components
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
       { path: 'pricing', element: <Pricing /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
+      { path: 'privacy', element: <PrivacyPolicy /> },
+      { path: 'terms', element: <TermsOfService /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
       { path: 'verify-email/:token', element: <EmailVerification /> },

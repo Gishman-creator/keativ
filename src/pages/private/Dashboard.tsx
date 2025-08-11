@@ -15,7 +15,7 @@ import {
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
 
-import EngagementChart from '../../components/EngagementChart';
+import EngagementChart from '@/components/influencer-dashboard/EngagementChart';
 import TwitterCard from '../../components/TwitterCard';
 import { useEffect, useMemo, useState } from 'react';
 import { API_ENDPOINTS } from '@/config/constants';

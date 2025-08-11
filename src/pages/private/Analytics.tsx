@@ -13,7 +13,7 @@ import {
   Calendar,
   Filter
 } from 'lucide-react';
-import EngagementChart from '@/components/EngagementChart';
+import EngagementChart from '@/components/influencer-dashboard/EngagementChart';
 import { API_ENDPOINTS } from '@/config/constants';
 import { api } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';

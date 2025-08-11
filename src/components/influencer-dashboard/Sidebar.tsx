@@ -26,7 +26,7 @@ interface SidebarProps {
 
 type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; badge?: number };
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) => {
   const location = useLocation();
   const navigate = useNavigate();
 

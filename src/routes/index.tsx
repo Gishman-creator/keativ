@@ -31,6 +31,7 @@ import Notifications from '../pages/private/Notifications';
 import Automations from '../pages/private/Automations';
 import TwitterCallback from '../pages/private/integrations/TwitterCallback';
 import CreatePost from '../pages/private/CreatePost';
+import PostAnalyticsPage from '@/pages/private/PostAnalyticsPage';
 
 export const router = createBrowserRouter([
   {

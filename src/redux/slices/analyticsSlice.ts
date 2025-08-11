@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AnalyticsData } from '../../types';
-import { mockAnalytics } from '../../data/mockData';
 
 interface AnalyticsState {
   data: AnalyticsData[];
@@ -13,7 +12,7 @@ interface AnalyticsState {
 }
 
 const initialState: AnalyticsState = {
-  data: mockAnalytics,
+  data: [],
   isLoading: false,
   error: null,
   dateRange: {

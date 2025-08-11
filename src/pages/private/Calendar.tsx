@@ -1,15 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarIcon, Plus, Filter } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../redux/store';
-import UpcomingPostsCard from '@/components/influencer-dashboard/UpcomingPostsCard'; // Import UpcomingPostsCard
+import { postsApi } from '@/lib/api';
+import { CreatePostDialog } from '@/components/CreatePostDialog';
+
+interface CalendarPost {
+  id: string;
+  title: string;
+  content?: string;
+  start: string; // ISO date-time
+  platform?: string;
+  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  color?: string;
+}
+
+interface CalendarResponse { posts: CalendarPost[] }
 
 const Calendar = () => {
-  const posts = useSelector((state: RootState) => state.posts.posts);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [calendarPosts, setCalendarPosts] = useState<CalendarPost[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const fetchCalendar = async () => {
+    const res = await postsApi.getCalendarPosts() as unknown as { success: boolean; data?: CalendarResponse };
+    if (res.success && res.data?.posts) {
+      setCalendarPosts(res.data.posts);
+    } else {
+      setCalendarPosts([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchCalendar();
+  }, []);
 
   // Simple calendar view for demo
   const getDaysInMonth = (date: Date) => {
@@ -20,26 +45,18 @@ const Calendar = () => {
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
 
-    const days = [];
+    const days: (number | null)[] = [];
     
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day);
-    }
-    
+    for (let i = 0; i < startingDayOfWeek; i++) days.push(null);
+    for (let day = 1; day <= daysInMonth; day++) days.push(day);
     return days;
   };
 
   const getPostsForDate = (day: number) => {
-    if (!day) return [];
+    if (!day) return [] as CalendarPost[];
     const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return posts.filter(post => {
-      const postDate = new Date(post.scheduledDate);
+    return calendarPosts.filter((post) => {
+      const postDate = new Date(post.start);
       return postDate.toDateString() === targetDate.toDateString();
     });
   };
@@ -52,13 +69,10 @@ const Calendar = () => {
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => {
+    setCurrentDate((prev) => {
       const newDate = new Date(prev);
-      if (direction === 'prev') {
-        newDate.setMonth(newDate.getMonth() - 1);
-      } else {
-        newDate.setMonth(newDate.getMonth() + 1);
-      }
+      if (direction === 'prev') newDate.setMonth(newDate.getMonth() - 1);
+      else newDate.setMonth(newDate.getMonth() + 1);
       return newDate;
     });
   };
@@ -81,7 +95,7 @@ const Calendar = () => {
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button className="bg-red-500 hover:bg-red-600 w-full sm:w-auto" onClick={handleCreatePostClick}>
+          <Button className="bg-red-500 hover:bg-red-600" onClick={() => setDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             New Post
           </Button>
@@ -107,14 +121,11 @@ const Calendar = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">
-            {/* Day headers */}
-            {dayNames.map(day => (
+            {dayNames.map((day) => (
               <div key={day} className="bg-gray-50 p-2 text-center text-sm font-medium text-gray-700">
                 {day}
               </div>
             ))}
-            
-            {/* Calendar days */}
             {getDaysInMonth(currentDate).map((day, index) => (
               <div key={index} className="bg-white min-h-[120px] p-2 relative">
                 {day && (
@@ -143,13 +154,53 @@ const Calendar = () => {
         </CardContent>
       </Card>
 
-      {/* Upcoming Posts List */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-lg font-semibold">Upcoming Posts</CardTitle>
         </CardHeader>
-        <UpcomingPostsCard handleCreatePostClick={handleCreatePostClick} />
+        <CardContent>
+          <div className="space-y-4">
+            {calendarPosts
+              .filter((p) => p.status === 'scheduled')
+              .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+              .map((post) => (
+                <div key={post.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">{post.title}</h3>
+                      {post.content && <p className="text-sm text-gray-600 mt-1">{post.content}</p>}
+                    </div>
+                    <Badge variant="secondary">{post.status}</Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      {post.platform && (
+                        <Badge key={post.platform} variant="outline" className="text-xs">
+                          {post.platform}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      <CalendarIcon className="inline h-4 w-4 mr-1" />
+                      {new Date(post.start).toLocaleDateString()} at{' '}
+                      {new Date(post.start).toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </CardContent>
       </Card>
+
+      <CreatePostDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onCreated={fetchCalendar}
+        defaultDate={new Date()}
+      />
     </div>
   );
 };

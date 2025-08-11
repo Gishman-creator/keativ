@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
@@ -12,6 +12,10 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Bell,
+  Plug,
+  Workflow,
+  Plus,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,49 +24,73 @@ interface SidebarProps {
   className?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) => {
-  const location = useLocation();
+type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; badge?: number };
 
-  const navItems = [
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const navItems: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
+    { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
+    { name: 'Integrations', href: '/dashboard/integrations', icon: Plug },
+    { name: 'Automations', href: '/dashboard/automations', icon: Workflow },
   ];
 
-  const settingsItem = { name: 'Settings', href: '/dashboard/settings', icon: Settings };
+  const settingsItem: NavItem = { name: 'Settings', href: '/dashboard/settings', icon: Settings };
 
-  const renderLink = (item: typeof navItems[0]) => {
+  const isItemActive = (href: string) => {
+    if (href === '/dashboard') return location.pathname === '/dashboard';
+    return location.pathname === href || location.pathname.startsWith(`${href}/`);
+  };
+
+  const renderLink = (item: NavItem) => {
     const Icon = item.icon;
-    const isActive = location.pathname === item.href;
+    const active = isItemActive(item.href);
+    const isCalendar = item.href === '/dashboard/calendar';
     return (
-      <Link
-        key={item.name}
-        to={item.href}
-        className={cn(
-          'flex items-center w-full text-sm font-medium transition-colors mx-auto',
-          isCollapsed
-            ? 'justify-center w-9 h-9 p-2 rounded-full'
-            : 'h-10 w-full px-3 space-x-3 rounded-lg',
-          isActive
-            ? isCollapsed
-              ? 'bg-red-500 text-white w-11 h-11 p-3 rounded-full'
-              : 'bg-red-100 text-red-600'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+      <div key={item.name} className={cn('flex items-center', isCollapsed ? 'justify-center' : '')}>
+        <Link
+          to={item.href}
+          className={cn(
+            'flex items-center w-full text-sm font-medium transition-colors mx-auto',
+            isCollapsed
+              ? 'justify-center w-9 h-9 p-2 rounded-full'
+              : 'h-10 w-full px-3 space-x-3 rounded-lg',
+            active
+              ? isCollapsed
+                ? 'bg-red-500 text-white w-11 h-11 p-3 rounded-full'
+                : 'bg-red-100 text-red-600'
+              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          )}
+          title={isCollapsed ? item.name : undefined}
+          aria-current={active ? 'page' : undefined}
+        >
+          <Icon className={cn('h-6 w-6 transition-all', active && isCollapsed ? 'h-7 w-7' : '')} />
+          {!isCollapsed && <span className="flex-1">{item.name}</span>}
+          {!isCollapsed && item.badge !== undefined && (
+            <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+              {item.badge}
+            </span>
+          )}
+        </Link>
+        {!isCollapsed && isCalendar && (
+          <button
+            onClick={() => navigate('/dashboard/calendar/new')}
+            className="ml-2 inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+            aria-label="Create post"
+            title="Create post"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
         )}
-        title={isCollapsed ? item.name : undefined}
-      >
-        <Icon className={cn('h-6 w-6 transition-all', isActive && isCollapsed ? 'h-7 w-7' : '')} />
-        {!isCollapsed && <span className="flex-1">{item.name}</span>}
-        {!isCollapsed && item.badge && (
-          <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
-            {item.badge}
-          </span>
-        )}
-      </Link>
+      </div>
     );
   };
 

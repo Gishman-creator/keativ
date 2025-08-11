@@ -11,7 +11,6 @@ import {
   Heart, 
   MessageCircle,
   Plus,
-  Star,
   Eye
 } from 'lucide-react';
 import { mockInfluencers } from '../../data/mockData';

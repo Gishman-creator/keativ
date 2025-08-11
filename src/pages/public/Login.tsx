@@ -1,31 +1,81 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Share2, Mail, Lock } from 'lucide-react';
-import { loginSuccess } from '../../redux/slices/authSlice';
-import { mockUser } from '../../data/mockData';
+import { Share2, Mail, Lock, CheckCircle, AlertCircle } from 'lucide-react';
+import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice';
+import { authApi } from '@/lib/api';
+
+interface LocationState {
+  message?: string;
+  username?: string;
+  type?: 'success' | 'error';
+}
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check for messages from email verification or registration
+    const state = location.state as LocationState;
+    if (state?.message) {
+      if (state.type === 'success') {
+        setSuccessMessage(state.message);
+        if (state.username) {
+          setEmail(state.username);
+        }
+      } else {
+        setErrorMessage(state.message);
+      }
+    }
+  }, [location.state]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login - in real app, this would call an API
-    dispatch(loginSuccess({ ...mockUser, isLoggedIn: true }));
-    navigate('/dashboard');
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+    dispatch(loginStart());
+
+    try {
+      const response = await authApi.login({ username: email, password });
+      if (response.success && response.data) {
+        dispatch(loginSuccess({ 
+          id: response.data.user.id.toString(),
+          name: `${response.data.user.first_name} ${response.data.user.last_name}`,
+          email: response.data.user.email,
+          avatar: response.data.user.profile?.avatar || '',
+          businessName: response.data.user.profile?.company_name || '',
+          isLoggedIn: true
+        }));
+        navigate('/dashboard');
+      } else {
+        const error = response.error || 'Login failed';
+        setErrorMessage(error);
+        dispatch(loginFailure(error));
+      }
+    } catch {
+      const errorMsg = 'Network error. Please try again.';
+      setErrorMessage(errorMsg);
+      dispatch(loginFailure(errorMsg));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
-    // Mock Google login
-    dispatch(loginSuccess({ ...mockUser, isLoggedIn: true }));
-    navigate('/dashboard');
+    // TODO: Implement Google OAuth login
+    setErrorMessage('Google login coming soon. Please use email login.');
   };
 
   return (
@@ -54,11 +104,26 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {successMessage && (
+              <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-3 rounded-md">
+                <CheckCircle className="h-5 w-5" />
+                <span className="text-sm">{successMessage}</span>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="flex items-center space-x-2 text-red-600 bg-red-50 p-3 rounded-md">
+                <AlertCircle className="h-5 w-5" />
+                <span className="text-sm">{errorMessage}</span>
+              </div>
+            )}
+
             <Button
               onClick={handleGoogleLogin}
               variant="outline"
               className="w-full"
               type="button"
+              disabled={isLoading}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -119,10 +184,26 @@ const Login = () => {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full bg-red-500 hover:bg-red-600">
-                Sign in
+              <Button 
+                type="submit" 
+                className="w-full bg-red-500 hover:bg-red-600"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
+
+            <div className="text-center space-y-2">
+              <p className="text-sm text-gray-600">
+                Need to verify your email?{' '}
+                <Link
+                  to="/resend-verification"
+                  className="text-red-500 hover:text-red-600 font-medium"
+                >
+                  Resend verification
+                </Link>
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

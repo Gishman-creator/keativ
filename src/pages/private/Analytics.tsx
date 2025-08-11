@@ -1,122 +1,102 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  Eye,
-  Heart,
+import { 
+  TrendingUp, 
+  Users, 
+  Eye, 
+  Heart, 
   MessageCircle,
   Share,
   Download,
   Calendar,
   Filter
 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../redux/store';
-import EngagementChart from '@/components/influencer-dashboard/EngagementChart';
+import EngagementChart from '@/components/EngagementChart';
+import { API_ENDPOINTS } from '@/config/constants';
+import { api } from '@/lib/api';
 import { useNavigate } from 'react-router-dom';
 
+interface DashboardResponse {
+  platform_stats: Record<string, { impressions: number; reach: number; engagement: number }>,
+  total_posts: number,
+  total_followers: number
+}
+
+interface BestPostItem {
+  post_id: string;
+  platform: string;
+  metric_type: string;
+  metric_value?: number;
+  engagement_rate?: number;
+  content?: string;
+  created_at?: string;
+}
+
 const Analytics = () => {
-  const analyticsData = useSelector((state: RootState) => state.analytics.data);
+  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [bestPosts, setBestPosts] = useState<BestPostItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const overviewStats = [
-    {
-      title: 'Total Followers',
-      value: '45.2K',
-      change: '+12.5%',
-      changeType: 'positive',
-      icon: Users,
-      color: 'text-blue-600'
-    },
-    {
-      title: 'Total Reach',
-      value: '125.4K',
-      change: '+18.2%',
-      changeType: 'positive',
-      icon: Eye,
-      color: 'text-green-600'
-    },
-    {
-      title: 'Engagement Rate',
-      value: '4.8%',
-      change: '+2.1%',
-      changeType: 'positive',
-      icon: Heart,
-      color: 'text-red-600'
-    },
-    {
-      title: 'Total Clicks',
-      value: '8.9K',
-      change: '-3.2%',
-      changeType: 'negative',
-      icon: Share,
-      color: 'text-purple-600'
-    }
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      const [dash, best] = await Promise.all([
+        api.get<DashboardResponse>(API_ENDPOINTS.ANALYTICS.DASHBOARD),
+        api.get<BestPostItem[]>(API_ENDPOINTS.ANALYTICS.BEST_POSTS),
+      ]);
+      if (!isMounted) return;
+      if (dash.success && dash.data) setDashboard(dash.data);
+      if (best.success && Array.isArray(best.data)) setBestPosts(best.data);
+      if (!dash.success || !best.success) setError(dash.error || best.error || 'Failed to load analytics');
+      setLoading(false);
+    };
+    load();
+    return () => { isMounted = false; };
+  }, []);
 
-  const platformStats = [
-    {
-      platform: 'Instagram',
-      followers: '12.5K',
-      engagement: '5.2%',
-      reach: '45.2K',
-      color: '#E4405F'
-    },
-    {
-      platform: 'Twitter',
-      followers: '8.3K',
-      engagement: '3.8%',
-      reach: '28.1K',
-      color: '#1DA1F2'
-    },
-    {
-      platform: 'Facebook',
-      followers: '15.2K',
-      engagement: '4.1%',
-      reach: '52.1K',
-      color: '#1877F2'
-    },
-    {
-      platform: 'LinkedIn',
-      followers: '9.2K',
-      engagement: '6.2%',
-      reach: '18.9K',
-      color: '#0A66C2'
-    }
-  ];
+  const overviewStats = useMemo(() => {
+    const totalFollowers = dashboard?.total_followers ?? 0;
+    const totalReach = Object.values(dashboard?.platform_stats || {}).reduce((acc, s) => acc + (s.reach || 0), 0);
+    const totalEngagement = Object.values(dashboard?.platform_stats || {}).reduce((acc, s) => acc + (s.engagement || 0), 0);
+    return [
+      {
+        title: 'Total Followers',
+        value: Intl.NumberFormat().format(totalFollowers),
+        change: '+0%','changeType': 'positive', icon: Users, color: 'text-blue-600'
+      },
+      {
+        title: 'Total Reach (7d)',
+        value: Intl.NumberFormat().format(totalReach),
+        change: '+0%','changeType': 'positive', icon: Eye, color: 'text-green-600'
+      },
+      {
+        title: 'Engagement Sum (7d)',
+        value: Intl.NumberFormat().format(totalEngagement),
+        change: '+0%','changeType': 'positive', icon: Heart, color: 'text-red-600'
+      },
+      {
+        title: 'Total Posts',
+        value: Intl.NumberFormat().format(dashboard?.total_posts ?? 0),
+        change: '+0%','changeType': 'positive', icon: Share, color: 'text-purple-600'
+      }
+    ];
+  }, [dashboard]);
 
-  const topPosts = [
-    {
-      id: '1',
-      title: 'Summer Collection Launch',
-      platform: 'Instagram',
-      engagement: '892',
-      reach: '15.6K',
-      date: '2025-01-15',
-      image: 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400'
-    },
-    {
-      id: '2',
-      title: 'Behind the Scenes',
-      platform: 'Twitter',
-      engagement: '456',
-      reach: '9.8K',
-      date: '2025-01-14',
-      image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400'
-    },
-    {
-      id: '3',
-      title: 'Monday Motivation',
-      platform: 'Facebook',
-      engagement: '1234',
-      reach: '18.9K',
-      date: '2025-01-13',
-      image: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400'
-    }
-  ];
+  const platformStats = useMemo(() => {
+    return Object.entries(dashboard?.platform_stats || {}).map(([platform, stats]) => ({
+      platform,
+      followers: '-',
+      engagement: `${stats.engagement ?? 0}`,
+      reach: `${stats.reach ?? 0}`,
+      color: '#0A66C2',
+    }));
+  }, [dashboard]);
 
   return (
     <div className="space-y-6 p-6">
@@ -142,6 +122,9 @@ const Analytics = () => {
           </Button>
         </div>
       </div>
+
+      {loading && <div className="text-sm text-gray-500">Loading…</div>}
+      {error && <div className="text-sm text-red-600">{error}</div>}
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -208,7 +191,7 @@ const Analytics = () => {
                     <span className="font-medium">{platform.followers}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Reach:</span>
+                    <span className="text-gray-600">Reach (7d):</span>
                     <span className="font-medium">{platform.reach}</span>
                   </div>
                 </div>
@@ -228,36 +211,31 @@ const Analytics = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {topPosts.map((post) => (
+            {bestPosts.slice(0, 6).map((post) => (
               <div
-                key={post.id}
-                className="border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => navigate(`/dashboard/analytics/posts/${post.id}`)}
-              >
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-32 object-cover"
-                />
+               key={post.post_id}
+                className="border border-gray-200 rounded-lg overflow-hidden"
+                onClick={() => navigate(`/dashboard/analytics/posts/${post.post_id}`)}
+                >
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-gray-900 text-sm">{post.title}</h3>
+                    <h3 className="font-medium text-gray-900 text-sm">{post.content?.slice(0, 60) || 'Post'}</h3>
                     <Badge variant="outline" className="text-xs">
                       {post.platform}
                     </Badge>
                   </div>
                   <div className="space-y-1 text-xs text-gray-600">
                     <div className="flex justify-between">
-                      <span>Engagement:</span>
-                      <span className="font-medium">{post.engagement}</span>
+                      <span>Engagement Rate:</span>
+                      <span className="font-medium">{post.engagement_rate ? `${post.engagement_rate.toFixed(2)}%` : '-'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Reach:</span>
-                      <span className="font-medium">{post.reach}</span>
+                      <span>Metric:</span>
+                      <span className="font-medium">{post.metric_type} {post.metric_value ?? ''}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Date:</span>
-                      <span className="font-medium">{post.date}</span>
+                      <span className="font-medium">{post.created_at ? new Date(post.created_at).toLocaleDateString() : '-'}</span>
                     </div>
                   </div>
                 </div>
@@ -267,7 +245,7 @@ const Analytics = () => {
         </CardContent>
       </Card>
 
-      {/* Insights & Recommendations */}
+      {/* Insights & Recommendations (static placeholders) */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">AI Insights & Recommendations</CardTitle>
@@ -298,7 +276,7 @@ const Analytics = () => {
                   <div>
                     <h4 className="font-medium text-green-900 mb-1">Content Performance</h4>
                     <p className="text-sm text-green-700">
-                      Behind-the-scenes content performs 40% better than product posts.
+                      Behind-the-scenes content performs better than product posts. 
                       Try sharing more process content.
                     </p>
                   </div>
@@ -315,7 +293,7 @@ const Analytics = () => {
                   <div>
                     <h4 className="font-medium text-purple-900 mb-1">Hashtag Strategy</h4>
                     <p className="text-sm text-purple-700">
-                      Posts with 5-10 hashtags get 25% more engagement.
+                      Posts with 5-10 hashtags get more engagement. 
                       Consider using trending hashtags in your niche.
                     </p>
                   </div>
@@ -330,7 +308,7 @@ const Analytics = () => {
                   <div>
                     <h4 className="font-medium text-orange-900 mb-1">Audience Growth</h4>
                     <p className="text-sm text-orange-700">
-                      Your follower growth has increased 15% this month.
+                      Your follower growth has increased this month. 
                       Keep up the consistent posting schedule!
                     </p>
                   </div>

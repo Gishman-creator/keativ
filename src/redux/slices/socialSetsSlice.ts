@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { SocialSet } from '../../types';
-import { mockSocialSets } from '../../data/mockData';
 
 interface SocialSetsState {
   socialSets: SocialSet[];
@@ -10,8 +9,8 @@ interface SocialSetsState {
 }
 
 const initialState: SocialSetsState = {
-  socialSets: mockSocialSets,
-  activeSocialSet: mockSocialSets[0],
+  socialSets: [],
+  activeSocialSet: null,
   isLoading: false,
   error: null,
 };

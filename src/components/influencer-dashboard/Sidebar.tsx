@@ -16,6 +16,7 @@ import {
   Plug,
   Workflow,
   Plus,
+  PenTool,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -32,9 +33,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
 
   const navItems: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Posts', href: '/dashboard/posts', icon: PenTool },
     { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-    { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle
+      // , badge: 2
+     },
     { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },

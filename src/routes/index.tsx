@@ -23,13 +23,14 @@ import Calendar from '../pages/private/Calendar';
 import Analytics from '../pages/private/Analytics';
 import Messages from '../pages/private/Messages';
 import MediaLibrary from '../pages/private/MediaLibrary';
-import Influencers from '../pages/private/Influencers';
 import SocialSets from '../pages/private/SocialSets';
+import Posts from '../pages/private/Posts';
 import SettingsPage from '../pages/private/SettingsPage';
 import IntegrationsPage from '../pages/private/IntegrationsPage';
 import Notifications from '../pages/private/Notifications';
 import Automations from '../pages/private/Automations';
 import TwitterCallback from '../pages/private/integrations/TwitterCallback';
+import LinkedInCallback from '../pages/private/integrations/LinkedInCallback';
 import CreatePost from '../pages/private/CreatePost';
 import PostAnalyticsPage from '@/pages/private/PostAnalyticsPage';
 
@@ -69,11 +70,14 @@ export const router = createBrowserRouter([
       { path: 'messages', element: <Messages /> },
       { path: 'automations', element: <Automations /> },
       { path: 'media', element: <MediaLibrary /> },
-      { path: 'influencers', element: <Influencers /> },
+      { path: 'influencers', element: <SocialSets /> },
       { path: 'social-sets', element: <SocialSets /> },
+      { path: 'posts', element: <Posts /> },
+      { path: 'posts/new', element: <Posts /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'integrations', element: <IntegrationsPage /> },
       { path: 'integrations/twitter/callback', element: <TwitterCallback /> },
+      { path: 'integrations/linkedin/callback', element: <LinkedInCallback /> },
       { path: 'notifications', element: <Notifications /> },
     ],
   },

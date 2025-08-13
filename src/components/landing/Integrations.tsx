@@ -27,7 +27,7 @@ const Integrations = () => {
         </h2>
 
         {/* Desktop and larger screens layout */}
-        <div className="relative h-96 flex flex-col items-center justify-center mt-0 hidden md:flex">
+        <div className="relative h-96 hidden md:flex flex-col items-center justify-center mt-0">
           <div className="relative w-full h-full max-w-3xl mx-auto">
             {integrations.map((integration) => (
               <div

@@ -183,6 +183,56 @@ export interface BindTwitterTokensPayload extends Record<string, unknown> {
   tokens: TwitterOAuthTokens;
 }
 
+// LinkedIn Types
+export interface LinkedInAccount {
+  id: string;
+  platform: string;
+  username: string;
+  display_name: string;
+  profile_image_url?: string;
+  is_verified: boolean;
+}
+
+export interface LinkedInPost {
+  success: boolean;
+  message: string;
+  post_id: string;
+  url?: string;
+}
+
+export interface LinkedInOAuthTokens {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  [key: string]: unknown;
+}
+
+export interface LinkedInCallbackAccount {
+  platform: string;
+  platform_user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  profile_image_url?: string;
+  [key: string]: unknown;
+}
+
+export interface LinkedInCallbackResponse {
+  account: LinkedInCallbackAccount;
+  tokens: LinkedInOAuthTokens;
+}
+
+export interface BindLinkedInTokensPayload extends Record<string, unknown> {
+  account: LinkedInCallbackAccount;
+  tokens: LinkedInOAuthTokens;
+}
+
+export interface PostLinkedInPayload extends Record<string, unknown> {
+  content: string;
+}
+
 export interface CalendarPostItem {
   id: string;
   title: string;
@@ -245,6 +295,7 @@ class ApiClient {
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+  'Accept': 'application/json',
     };
 
     const token = this.getToken();
@@ -257,7 +308,9 @@ class ApiClient {
 
   // Authorization-only headers (no Content-Type) for FormData requests
   private getAuthHeaders(): HeadersInit {
-    const headers: HeadersInit = {};
+    const headers: HeadersInit = {
+      'Accept': 'application/json',
+    };
     const token = this.getToken();
     if (token) {
       headers['Authorization'] = `Token ${token}`;
@@ -299,7 +352,8 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: this.getHeaders(),
+  headers: this.getHeaders(),
+  credentials: 'include',
       });
       return this.handleResponse<T>(response);
     } catch {
@@ -314,7 +368,8 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: this.getHeaders(),
+  headers: this.getHeaders(),
+  credentials: 'include',
         body: data ? JSON.stringify(data) : undefined,
       });
       return this.handleResponse<T>(response);
@@ -330,7 +385,8 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'PUT',
-        headers: this.getHeaders(),
+  headers: this.getHeaders(),
+  credentials: 'include',
         body: data ? JSON.stringify(data) : undefined,
       });
       return this.handleResponse<T>(response);
@@ -346,7 +402,8 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'DELETE',
-        headers: this.getHeaders(),
+  headers: this.getHeaders(),
+  credentials: 'include',
       });
       return this.handleResponse<T>(response);
     } catch {
@@ -362,7 +419,8 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'POST',
-        headers: this.getAuthHeaders(),
+  headers: this.getAuthHeaders(),
+  credentials: 'include',
         body: form,
       });
         return this.handleResponse<T>(response);
@@ -375,7 +433,8 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'PUT',
-        headers: this.getAuthHeaders(),
+  headers: this.getAuthHeaders(),
+  credentials: 'include',
         body: form,
       });
       return this.handleResponse<T>(response);
@@ -458,6 +517,31 @@ class ApiClient {
 
   async bindTwitterTokens(payload: BindTwitterTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
     return this.post<{ success: boolean }>(API_ENDPOINTS.TWITTER_BIND_TOKENS, payload);
+  }
+
+  // LinkedIn Integration Methods
+
+  async verifyLinkedInCredentials(): Promise<ApiResponse<{ success: boolean; message: string; account: LinkedInAccount }>> {
+    return this.get<{ success: boolean; message: string; account: LinkedInAccount }>(API_ENDPOINTS.LINKEDIN_VERIFY);
+  }
+
+  async postLinkedInShare(payload: PostLinkedInPayload): Promise<ApiResponse<{ success: boolean; message: string; post: LinkedInPost }>> {
+    return this.post<{ success: boolean; message: string; post: LinkedInPost }>(API_ENDPOINTS.LINKEDIN_POST, payload);
+  }
+
+  async getLinkedInAuthorizeUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
+    return this.get<{ authorize_url: string }>(API_ENDPOINTS.LINKEDIN_AUTHORIZE);
+  }
+
+  async linkedInCallback(params: { code: string; state?: string }): Promise<ApiResponse<LinkedInCallbackResponse>> {
+    const url = new URL(API_ENDPOINTS.LINKEDIN_CALLBACK);
+    url.searchParams.set('code', params.code);
+    if (params.state) url.searchParams.set('state', params.state);
+    return this.get<LinkedInCallbackResponse>(url.toString());
+  }
+
+  async bindLinkedInTokens(payload: BindLinkedInTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
+    return this.post<{ success: boolean }>(API_ENDPOINTS.LINKEDIN_BIND_TOKENS, payload);
   }
 
   // Posts API Methods

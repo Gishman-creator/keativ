@@ -65,8 +65,17 @@ export const API_ENDPOINTS = {
   
   // Influencers
   INFLUENCERS: {
-    LIST: `${API_BASE_URL}/api/influencers/`,
+    PROFILE: `${API_BASE_URL}/api/influencers/profile/`,
+    DASHBOARD: `${API_BASE_URL}/api/influencers/dashboard/`,
     ANALYTICS: `${API_BASE_URL}/api/influencers/analytics/`,
+    DISCOVER: `${API_BASE_URL}/api/influencers/discover/`,
+    CAMPAIGNS: `${API_BASE_URL}/api/influencers/campaigns/`,
+    CAMPAIGN_DETAIL: (id: string) => `${API_BASE_URL}/api/influencers/campaigns/${id}/`,
+    APPLICATIONS: `${API_BASE_URL}/api/influencers/applications/`,
+    APPLICATION_STATUS: (id: string) => `${API_BASE_URL}/api/influencers/applications/${id}/status/`,
+    PORTFOLIO: `${API_BASE_URL}/api/influencers/portfolio/`,
+    COLLABORATIONS: `${API_BASE_URL}/api/influencers/collaborations/`,
+    SYNC_FOLLOWERS: `${API_BASE_URL}/api/influencers/sync-followers/`,
     IMPORT: `${API_BASE_URL}/api/influencers/import/`,
   },
   
@@ -112,6 +121,13 @@ export const API_ENDPOINTS = {
   TWITTER_AUTHORIZE: `${API_BASE_URL}/api/integrations/twitter/authorize/`,
   TWITTER_CALLBACK: `${API_BASE_URL}/api/integrations/twitter/callback/`,
   TWITTER_BIND_TOKENS: `${API_BASE_URL}/api/integrations/twitter/bind-tokens/`,
+
+  // LinkedIn Integration
+  LINKEDIN_VERIFY: `${API_BASE_URL}/api/integrations/linkedin/verify/`,
+  LINKEDIN_POST: `${API_BASE_URL}/api/integrations/linkedin/post/`,
+  LINKEDIN_AUTHORIZE: `${API_BASE_URL}/api/integrations/linkedin/authorize/`,
+  LINKEDIN_CALLBACK: `${API_BASE_URL}/api/integrations/linkedin/callback/`,
+  LINKEDIN_BIND_TOKENS: `${API_BASE_URL}/api/integrations/linkedin/bind-tokens/`,
   
   // Messaging
   MESSAGING: {

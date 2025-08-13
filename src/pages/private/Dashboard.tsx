@@ -21,7 +21,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { API_ENDPOINTS } from '@/config/constants';
 import { api, ApiResponse } from '@/lib/api';
 import SchedulePostPage from '@/components/influencer-dashboard/dashboard/schedule-post-page';
-import { X } from 'lucide-react'; // Import X icon for close button
+// Import X icon for close button
 import { cn } from '@/lib/utils'; // Import cn for conditional class names
 
 // Types for backend responses

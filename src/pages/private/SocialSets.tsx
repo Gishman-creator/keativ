@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import { 
-  Layers, 
   Plus, 
   Settings, 
   Users, 
@@ -16,16 +16,103 @@ import {
   Linkedin,
   Youtube,
   Edit,
-  Trash2
+  Trash2,
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { RootState } from '../../redux/store';
-import { setActiveSocialSet } from '../../redux/slices/socialSetsSlice';
+import { 
+  setSocialSets, 
+  setActiveSocialSet, 
+  setLoading, 
+  setError 
+} from '../../redux/slices/socialSetsSlice';
+import { socialSetsApi } from '@/lib/socialSetsApi';
+import CreateSocialSetDialog from '@/components/social-sets/CreateSocialSetDialog';
+
 import type { SocialSet } from '@/types';
 
 const SocialSets = () => {
   const dispatch = useDispatch();
-  const { socialSets, activeSocialSet } = useSelector((state: RootState) => state.socialSets);
+  const { toast } = useToast();
+  const { socialSets, activeSocialSet, isLoading, error } = useSelector((state: RootState) => state.socialSets);
   const [searchTerm, setSearchTerm] = useState('');
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editingSocialSet, setEditingSocialSet] = useState<SocialSet | null>(null);
+
+  const loadSocialSets = useCallback(async () => {
+    try {
+      dispatch(setLoading(true));
+      dispatch(setError(null));
+      
+      // Load social sets from API
+      const sets = await socialSetsApi.getSocialSets();
+      dispatch(setSocialSets(sets));
+      
+      if (sets.length === 0) {
+        toast({
+          title: "No Social Sets",
+          description: "You haven't created any social sets yet. Create your first one to get started!",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load social sets:', error);
+      dispatch(setError('Failed to load social sets. Please check your connection and try again.'));
+      dispatch(setSocialSets([])); // Set empty array instead of mock data
+      
+      toast({
+        title: "Connection Error",
+        description: "Unable to load social sets. Please check your internet connection.",
+        variant: "destructive",
+      });
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }, [dispatch, toast]);
+
+  // Load social sets when component mounts
+  useEffect(() => {
+    loadSocialSets();
+  }, [loadSocialSets]);
+
+  const handleRefresh = () => {
+    loadSocialSets();
+    toast({
+      title: "Refreshed",
+      description: "Social sets have been refreshed.",
+    });
+  };
+
+  const handleCreateNew = () => {
+    setEditingSocialSet(null);
+    setCreateDialogOpen(true);
+  };
+
+  const handleEdit = (socialSet: SocialSet) => {
+    setEditingSocialSet(socialSet);
+    setCreateDialogOpen(true);
+  };
+
+  const handleSocialSetCreated = () => {
+    loadSocialSets();
+  };
+
+  const handleDelete = async (socialSet: SocialSet) => {
+    try {
+      await socialSetsApi.deleteSocialSet(socialSet.id);
+      await loadSocialSets(); // Refresh the list
+      toast({
+        title: "Deleted",
+        description: `"${socialSet.name}" has been deleted.`,
+      });
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to delete social set.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getPlatformIcon = (type: string) => {
     switch (type) {
@@ -61,8 +148,26 @@ const SocialSets = () => {
     }
   };
 
-  const handleSetActiveSocialSet = (socialSet: SocialSet) => {
-    dispatch(setActiveSocialSet(socialSet));
+  const handleSetActiveSocialSet = async (socialSet: SocialSet) => {
+    try {
+      // Update the social set to active in backend
+      await socialSetsApi.setActive(socialSet.id, true);
+      
+      // Set the active social set in Redux
+      dispatch(setActiveSocialSet(socialSet));
+      
+      toast({
+        title: "Set Active",
+        description: `"${socialSet.name}" is now your active social set.`,
+      });
+    } catch {
+      // If API fails, still update Redux for demo purposes
+      dispatch(setActiveSocialSet(socialSet));
+      toast({
+        title: "Set Active (Demo)",
+        description: `"${socialSet.name}" is now your active social set.`,
+      });
+    }
   };
 
   const filteredSocialSets = socialSets.filter(set =>
@@ -76,11 +181,50 @@ const SocialSets = () => {
           <h1 className="font-heading text-3xl font-bold text-gray-900">Social Sets</h1>
           <p className="text-gray-600 mt-1">Organize your social media accounts into manageable groups</p>
         </div>
-        <Button className="bg-red-500 hover:bg-red-600 w-1/2 sm:w-auto mb-5 md:mb-0">
-          <Plus className="mr-2 h-4 w-4" />
-          Create New Set
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button 
+            className="bg-red-500 hover:bg-red-600" 
+            onClick={handleCreateNew}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create New Set
+          </Button>
+        </div>
       </div>
+
+      {/* Loading State */}
+      {isLoading && (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6 flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            <span>Loading social sets...</span>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error State */}
+      {error && !isLoading && (
+        <Card className="border-red-200 bg-red-50 shadow-sm">
+          <CardContent className="p-6">
+            <p className="text-red-600">{error}</p>
+            <Button 
+              variant="outline" 
+              className="mt-2" 
+              onClick={handleRefresh}
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search */}
       <Card className="border-0 shadow-sm">
@@ -145,8 +289,31 @@ const SocialSets = () => {
       )}
 
       {/* All Social Sets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSocialSets.map((socialSet) => (
+      {!isLoading && filteredSocialSets.length === 0 && !error && (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-12 text-center">
+            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Users className="h-12 w-12 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Social Sets Yet</h3>
+            <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+              Create your first social set to organize your social media accounts and streamline your posting workflow.
+            </p>
+            <Button 
+              className="bg-red-500 hover:bg-red-600" 
+              onClick={handleCreateNew}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Your First Social Set
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Social Sets Grid */}
+      {!isLoading && filteredSocialSets.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredSocialSets.map((socialSet) => (
           <Card key={socialSet.id} className={`border-0 shadow-sm hover:shadow-md transition-shadow ${
             activeSocialSet?.id === socialSet.id ? 'ring-2 ring-red-500' : ''
           }`}>
@@ -154,10 +321,18 @@ const SocialSets = () => {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold">{socialSet.name}</CardTitle>
                 <div className="flex space-x-1">
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleEdit(socialSet)}
+                  >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleDelete(socialSet)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -215,7 +390,16 @@ const SocialSets = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
+
+      {/* Create/Edit Social Set Dialog */}
+      <CreateSocialSetDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSocialSetCreated={handleSocialSetCreated}
+        editingSocialSet={editingSocialSet}
+      />
     </div>
   );
 };

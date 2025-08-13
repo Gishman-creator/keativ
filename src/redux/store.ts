@@ -15,6 +15,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: ['posts/setPosts'],
+        ignoredPaths: ['analytics.dateRange.start', 'analytics.dateRange.end'],
       },
     }),
 });

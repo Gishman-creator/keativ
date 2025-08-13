@@ -35,6 +35,12 @@ interface UpdateSocialSetRequest {
   is_active?: boolean;
 }
 
+// Helper function to get the base URL
+const getApiUrl = (endpoint: string) => {
+  const baseURL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+  return `${baseURL}/api${endpoint}`;
+};
+
 //Transform backend SocialSetResponse to frontend SocialSet type
 const transformSocialSet = (backendSet: SocialSetResponse): SocialSet => {
   return {
@@ -60,16 +66,25 @@ const transformSocialSet = (backendSet: SocialSetResponse): SocialSet => {
 export const socialSetsApi = {
   // Fetch all social sets for the current user
   async getSocialSets(): Promise<SocialSet[]> {
-    const response = await api.get<SocialSetResponse[]>('/posts/social-sets/');
-    if (response.success && response.data) {
-      return response.data.map(transformSocialSet);
+    try {
+      const response = await api.get<SocialSetResponse[]>(getApiUrl('/posts/social-sets/'));
+      
+      if (response.success) {
+        // Handle both cases: response.data is array or null/undefined
+        const data = response.data || [];
+        return Array.isArray(data) ? data.map(transformSocialSet) : [];
+      } else {
+        throw new Error(response.error || 'Failed to fetch social sets');
+      }
+    } catch (error) {
+      console.error('getSocialSets error:', error);
+      throw error;
     }
-    throw new Error(response.error || 'Failed to fetch social sets');
   },
 
   // Get a specific social set by ID
   async getSocialSet(id: string): Promise<SocialSet> {
-    const response = await api.get<SocialSetResponse>(`/posts/social-sets/${id}/`);
+    const response = await api.get<SocialSetResponse>(getApiUrl(`/posts/social-sets/${id}/`));
     if (response.success && response.data) {
       return transformSocialSet(response.data);
     }
@@ -78,7 +93,7 @@ export const socialSetsApi = {
 
   // Create a new social set
   async createSocialSet(data: CreateSocialSetRequest): Promise<SocialSet> {
-    const response = await api.post<SocialSetResponse>('/posts/social-sets/', data as unknown as Record<string, unknown>);
+    const response = await api.post<SocialSetResponse>(getApiUrl('/posts/social-sets/'), data as unknown as Record<string, unknown>);
     if (response.success && response.data) {
       return transformSocialSet(response.data);
     }
@@ -87,7 +102,7 @@ export const socialSetsApi = {
 
   // Update an existing social set using PUT
   async updateSocialSet(id: string, data: UpdateSocialSetRequest): Promise<SocialSet> {
-    const response = await api.put<SocialSetResponse>(`/posts/social-sets/${id}/`, data as unknown as Record<string, unknown>);
+    const response = await api.put<SocialSetResponse>(getApiUrl(`/posts/social-sets/${id}/`), data as unknown as Record<string, unknown>);
     if (response.success && response.data) {
       return transformSocialSet(response.data);
     }
@@ -96,7 +111,7 @@ export const socialSetsApi = {
 
   // Delete a social set
   async deleteSocialSet(id: string): Promise<void> {
-    const response = await api.delete(`/posts/social-sets/${id}/`);
+    const response = await api.delete(getApiUrl(`/posts/social-sets/${id}/`));
     if (!response.success) {
       throw new Error(response.error || 'Failed to delete social set');
     }
@@ -104,7 +119,7 @@ export const socialSetsApi = {
 
   // Get available social media accounts (from authentication app)
   async getAvailableAccounts(): Promise<SocialMediaAccount[]> {
-    const response = await api.get<SocialMediaAccount[]>('/auth/social-accounts/');
+    const response = await api.get<SocialMediaAccount[]>(getApiUrl('/auth/social-accounts/'));
     if (response.success && response.data) {
       return response.data;
     }
@@ -113,7 +128,7 @@ export const socialSetsApi = {
 
   // Add accounts to a social set (if backend supports this endpoint)
   async addAccountsToSet(setId: string, accountIds: string[]): Promise<SocialSet> {
-    const response = await api.post<SocialSetResponse>(`/posts/social-sets/${setId}/add-accounts/`, {
+    const response = await api.post<SocialSetResponse>(getApiUrl(`/posts/social-sets/${setId}/add-accounts/`), {
       accounts: accountIds
     });
     if (response.success && response.data) {
@@ -124,7 +139,7 @@ export const socialSetsApi = {
 
   // Remove accounts from a social set (if backend supports this endpoint)
   async removeAccountsFromSet(setId: string, accountIds: string[]): Promise<SocialSet> {
-    const response = await api.post<SocialSetResponse>(`/posts/social-sets/${setId}/remove-accounts/`, {
+    const response = await api.post<SocialSetResponse>(getApiUrl(`/posts/social-sets/${setId}/remove-accounts/`), {
       accounts: accountIds
     });
     if (response.success && response.data) {
@@ -135,7 +150,7 @@ export const socialSetsApi = {
 
   // Set a social set as active/inactive using PUT
   async setActive(id: string, isActive: boolean): Promise<SocialSet> {
-    const response = await api.put<SocialSetResponse>(`/posts/social-sets/${id}/`, { 
+    const response = await api.put<SocialSetResponse>(getApiUrl(`/posts/social-sets/${id}/`), { 
       is_active: isActive 
     });
     if (response.success && response.data) {

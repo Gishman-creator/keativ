@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { api, ApiResponse } from '@/lib/api';
-import { API_ENDPOINTS } from '@/config/constants';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Play, Pause, TestTube2 } from 'lucide-react';
+import { Loader2, Play, Pause, TestTube2, Plus, RefreshCw } from 'lucide-react';
+import { automationsApi } from '@/lib/automationsApi';
+import { useToast } from '@/hooks/use-toast';
+import CreateAutomationDialog from '@/components/automations/CreateAutomationDialog';
 
-interface AutomatedMessageItem {
+interface AutomatedMessage {
   id: string;
   user: number;
   platform: string;
@@ -19,20 +20,31 @@ interface AutomatedMessageItem {
 }
 
 export default function Automations() {
-  const [items, setItems] = useState<AutomatedMessageItem[]>([]);
+  const [items, setItems] = useState<AutomatedMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const load = async () => {
     setLoading(true);
-    const res: ApiResponse<AutomatedMessageItem[]> = await api.get(API_ENDPOINTS.MESSAGING.AUTOMATED.LIST);
-    if (res.success && Array.isArray(res.data)) {
-      setItems(res.data);
-      setError(null);
-    } else {
-      setError(res.error || 'Failed to load automations');
+    setError(null);
+    
+    try {
+      const data = await automationsApi.getAutomatedMessages();
+      setItems(data);
+    } catch (error) {
+      console.error('Failed to load automations:', error);
+      setError('Failed to load automations. Please check your connection and try again.');
+      setItems([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleAutomationCreated = () => {
+    setCreateDialogOpen(false);
+    load(); // Refresh the list
   };
 
   useEffect(() => {
@@ -40,12 +52,41 @@ export default function Automations() {
   }, []);
 
   const toggle = async (id: string) => {
-    await api.post(API_ENDPOINTS.MESSAGING.AUTOMATED.TOGGLE(id));
-    load();
+    try {
+      await automationsApi.toggleAutomatedMessage(id);
+      await load(); // Refresh the list
+      toast({
+        title: "Updated",
+        description: "Automation status has been updated.",
+      });
+    } catch (error) {
+      console.error('Failed to toggle automation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update automation status.",
+        variant: "destructive",
+      });
+    }
   };
 
   const testSend = async (id: string) => {
-    await api.post(API_ENDPOINTS.MESSAGING.AUTOMATED.TEST(id));
+    // For now, use a default test recipient - in production, you'd want a dialog to get this
+    const testRecipient = 'test@example.com';
+    
+    try {
+      await automationsApi.testAutomatedMessage(id, testRecipient);
+      toast({
+        title: "Test Sent",
+        description: "Test message has been sent successfully.",
+      });
+    } catch (error) {
+      console.error('Failed to send test:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send test message.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -55,10 +96,16 @@ export default function Automations() {
           <h1 className="font-heading text-3xl font-bold text-gray-900">Automations</h1>
           <p className="text-gray-600 mt-1">Manage automated message templates and triggers</p>
         </div>
-        <Button variant="outline" onClick={load}>
-          {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-          Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Automation
+          </Button>
+          <Button variant="outline" onClick={load}>
+            {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <Card className="border-0 shadow-sm">
@@ -67,11 +114,23 @@ export default function Automations() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-gray-600 flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading...</div>
+            <div className="text-gray-600 flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading automations...
+            </div>
           ) : error ? (
-            <div className="text-red-600 text-sm">{error}</div>
+            <div className="text-center py-8">
+              <div className="text-red-600 text-sm mb-4">{error}</div>
+              <Button variant="outline" onClick={load}>
+                Try Again
+              </Button>
+            </div>
           ) : items.length === 0 ? (
-            <div className="text-gray-500">No automations</div>
+            <div className="text-center py-8 text-gray-500">
+              <div className="mb-4">No automated messages configured yet.</div>
+              <div className="text-sm text-gray-400">
+                Create your first automation to get started with automated responses.
+              </div>
+            </div>
           ) : (
             <div className="space-y-3">
               {items.map((a) => (
@@ -103,6 +162,12 @@ export default function Automations() {
           )}
         </CardContent>
       </Card>
+      
+      <CreateAutomationDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onAutomationCreated={handleAutomationCreated}
+      />
     </div>
   );
 }

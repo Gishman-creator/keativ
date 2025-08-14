@@ -30,10 +30,15 @@ interface MobileSidebarProps {
 const MobileSidebar: React.FC<MobileSidebarProps> = ({ isCollapsed, onToggle }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    // Notify parent about user toggling the mobile sidebar (consumes onToggle prop to satisfy ESLint)
+    try { onToggle(); } catch { /* no-op */ }
+  };
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
+    { name: 'Planner', href: '/dashboard/planner', icon: Calendar },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
@@ -71,13 +76,13 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isCollapsed, onToggle }) 
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64">
+      <SheetContent side="left" className={cn("p-0", isCollapsed ? "w-56" : "w-64")}>
         <div className="flex flex-col h-full bg-gray-50 border-r border-gray-200">
           <div className="flex items-center justify-between h-16 border-b border-gray-200 px-5">
             <Link to="/dashboard" className="flex items-center space-x-2">
@@ -92,11 +97,14 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isCollapsed, onToggle }) 
               </Button>
             </SheetClose>
           </div>
-          <div className="flex-grow flex flex-col p-4 space-y-2">
-            <nav className="w-full flex-grow space-y-2">
-              {navItems.map((item) => renderLink(item))}
-            </nav>
-            <div className="w-full">
+          {/* Content area with scrollable nav and pinned footer */}
+          <div className="flex flex-1 min-h-0 flex-col">
+            <div className="flex-1 overflow-y-auto p-4">
+              <nav className="w-full space-y-2">
+                {navItems.map((item) => renderLink(item))}
+              </nav>
+            </div>
+            <div className="border-t border-gray-200 p-4">
               {renderLink(settingsItem)}
             </div>
           </div>

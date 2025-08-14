@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 import {
   MessageCircle,
   Search,
@@ -16,8 +17,9 @@ import {
   Twitter,
   Facebook,
   Loader2,
+  Send
 } from 'lucide-react';
-import { api, ApiResponse } from '@/lib/api';
+import { api, ApiResponse, slackApi, SlackConversation, SlackHistoryItem, SlackHistoryResponse } from '@/lib/api';
 import { API_ENDPOINTS } from '@/config/constants';
 
 interface MessageItem {
@@ -38,6 +40,18 @@ const Messages = () => {
   const [selectedMessage, setSelectedMessage] = useState<MessageItem | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  // Slack compose state
+  const [slackRecipient, setSlackRecipient] = useState('');
+  const [slackText, setSlackText] = useState('');
+  const [slackSending, setSlackSending] = useState(false);
+  // Added: Slack conversations & history state
+  const [slackConversations, setSlackConversations] = useState<SlackConversation[]>([]);
+  const [loadingSlack, setLoadingSlack] = useState(false);
+  const [selectedSlackConversation, setSelectedSlackConversation] = useState<SlackConversation | null>(null);
+  const [slackHistory, setSlackHistory] = useState<SlackHistoryItem[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [slackAuthScopes, setSlackAuthScopes] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const fetchMessages = async () => {
     setLoading(true);
@@ -51,7 +65,37 @@ const Messages = () => {
 
   useEffect(() => {
     fetchMessages();
+    // Added: load Slack conversations & auth status
+    const initSlack = async () => {
+      setLoadingSlack(true);
+      const [convRes, authRes] = await Promise.all([
+        slackApi.listConversations(),
+        api.get<{ ok: boolean; scopes?: string[] }>(API_ENDPOINTS.INTEGRATIONS.SLACK_AUTH_STATUS)
+      ]);
+      if (convRes.success && convRes.data && (convRes.data.ok ?? true)) {
+        setSlackConversations(convRes.data.channels || []);
+      }
+      if (authRes.success && authRes.data?.scopes) {
+        setSlackAuthScopes(authRes.data.scopes);
+      }
+      setLoadingSlack(false);
+    };
+    initSlack();
   }, []);
+
+  const loadSlackHistory = async (conv: SlackConversation) => {
+    setSelectedSlackConversation(conv);
+    setLoadingHistory(true);
+    // channel id (remove leading symbol if user typed #)
+    const channelId = conv.id;
+    const res: ApiResponse<SlackHistoryResponse> = await api.get(API_ENDPOINTS.INTEGRATIONS.SLACK_HISTORY(channelId));
+    if (res.success && res.data?.messages) {
+      setSlackHistory(res.data.messages);
+    } else {
+      setSlackHistory([]);
+    }
+    setLoadingHistory(false);
+  };
 
   const getPlatformIcon = (platform: string) => {
     switch (platform?.toLowerCase()) {
@@ -86,6 +130,22 @@ const Messages = () => {
     );
   }, [messages, searchTerm]);
 
+  const sendSlack = async () => {
+    if (!slackRecipient || !slackText) {
+      toast({ title: 'Missing fields', description: 'Provide recipient and message', variant: 'destructive' });
+      return;
+    }
+    setSlackSending(true);
+    const res = await slackApi.sendMessage(slackRecipient, slackText);
+    setSlackSending(false);
+    if (res.success && (res.data?.ok ?? true)) {
+      toast({ title: 'Sent', description: 'Slack message delivered.' });
+      setSlackText('');
+    } else {
+      toast({ title: 'Failed', description: res.error || res.data?.error || 'Slack send failed', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
@@ -117,6 +177,65 @@ const Messages = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
+            </div>
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-medium text-gray-500 uppercase">Slack Quick Compose</p>
+              <Input
+                placeholder="#channel or @username"
+                value={slackRecipient}
+                onChange={(e) => setSlackRecipient(e.target.value)}
+              />
+              <div className="flex space-x-2">
+                <Input
+                  placeholder="Message"
+                  className="flex-1"
+                  value={slackText}
+                  onChange={(e) => setSlackText(e.target.value)}
+                />
+                <Button size="sm" onClick={sendSlack} disabled={slackSending}>
+                  {slackSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </div>
+              <p className="text-[11px] text-gray-400">Use #channel for channels or @username for direct messages.</p>
+              {/* Added: Slack conversations list */}
+              <div className="max-h-48 overflow-auto border rounded-md p-2 bg-white">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-semibold text-gray-500">Slack Conversations</span>
+                  {loadingSlack && <Loader2 className="h-3 w-3 animate-spin text-gray-400" />}
+                </div>
+                {slackConversations.length === 0 && !loadingSlack && (
+                  <p className="text-[11px] text-gray-400">No conversations</p>
+                )}
+                <ul className="space-y-1">
+                  {slackConversations.map((c) => (
+                    <li
+                      key={c.id}
+                      className={`text-xs px-2 py-1 rounded hover:bg-gray-100 cursor-pointer flex items-center justify-between ${selectedSlackConversation?.id === c.id ? 'bg-gray-100' : ''}`}
+                      onClick={() => {
+                        setSlackRecipient(c.name ? `#${c.name}` : c.user ? `@${c.user}` : c.id);
+                        loadSlackHistory(c);
+                      }}
+                      title={c.id}
+                    >
+                      <span className="truncate">{c.name || c.user || c.id}</span>
+                      <div className="flex items-center space-x-1">
+                        {c.is_im && <span className="text-[9px] text-gray-400 ml-1">DM</span>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                {slackAuthScopes.length > 0 && (
+                  <div className="mt-2 border-t pt-2">
+                    <p className="text-[10px] font-semibold text-gray-500 mb-1">Granted Scopes</p>
+                    <div className="flex flex-wrap gap-1">
+                      {slackAuthScopes.slice(0, 8).map(s => (
+                        <span key={s} className="bg-gray-100 text-gray-600 rounded px-1.5 py-0.5 text-[10px]">{s}</span>
+                      ))}
+                      {slackAuthScopes.length > 8 && <span className="text-[10px] text-gray-400">+{slackAuthScopes.length - 8} more</span>}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -173,9 +292,39 @@ const Messages = () => {
           </CardContent>
         </Card>
 
-        {/* Message Detail */}
+        {/* Message Detail or Slack History */}
         <Card className="lg:col-span-2 border-0 shadow-sm">
-          {selectedMessage ? (
+          {selectedSlackConversation ? (
+            <>
+              <CardHeader className="border-b border-gray-200 flex flex-col gap-2">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-sm font-semibold">#</div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{selectedSlackConversation.name || selectedSlackConversation.user || selectedSlackConversation.id}</h3>
+                      <p className="text-xs text-gray-500">Slack Conversation History</p>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                {loadingHistory ? (
+                  <div className="flex items-center gap-2 text-gray-500"><Loader2 className="h-4 w-4 animate-spin" /> Loading history...</div>
+                ) : slackHistory.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No messages in history.</p>
+                ) : (
+                  <div className="space-y-4 max-h-[32rem] overflow-auto pr-2">
+                    {slackHistory.map(m => (
+                      <div key={m.ts} className="border rounded-lg p-3 bg-gray-50">
+                        <p className="text-xs text-gray-500 mb-1">{m.user || 'user'} • {new Date(parseFloat(m.ts) * 1000).toLocaleString()}</p>
+                        <p className="text-sm whitespace-pre-wrap text-gray-900">{m.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </>
+          ) : selectedMessage ? (
             <>
               <CardHeader className="border-b border-gray-200">
                 <div className="flex items-center justify-between">

@@ -12,11 +12,9 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Bell,
   Plug,
   Workflow,
   Plus,
-  PenTool,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -33,13 +31,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
 
   const navItems: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Posts', href: '/dashboard/posts', icon: PenTool },
-    { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
+    { name: 'Planner', href: '/dashboard/planner', icon: Calendar },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle
       // , badge: 2
      },
-    { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
@@ -57,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
   const renderLink = (item: NavItem) => {
     const Icon = item.icon;
     const active = isItemActive(item.href);
-    const isCalendar = item.href === '/dashboard/calendar';
+  const isPlanner = item.href === '/dashboard/planner';
     return (
       <div key={item.name} className={cn('flex items-center', isCollapsed ? 'justify-center' : '')}>
         <Link
@@ -84,9 +80,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
             </span>
           )}
         </Link>
-        {!isCollapsed && isCalendar && (
+    {!isCollapsed && isPlanner && (
           <button
-            onClick={() => navigate('/dashboard/calendar/new')}
+      onClick={() => navigate('/dashboard/posts/new')}
             className="ml-2 inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
             aria-label="Create post"
             title="Create post"
@@ -99,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
   };
 
   return (
-    <div className={cn(`bg-gray-50 ${isCollapsed ? 'w-20' : 'w-64'} h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-gray-200 transition-all duration-300 z-40 flex flex-col`, className)}>
+    <div className={cn(`bg-gray-50 ${isCollapsed ? 'w-20' : 'w-64'} h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-gray-200 transition-all duration-300 z-40 flex flex-col `, className)}>
       {/* Toggle Button */}
       <div className="absolute -right-3 top-6 z-50">
         <Button
@@ -112,11 +108,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
         </Button>
       </div>
 
-      <div className="flex-grow flex flex-col p-4 space-y-2 items-center">
-        <nav className="w-full flex-grow space-y-2">
+      <div className="flex-1 flex flex-col p-4 gap-2">
+        <nav className="w-full flex-1 space-y-2 overflow-y-auto pr-1">
           {navItems.map((item) => renderLink(item))}
         </nav>
-        <div className="w-full">
+        <div className="w-full shrink-0 pt-2 border-t border-gray-200">
           {renderLink(settingsItem)}
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarIcon, Plus, Filter } from 'lucide-react';
 import { postsApi } from '@/lib/api';
 import { CreatePostDialog } from '@/components/CreatePostDialog';
+import { useNavigate } from 'react-router-dom';
 
 interface CalendarPost {
   id: string;
@@ -19,6 +20,8 @@ interface CalendarPost {
 interface CalendarResponse { posts: CalendarPost[] }
 
 const Calendar = () => {
+
+  const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarPosts, setCalendarPosts] = useState<CalendarPost[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -77,11 +80,7 @@ const Calendar = () => {
     });
   };
 
-  const handleCreatePostClick = () => {
-    // Placeholder for creating a new post.
-    // In a real app, this would navigate to the post creation page/modal.
-    console.log("Create new post clicked from Calendar page!");
-  };
+ 
 
   return (
     <div className="space-y-6 p-6">
@@ -95,10 +94,10 @@ const Calendar = () => {
             <Filter className="mr-2 h-4 w-4" />
             Filter
           </Button>
-          <Button className="bg-red-500 hover:bg-red-600" onClick={() => setDialogOpen(true)}>
+            <Button className="bg-red-500 hover:bg-red-600" onClick={() => navigate("/dashboard/createpost")}>
             <Plus className="mr-2 h-4 w-4" />
             New Post
-          </Button>
+            </Button>
         </div>
       </div>
 

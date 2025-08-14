@@ -19,9 +19,9 @@ import { EmailVerification, VerificationPending, ResendVerification } from '../c
 
 // Private pages
 import Dashboard from '../pages/private/Dashboard';
-import Calendar from '../pages/private/Calendar';
+// Calendar is integrated into Planner via tabs
+import Planner from '../pages/private/Planner';
 import Analytics from '../pages/private/Analytics';
-import Messages from '../pages/private/Messages';
 import MediaLibrary from '../pages/private/MediaLibrary';
 import SocialSets from '../pages/private/SocialSets';
 import Posts from '../pages/private/Posts';
@@ -33,6 +33,9 @@ import TwitterCallback from '../pages/private/integrations/TwitterCallback';
 import LinkedInCallback from '../pages/private/integrations/LinkedInCallback';
 import CreatePost from '../pages/private/CreatePost';
 import PostAnalyticsPage from '@/pages/private/PostAnalyticsPage';
+// import Influencers from '@/pages/private/Influencers';
+import InfluencerDashboardPage from '@/pages/private/InfluencerDashboard';
+import Messages from '../pages/private/Messages';
 
 export const router = createBrowserRouter([
   {
@@ -63,22 +66,27 @@ export const router = createBrowserRouter([
     // ),
     children: [
       { index: true, element: <Dashboard /> },
-      { path: 'calendar', element: <Calendar /> },
+  { path: 'planner', element: <Planner /> },
+  { path: 'calendar', element: <Planner /> },
       { path: 'calendar/new', element: <CreatePost /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'analytics/posts/:id', element: <PostAnalyticsPage /> },
-      { path: 'messages', element: <Messages /> },
+  { path: 'messages', element: <Messages /> },
       { path: 'automations', element: <Automations /> },
       { path: 'media', element: <MediaLibrary /> },
-      { path: 'influencers', element: <SocialSets /> },
+      { path: 'influencers', element: <InfluencerDashboardPage /> },
       { path: 'social-sets', element: <SocialSets /> },
-      { path: 'posts', element: <Posts /> },
-      { path: 'posts/new', element: <Posts /> },
+  { path: 'posts', element: <Planner /> },
+  { path: 'posts/new', element: <Posts /> },
       { path: 'settings', element: <SettingsPage /> },
       { path: 'integrations', element: <IntegrationsPage /> },
       { path: 'integrations/twitter/callback', element: <TwitterCallback /> },
       { path: 'integrations/linkedin/callback', element: <LinkedInCallback /> },
       { path: 'notifications', element: <Notifications /> },
+      {
+        path: 'createpost',
+        element: <CreatePost />,
+      }
     ],
   },
   {

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,9 +16,11 @@ import {
   Youtube,
   Link as LinkIcon,
   Users,
-  Loader2
+  Loader2,
+  Plus
 } from 'lucide-react';
-import { socialSetsApi } from '@/lib/socialSetsApi';
+import { api, ApiResponse } from '@/lib/api';
+import { API_ENDPOINTS } from '@/config/constants';
 import type { SocialSet } from '@/types';
 
 interface SocialMediaAccount {
@@ -57,17 +59,32 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
 
   const isEditing = !!editingSocialSet;
 
-  const loadAvailableAccounts = React.useCallback(async () => {
+  const fetchAccounts = useCallback(async () => {
+    setLoadingAccounts(true);
     try {
-      setLoadingAccounts(true);
-      const accounts = await socialSetsApi.getAvailableAccounts();
-      setAvailableAccounts(accounts);
+      const res: ApiResponse<SocialMediaAccount[]> = await api.get(API_ENDPOINTS.SOCIAL_ACCOUNTS);
+      
+      // Ensure we always have an array
+      if (res.success && res.data) {
+        if (Array.isArray(res.data)) {
+          setAvailableAccounts(res.data);
+        } else if (typeof res.data === 'object' && 'results' in res.data && Array.isArray((res.data as { results: SocialMediaAccount[] }).results)) {
+          // Handle paginated response
+          setAvailableAccounts((res.data as { results: SocialMediaAccount[] }).results);
+        } else {
+          console.warn('Unexpected social accounts response format:', res.data);
+          setAvailableAccounts([]);
+        }
+      } else {
+        setAvailableAccounts([]);
+      }
     } catch (error) {
-      console.error('Failed to load available accounts:', error);
+      console.error('Error fetching accounts:', error);
+      setAvailableAccounts([]);
       toast({
-        title: "Error",
-        description: "Failed to load social media accounts.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load social media accounts',
+        variant: 'destructive',
       });
     } finally {
       setLoadingAccounts(false);
@@ -76,7 +93,7 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
 
   useEffect(() => {
     if (open) {
-      loadAvailableAccounts();
+      fetchAccounts();
       
       if (isEditing && editingSocialSet) {
         setFormData({
@@ -92,7 +109,7 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
         });
       }
     }
-  }, [open, editingSocialSet, isEditing, loadAvailableAccounts]);
+  }, [open, editingSocialSet, isEditing, fetchAccounts]);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -158,38 +175,37 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
       return;
     }
 
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      if (isEditing && editingSocialSet) {
-        await socialSetsApi.updateSocialSet(editingSocialSet.id, {
-          name: formData.name,
-          description: formData.description,
-          accounts: formData.selectedAccounts
-        });
+      const res = await api.post(API_ENDPOINTS.SOCIAL_SETS.CREATE, {
+        name: formData.name,
+        description: formData.description,
+        accounts: formData.selectedAccounts,
+      });
+
+      if (res.success) {
         toast({
-          title: "Updated",
-          description: "Social set has been updated successfully.",
+          title: "Success",
+          description: "Social set created successfully",
         });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          description: '',
+          selectedAccounts: []
+        });
+        onOpenChange(false);
+        
+        onSocialSetCreated();
       } else {
-        await socialSetsApi.createSocialSet({
-          name: formData.name,
-          description: formData.description,
-          accounts: formData.selectedAccounts
-        });
-        toast({
-          title: "Created",
-          description: "Social set has been created successfully.",
-        });
+        throw new Error(res.error || 'Failed to create social set');
       }
-      
-      onSocialSetCreated();
-      onOpenChange(false);
     } catch (error) {
-      console.error('Failed to save social set:', error);
+      console.error('Error creating social set:', error);
       toast({
         title: "Error",
-        description: `Failed to ${isEditing ? 'update' : 'create'} social set.`,
+        description: error instanceof Error ? error.message : 'Failed to create social set',
         variant: "destructive",
       });
     } finally {
@@ -199,6 +215,12 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogTrigger asChild>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Social Set
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>

@@ -10,6 +10,10 @@ export const API_ENDPOINTS = {
     USER: `${API_BASE_URL}/api/auth/user/`,
     PROFILE: `${API_BASE_URL}/api/auth/profile/`,
     REFRESH: `${API_BASE_URL}/api/auth/token/refresh/`,
+    STATS: `${API_BASE_URL}/api/auth/stats/`,
+    CHANGE_PASSWORD: `${API_BASE_URL}/api/auth/settings/password/`,
+    UPDATE_NOTIFICATIONS: `${API_BASE_URL}/api/auth/settings/notifications/`,
+    ACCOUNT_OVERVIEW: `${API_BASE_URL}/api/auth/settings/overview/`,
   },
   
   // Posts
@@ -42,6 +46,13 @@ export const API_ENDPOINTS = {
   
   // Social Media Accounts
   SOCIAL_ACCOUNTS: `${API_BASE_URL}/api/auth/social-accounts/`,
+  
+  // Social Sets
+  SOCIAL_SETS: {
+    LIST: `${API_BASE_URL}/api/social-sets/`,
+    CREATE: `${API_BASE_URL}/api/social-sets/`,
+    DETAIL: (id: string) => `${API_BASE_URL}/api/social-sets/${id}/`,
+  },
   
   // Collaborators (align with backend URLs)
   COLLABORATORS: {
@@ -143,6 +154,17 @@ export const API_ENDPOINTS = {
       TOGGLE: (id: string) => `${API_BASE_URL}/api/messaging/automated/${id}/toggle/`,
       TEST: (id: string) => `${API_BASE_URL}/api/messaging/automated/${id}/test/`,
     },
+  },
+  // Integrations extras
+  INTEGRATIONS: {
+    SLACK_HISTORY: (channel: string) => `${API_BASE_URL}/api/integrations/slack/history/?channel=${encodeURIComponent(channel)}`,
+    SLACK_AUTH_STATUS: `${API_BASE_URL}/api/integrations/slack/auth-status/`,
+    GOOGLE_DRIVE_FILES: `${API_BASE_URL}/api/integrations/google-drive/files/`,
+    GOOGLE_DRIVE_IMPORT: `${API_BASE_URL}/api/integrations/google-drive/import/`,
+    DROPBOX_FILES: `${API_BASE_URL}/api/integrations/dropbox/files/`,
+    DROPBOX_IMPORT: `${API_BASE_URL}/api/integrations/dropbox/import/`,
+    HASHTAG_SUGGEST: `${API_BASE_URL}/api/integrations/hashtags/suggest/`,
+    OPTIMAL_TIMES: `${API_BASE_URL}/api/integrations/posting/optimal-times/`,
   },
 
 };

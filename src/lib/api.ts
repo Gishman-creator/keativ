@@ -178,6 +178,29 @@ export interface TwitterCallbackResponse {
   tokens: TwitterOAuthTokens;
 }
 
+// Integration extra types
+export interface SlackHistoryItem { type?: string; user?: string; text?: string; ts: string }
+export interface SlackHistoryResponse { ok: boolean; messages?: SlackHistoryItem[]; error?: string; response_metadata?: { next_cursor?: string } }
+export interface SlackConversation {
+  id: string;
+  name?: string;
+  is_channel?: boolean;
+  is_group?: boolean;
+  is_im?: boolean;
+  user?: string; // present for IMs
+  is_member?: boolean;
+  created?: number;
+}
+export interface SlackAuthStatus { ok: boolean; auth_test?: Record<string, unknown>; scopes?: string[]; error?: string }
+export interface DriveFile { id: string; name: string; mime_type?: string }
+export interface DriveFilesResponse { files: DriveFile[] }
+export interface DropboxFile { id: string; name: string; path: string }
+export interface DropboxFilesResponse { files: DropboxFile[] }
+export interface HashtagSuggestions { hashtags: string[] }
+export interface OptimalPostingTime { hour: number; score?: number; recommendation?: string; avg_engagement?: number; avg_reach?: number }
+export interface OptimalPostingTimesResponse { optimal_posting_times?: OptimalPostingTime[]; optimal_times?: unknown; confidence?: number; analysis_period?: string }
+export interface CalendarShareResponse { queued: boolean; slack: number; emails: number }
+
 export interface BindTwitterTokensPayload extends Record<string, unknown> {
   account: TwitterCallbackAccount;
   tokens: TwitterOAuthTokens;
@@ -404,6 +427,23 @@ class ApiClient {
         method: 'DELETE',
   headers: this.getHeaders(),
   credentials: 'include',
+      });
+      return this.handleResponse<T>(response);
+    } catch {
+      return {
+        error: 'Network error',
+        success: false,
+      };
+    }
+  }
+
+  async patch<T>(url: string, data?: Record<string, unknown>): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(url, {
+        method: 'PATCH',
+  headers: this.getHeaders(),
+  credentials: 'include',
+        body: data ? JSON.stringify(data) : undefined,
       });
       return this.handleResponse<T>(response);
     } catch {
@@ -651,6 +691,18 @@ export const authApi = {
     }
     return response;
   },
+  // Integrations extras
+  integrations: {
+  slackHistory: async (channel: string): Promise<ApiResponse<SlackHistoryResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.SLACK_HISTORY(channel)),
+  slackAuthStatus: async (): Promise<ApiResponse<SlackAuthStatus>> => api.get(API_ENDPOINTS.INTEGRATIONS.SLACK_AUTH_STATUS),
+  googleDriveFiles: async (): Promise<ApiResponse<DriveFilesResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.GOOGLE_DRIVE_FILES),
+  googleDriveImport: async (file_id: string): Promise<ApiResponse<{ imported: boolean; file_id: string }>> => api.post(API_ENDPOINTS.INTEGRATIONS.GOOGLE_DRIVE_IMPORT, { file_id }),
+  dropboxFiles: async (): Promise<ApiResponse<DropboxFilesResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.DROPBOX_FILES),
+  dropboxImport: async (path: string): Promise<ApiResponse<{ imported: boolean; path: string }>> => api.post(API_ENDPOINTS.INTEGRATIONS.DROPBOX_IMPORT, { path }),
+  hashtagSuggestions: async (content: string, platform='instagram'): Promise<ApiResponse<HashtagSuggestions>> => api.post(API_ENDPOINTS.INTEGRATIONS.HASHTAG_SUGGEST, { content, platform }),
+  optimalPostingTimes: async (): Promise<ApiResponse<OptimalPostingTimesResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.OPTIMAL_TIMES),
+  shareCalendar: async (entries: {platform:string; scheduled_time:string; title:string; status:string}[], slack_recipients: string[], emails: string[]): Promise<ApiResponse<CalendarShareResponse>> => api.post('/api/messaging/share-calendar/', { entries, slack_recipients, emails }),
+  },
 
   logout: async () => {
     await api.post(API_ENDPOINTS.AUTH.LOGOUT);
@@ -691,6 +743,102 @@ export const authApi = {
   resendVerificationEmail: async (email: string) => {
     return api.post('/api/auth/resend-verification/', { email });
   },
+
+  // Enhanced methods for navbar and settings integration
+  uploadAvatar: async (avatarFile: File) => {
+    const formData = new FormData();
+    formData.append('avatar', avatarFile);
+    
+    return api.putForm<{ avatar: string; message: string }>(
+      API_ENDPOINTS.AUTH.PROFILE,
+      formData
+    );
+  },
+
+  updatePassword: async (passwordData: {
+    current_password: string;
+    new_password: string;
+  }) => {
+    return api.post<{ message: string }>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, passwordData);
+  },
+
+  updateNotificationSettings: async (settings: {
+    email_notifications?: boolean;
+    slack_notifications?: boolean;
+  }) => {
+    return api.post<{ message: string; email_notifications: boolean; slack_notifications: boolean }>(
+      API_ENDPOINTS.AUTH.UPDATE_NOTIFICATIONS,
+      settings
+    );
+  },
+
+  getUserStats: async () => {
+    return api.get<{
+      active_posts: number;
+      scheduled_posts: number;
+      unread_notifications: number;
+    }>(API_ENDPOINTS.AUTH.STATS);
+  },
+
+  getAccountOverview: async () => {
+    return api.get<{
+      account_created: string;
+      last_login: string;
+      subscription_type: string;
+      social_accounts_count: number;
+      total_posts: number;
+      team_memberships: number;
+      storage_used: string;
+      api_calls_this_month: number;
+    }>(API_ENDPOINTS.AUTH.ACCOUNT_OVERVIEW);
+  },
+
+  // Account security methods
+  enable2FA: async () => {
+    return api.post<{ qr_code: string; secret: string }>('/api/auth/2fa/setup/', {});
+  },
+
+  confirm2FA: async (token: string) => {
+    return api.post<{ message: string }>('/api/auth/2fa/confirm/', { token });
+  },
+
+  disable2FA: async (token: string) => {
+    return api.post<{ message: string }>('/api/auth/2fa/disable/', { token });
+  },
+
+  getActiveSessions: async () => {
+    return api.get<{ sessions: Array<{
+      id: string;
+      ip_address: string;
+      user_agent: string;
+      created_at: string;
+      last_activity: string;
+      is_current: boolean;
+    }> }>('/api/auth/sessions/');
+  },
+
+  terminateSession: async (sessionId: string) => {
+    return api.delete(`/api/auth/sessions/${sessionId}/`);
+  },
+
+  requestDataExport: async () => {
+    return api.post<{ message: string; export_id: string }>('/api/auth/export-data/', {});
+  },
+
+  deleteAccount: async (password: string) => {
+    return api.post<{ message: string }>('/api/auth/delete-account/', { password });
+  },
+};
+
+// Slack API Client
+export const slackApi = {
+  listConversations: async (types?: string) => {
+    const qs = types ? `?types=${encodeURIComponent(types)}` : '';
+  return api.get<{ ok?: boolean; channels?: SlackConversation[]; response_metadata?: { next_cursor?: string } }>(`/api/integrations/slack/conversations/${qs}`);
+  },
+  sendMessage: async (recipient: string, text: string) => {
+    return api.post<{ ok?: boolean; ts?: string; error?: string }>(`/api/integrations/slack/send/`, { recipient, text });
+  }
 };
 
 export const postsApi = {

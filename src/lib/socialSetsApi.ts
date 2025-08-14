@@ -22,6 +22,9 @@ interface SocialMediaAccount {
   created_at: string;
 }
 
+// Allow paginated or list response from backend
+type SocialAccountsApiResponse = SocialMediaAccount[] | { results: SocialMediaAccount[]; count?: number };
+
 interface CreateSocialSetRequest {
   name: string;
   description?: string;
@@ -119,9 +122,19 @@ export const socialSetsApi = {
 
   // Get available social media accounts (from authentication app)
   async getAvailableAccounts(): Promise<SocialMediaAccount[]> {
-    const response = await api.get<SocialMediaAccount[]>(getApiUrl('/auth/social-accounts/'));
+  const response = await api.get<SocialAccountsApiResponse>(getApiUrl('/auth/social-accounts/'));
     if (response.success && response.data) {
-      return response.data;
+      const data = response.data;
+      // Support both paginated { results: [...] } and plain array responses
+      if (Array.isArray(data)) {
+        return data as SocialMediaAccount[];
+      }
+      if (Array.isArray(data.results)) {
+        return data.results as SocialMediaAccount[];
+      }
+      // Unexpected shape
+      console.warn('Unexpected social-accounts payload shape', data);
+      return [];
     }
     throw new Error(response.error || 'Failed to fetch accounts');
   },

@@ -14,12 +14,15 @@ import { Calendar as CalendarIcon, Plus, Loader2 } from 'lucide-react';
 import { postsApi, socialAccountsApi, type SocialAccount, type PostCreateWithMedia } from '@/lib/api';
 import { SOCIAL_PLATFORMS } from '@/config/constants';
 import { toast } from 'sonner';
+import HashtagSuggestions from '@/components/hashtag/HashtagSuggestions';
+import PostSuggestions from '@/components/posts/PostSuggestions';
+import ContentEnhancer from '@/components/content/ContentEnhancer';
 
 const CreatePost = () => {
   const navigate = useNavigate();
   const [content, setContent] = useState('');
   const [caption, setCaption] = useState('');
-  const [hashtags, setHashtags] = useState('');
+  const [hashtagsArray, setHashtagsArray] = useState<string[]>([]);
   const [platform, setPlatform] = useState<string>('twitter');
   const [mediaUrl, setMediaUrl] = useState('');
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>(new Date());
@@ -68,7 +71,7 @@ const CreatePost = () => {
     const basePayload: Record<string, unknown> = {
       content,
       caption,
-      hashtags,
+      hashtags: hashtagsArray.join(', '),
       // If a file is chosen, ignore media_url in multipart path
       media_url: mediaUrl || undefined,
       platform,
@@ -117,6 +120,23 @@ const CreatePost = () => {
     if (file) setImageFile(null);
   };
 
+  // Hashtag handlers
+  const handleHashtagAdd = (hashtag: string) => {
+    if (!hashtagsArray.includes(hashtag)) {
+      setHashtagsArray(prev => [...prev, hashtag]);
+    }
+  };
+
+  const handleHashtagRemove = (hashtag: string) => {
+    setHashtagsArray(prev => prev.filter(h => h !== hashtag));
+  };
+
+  // Handler for optimal time selection
+  const handleOptimalTimeSelect = (date: Date) => {
+    setScheduledDate(date);
+    setScheduledTime(format(date, 'HH:mm'));
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -146,10 +166,6 @@ const CreatePost = () => {
             <div className="space-y-2">
               <Label>Caption (optional)</Label>
               <Input value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Add a caption" />
-            </div>
-            <div className="space-y-2">
-              <Label>Hashtags (comma separated)</Label>
-              <Input value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="#marketing, #growth" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -247,6 +263,28 @@ const CreatePost = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Content Enhancement Suggestions */}
+      <ContentEnhancer
+        originalContent={content}
+        platform={platform}
+        onContentSelect={setContent}
+      />
+
+      {/* Hashtag Suggestions */}
+      <HashtagSuggestions
+        content={content}
+        platform={platform}
+        currentHashtags={hashtagsArray}
+        onHashtagAdd={handleHashtagAdd}
+        onHashtagRemove={handleHashtagRemove}
+      />
+
+      {/* Post Suggestions - Optimal Times */}
+      <PostSuggestions
+        platform={platform}
+        onTimeSelect={handleOptimalTimeSelect}
+      />
     </div>
   );
 };

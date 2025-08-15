@@ -17,6 +17,12 @@ import NotFound from '../pages/public/NotFound';
 // Email verification components
 import { EmailVerification, VerificationPending, ResendVerification } from '../components/auth';
 
+// Import the Enhanced Pricing component
+import EnhancedPricing from '../pages/public/EnhancedPricing';
+
+// Import the Plan Selection component
+import PlanSelection from '../pages/auth/PlanSelection';
+
 // Private pages
 import Dashboard from '../pages/private/Dashboard';
 // Calendar is integrated into Planner via tabs
@@ -37,6 +43,17 @@ import PostAnalyticsPage from '@/pages/private/PostAnalyticsPage';
 import InfluencerDashboardPage from '@/pages/private/InfluencerDashboard';
 import Messages from '../pages/private/Messages';
 
+// Payment and CRM imports
+import BillingDashboard from '../pages/private/billing/BillingDashboard';
+import EnhancedBillingDashboard from '../pages/private/billing/EnhancedBillingDashboard';
+import BillingPlanSelection from '../pages/private/billing/PlanSelection';
+import CRMDashboard from '../pages/private/crm/CRMDashboard';
+import GoHighLevelIntegration from '../components/crm/GoHighLevelIntegration';
+import CRMContactsList from '../components/crm/CRMContactsList';
+
+// Demo page for dialog components
+import DialogsDemoPage from '../pages/private/demo/DialogsDemoPage';
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -45,12 +62,14 @@ export const router = createBrowserRouter([
       { index: true, element: <Landing /> },
       { path: 'features', element: <Features /> },
       { path: 'pricing', element: <Pricing /> },
+      { path: 'pricing-enhanced', element: <EnhancedPricing /> },
       { path: 'about', element: <About /> },
       { path: 'contact', element: <Contact /> },
       { path: 'privacy', element: <PrivacyPolicy /> },
       { path: 'terms', element: <TermsOfService /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
+      { path: 'plan-selection', element: <PlanSelection /> },
       { path: 'verify-email/:token', element: <EmailVerification /> },
       { path: 'verification-pending', element: <VerificationPending /> },
       { path: 'resend-verification', element: <ResendVerification /> },
@@ -83,6 +102,20 @@ export const router = createBrowserRouter([
       { path: 'integrations/twitter/callback', element: <TwitterCallback /> },
       { path: 'integrations/linkedin/callback', element: <LinkedInCallback /> },
       { path: 'notifications', element: <Notifications /> },
+      
+      // Billing and subscription routes
+      { path: 'billing', element: <EnhancedBillingDashboard /> },
+      { path: 'billing/legacy', element: <BillingDashboard /> },
+      { path: 'billing/plans', element: <BillingPlanSelection /> },
+      
+      // CRM routes
+      { path: 'crm', element: <CRMDashboard /> },
+      { path: 'crm/contacts', element: <CRMContactsList /> },
+      { path: 'crm/integration', element: <GoHighLevelIntegration /> },
+      
+      // Demo routes (development/testing)
+      { path: 'demo/dialogs', element: <DialogsDemoPage /> },
+      
       {
         path: 'createpost',
         element: <CreatePost />,

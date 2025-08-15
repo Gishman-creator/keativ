@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Share2, Mail, Lock, CheckCircle, AlertCircle } from 'lucide-react';
 import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/authSlice';
 import { authApi } from '@/lib/api';
+import api from '@/services/api';
 
 interface LocationState {
   message?: string;
@@ -58,7 +59,19 @@ const Login = () => {
           businessName: response.data.user.profile?.company_name || '',
           isLoggedIn: true
         }));
-        navigate('/dashboard');
+        
+        // Check if this is a first-time login that needs plan selection
+        try {
+          const planResponse = await api.get('/auth/setup/plan-selection/');
+          if (planResponse.data.is_first_login) {
+            navigate('/plan-selection');
+          } else {
+            navigate('/dashboard');
+          }
+        } catch {
+          // If plan selection check fails, just go to dashboard
+          navigate('/dashboard');
+        }
       } else {
         const error = response.error || 'Login failed';
         setErrorMessage(error);

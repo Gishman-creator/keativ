@@ -15,6 +15,8 @@ import {
   Plug,
   Workflow,
   Plus,
+  CreditCard,
+  Building2,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -41,6 +43,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
     { name: 'Integrations', href: '/dashboard/integrations', icon: Plug },
     { name: 'Automations', href: '/dashboard/automations', icon: Workflow },
+    { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
+    { name: 'CRM', href: '/dashboard/crm', icon: Building2 },
   ];
 
   const settingsItem: NavItem = { name: 'Settings', href: '/dashboard/settings', icon: Settings };

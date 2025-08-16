@@ -1,11 +1,13 @@
 # Keativ — React + TypeScript Social Media Management UI (Frontend Only)
 
 ## Project Description
+
 Keativ is a minimalist, flat-design social media management frontend web app inspired by Later.com and Buffer. It allows users to schedule posts, manage media, preview content, and analyze social engagement—all from a clean, intuitive interface. No backend is included; static/mock data only.
 
 ## Core Features (Frontend Only)
 
 ### 📍 Functional Features
+
 - Schedule social media posts via a calendar interface (FullCalendar)
 - View analytics (followers, reach, impressions) using Recharts
 - Create posts per platform with previews
@@ -19,12 +21,14 @@ Keativ is a minimalist, flat-design social media management frontend web app ins
 - Brand wall of tagged posts
 
 ### 🧑‍🤝‍🧑 Collaborator Features
+
 - Invite collaborators (frontend form)
 - Shared calendar view
 - Unlimited collaborators (mock state)
 - Dropdown switcher for “social sets”
 
 ### 🧠 Smart (Mocked AI) Features
+
 - Post timing suggestions
 - Sentiment analysis (display only)
 - Tag locations/users
@@ -36,6 +40,7 @@ Keativ is a minimalist, flat-design social media management frontend web app ins
 ## Routes
 
 ### 🔓 Public Routes
+
 | Page      | Path       | Description                                        |
 |-----------|------------|----------------------------------------------------|
 | Landing   | `/`        | Hero section, call to action, branding            |
@@ -48,6 +53,7 @@ Keativ is a minimalist, flat-design social media management frontend web app ins
 | NotFound  | `*`        | Custom 404 page                                    |
 
 ### 🔒 Private Routes
+
 | Page         | Path           | Description                                      |
 |--------------|----------------|--------------------------------------------------|
 | Dashboard    | `/dashboard`   | Overview of stats, posts, and social sets        |

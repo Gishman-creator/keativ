@@ -496,7 +496,7 @@ const SettingsPage = () => {
                   <div className="flex items-center gap-3">
                     <Download className="h-5 w-5" />
                     <div>
-                      <p className="font-medium">Download Data</p>
+                      <p className="font-medium">Download a copy of your account data</p>
                       <p className="text-sm text-gray-600">Download a copy of your account data</p>
                     </div>
                   </div>

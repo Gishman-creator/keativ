@@ -41,7 +41,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
-    { name: 'Integrations', href: '/dashboard/integrations', icon: Plug },
     { name: 'Automations', href: '/dashboard/automations', icon: Workflow },
     { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
     { name: 'CRM', href: '/dashboard/crm', icon: Building2 },

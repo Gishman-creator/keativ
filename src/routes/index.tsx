@@ -53,6 +53,7 @@ import CRMContactsList from '../components/crm/CRMContactsList';
 
 // Demo page for dialog components
 import DialogsDemoPage from '../pages/private/demo/DialogsDemoPage';
+import Settings from '@/pages/private/Settings';
 
 export const router = createBrowserRouter([
   {
@@ -85,37 +86,38 @@ export const router = createBrowserRouter([
     // ),
     children: [
       { index: true, element: <Dashboard /> },
-  { path: 'planner', element: <Planner /> },
-  { path: 'calendar', element: <Planner /> },
+      { path: 'planner', element: <Planner /> },
+      { path: 'calendar', element: <Planner /> },
       { path: 'calendar/new', element: <CreatePost /> },
       { path: 'analytics', element: <Analytics /> },
       { path: 'analytics/posts/:id', element: <PostAnalyticsPage /> },
-  { path: 'messages', element: <Messages /> },
+      { path: 'messages', element: <Messages /> },
       { path: 'automations', element: <Automations /> },
       { path: 'media', element: <MediaLibrary /> },
       { path: 'influencers', element: <InfluencerDashboardPage /> },
       { path: 'social-sets', element: <SocialSets /> },
-  { path: 'posts', element: <Planner /> },
-  { path: 'posts/new', element: <Posts /> },
-      { path: 'settings', element: <SettingsPage /> },
+      { path: 'posts', element: <Planner /> },
+      { path: 'posts/new', element: <Posts /> },
+      { path: 'settings', element: <Settings /> },
+      { path: 'settingspage', element: <SettingsPage /> },
       { path: 'integrations', element: <IntegrationsPage /> },
       { path: 'integrations/twitter/callback', element: <TwitterCallback /> },
       { path: 'integrations/linkedin/callback', element: <LinkedInCallback /> },
       { path: 'notifications', element: <Notifications /> },
-      
+
       // Billing and subscription routes
       { path: 'billing', element: <EnhancedBillingDashboard /> },
       { path: 'billing/legacy', element: <BillingDashboard /> },
       { path: 'billing/plans', element: <BillingPlanSelection /> },
-      
+
       // CRM routes
       { path: 'crm', element: <CRMDashboard /> },
       { path: 'crm/contacts', element: <CRMContactsList /> },
       { path: 'crm/integration', element: <GoHighLevelIntegration /> },
-      
+
       // Demo routes (development/testing)
       { path: 'demo/dialogs', element: <DialogsDemoPage /> },
-      
+
       {
         path: 'createpost',
         element: <CreatePost />,

@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, ArrowRight, X } from 'lucide-react';
 import { planDetails } from '@/config/billingPlans';
@@ -44,51 +43,48 @@ const Pricing = () => {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-gray-50 to-white py-10">
+      <section className="bg-gradient-to-b from-gray-50 to-white pt-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-heading text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             Simple, Transparent
             <span className="text-red-500"> Pricing</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Choose the plan that fits your needs. Start free and scale as you grow.
             No hidden fees, no commitments.
           </p>
-          <div className="inline-flex items-center bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full">
-            <span>🎉 14-day free trial on all paid plans</span>
-          </div>
         </div>
       </section>
 
       {/* Pricing Cards */}
-      <section className="py-20">
+      <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Billing Period Toggle */}
-          <div className="flex justify-center mb-10">
-            <div className="bg-gray-100 rounded-lg p-1 flex">
+          <div className="relative flex justify-center mb-16 w-fit sm:mx-auto">
+            <div className="p-1 flex">
               <button
                 onClick={() => setDisplayPeriod("monthly")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${displayPeriod === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                className={`px-4 py-2 text-sm font-medium transition-colors ${displayPeriod === "monthly" ? "text-primary border-b-2 border-primary" : "text-gray-600 hover:text-gray-900"
                   }`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setDisplayPeriod("yearly")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${displayPeriod === "yearly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                className={`px-4 py-2 text-sm font-medium transition-colors ${displayPeriod === "yearly" ? "text-primary border-b-2 border-primary" : "text-gray-600 hover:text-gray-900"
                   }`}
               >
                 Yearly
               </button>
             </div>
-            {displayPeriod === "yearly" && (
-              <Badge className="ml-3 shadow-none bg-green-100 text-green-800 hover:bg-green-100">Save up to 20%</Badge>
-            )}
+            <div className={` absolute left-full ml-4 top-1/2 -translate-y-1/2 transform ${displayPeriod === "yearly" ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              <Badge className="shadow-none bg-green-100 text-green-800 hover:bg-green-100 whitespace-nowrap">Save up to 20%</Badge>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative border-0 shadow-sm hover:shadow-lg transition-shadow ${plan.popular ? 'ring-2 ring-red-500 shadow-lg' : ''
+              <div key={index} className={`relative border md:border-0 transition-shadow rounded-lg bg-white p-6 flex flex-col ${plan.popular ? 'ring-2 ring-red-500 shadow-lg' : ''
                 }`}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -98,11 +94,11 @@ const Pricing = () => {
                   </div>
                 )}
 
-                <CardHeader className="text-center pb-8">
-                  <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                  <CardDescription className="text-gray-600 mt-2">
+                <div className="text-center pb-8">
+                  <h3 className="text-2xl font-bold">{plan.name}</h3>
+                  <p className="text-gray-600 mt-2">
                     {plan.description}
-                  </CardDescription>
+                  </p>
                   <div className="mt-6">
                     <span className="text-4xl font-bold text-gray-900">${formatPrice(plan.monthly, plan.yearly).price.toFixed(2)}</span>
                     <span className="text-gray-500 ml-1">/{formatPrice(plan.monthly, plan.yearly).period}</span>
@@ -112,9 +108,9 @@ const Pricing = () => {
                       </div>
                     )}
                   </div>
-                </CardHeader>
+                </div>
 
-                <CardContent className="space-y-6">
+                <div className="flex flex-col justify-between h-full">
                   <div className="space-y-3">
                     {plan.features.map((feature, i) => (
                       <div key={i} className="flex items-center space-x-3">
@@ -124,7 +120,7 @@ const Pricing = () => {
                     ))}
                   </div>
 
-                  <Link to="/signup" className="block">
+                  <Link to="/signup" className="block mt-auto pt-6">
                     <Button
                       className={`w-full ${plan.popular
                         ? 'bg-red-500 hover:bg-red-600 text-white'
@@ -136,8 +132,8 @@ const Pricing = () => {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -160,7 +156,7 @@ const Pricing = () => {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-4 text-left font-medium text-gray-900">Features</th>
+                    <th className="px-6 py-4 text-left font-medium text-gray-900 sticky left-0 bg-gray-50 z-10">Features</th>
                     <th className="px-6 py-4 text-center font-medium text-gray-900">Basic</th>
                     <th className="px-6 py-4 text-center font-medium text-gray-900">Professional</th>
                     <th className="px-6 py-4 text-center font-medium text-gray-900">Enterprise</th>
@@ -178,7 +174,7 @@ const Pricing = () => {
                     { feature: 'Support', basic: 'Email', pro: 'Priority', enterprise: 'Dedicated' }
                   ].map((row, index) => (
                     <tr key={index}>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{row.feature}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">{row.feature}</td>
                       <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.basic === 'string' ? row.basic : row.basic}</td>
                       <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.pro === 'string' ? row.pro : row.pro}</td>
                       <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.enterprise === 'string' ? row.enterprise : row.enterprise}</td>
@@ -210,24 +206,6 @@ const Pricing = () => {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-red-500 py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-heading text-3xl lg:text-4xl font-bold text-white mb-6">
-            Ready to Get Started?
-          </h2>
-          <p className="text-xl text-red-100 mb-8">
-            Join thousands of businesses already using Zenith to grow their social media presence.
-          </p>
-          <Link to="/signup">
-            <Button size="lg" className="bg-white text-red-500 hover:bg-gray-100 px-8 py-3">
-              Start Your Free Trial
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
         </div>
       </section>
     </div>

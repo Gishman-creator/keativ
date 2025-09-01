@@ -182,12 +182,12 @@ const Landing = () => {
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Link to="/signup">
-                  <Button size="lg" className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 text-lg">
+                  <Button size="lg" className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white px-8 py-4 text-lg">
                     Start Free Trial
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="px-8 py-4 text-lg">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 py-4 text-lg">
                   <Play className="mr-2 h-5 w-5" />
                   Watch Demo
                 </Button>

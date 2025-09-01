@@ -3,15 +3,12 @@ import slackLogo from '/integrated apps/slack-logo.png';
 import canvaLogo from '/integrated apps/canva-logo.png';
 import googleDriveLogo from '/integrated apps/google-drive-logo.png';
 import dropboxLogo from '/integrated apps/dropbox-logo.png';
-// Use fallback since zapier logo is not present in public/integrated apps
-import zapierLogo from '/logo.png';
 
 const integrations = [
   { name: 'Slack', logo: slackLogo, description: 'Team Communication', position: 'left-[5%] top-[35%]', rotation: '-rotate-12' },
   { name: 'Canva', logo: canvaLogo, description: 'Graphic Design', position: 'left-[29%] top-[15%]', rotation: '-rotate-3' },
   { name: 'Google Drive', logo: googleDriveLogo, description: 'Cloud Storage', position: 'right-[29%] top-[15%]', rotation: 'rotate-3' },
   { name: 'Dropbox', logo: dropboxLogo, description: 'File Hosting', position: 'right-[5%] top-[35%]', rotation: 'rotate-12' },
-  { name: 'Zapier', logo: zapierLogo, description: 'Workflow Automation', position: 'left-[45%] top-[65%]', rotation: 'rotate-0' },
 ];
 
 const Integrations = () => {

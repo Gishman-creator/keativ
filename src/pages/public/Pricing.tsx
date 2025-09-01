@@ -1,72 +1,26 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight, X } from 'lucide-react';
+import { planDetails } from '@/config/billingPlans';
 
 const Pricing = () => {
+  const [displayPeriod, setDisplayPeriod] = useState<"monthly" | "yearly">("monthly");
+
   const plans = [
-    {
-      name: 'Starter',
-      price: 'Free',
-      period: 'forever',
-      description: 'Perfect for individuals and small creators getting started',
-      features: [
-        '3 social accounts',
-        '10 scheduled posts per month',
-        'Basic analytics',
-        'Email support',
-        'Mobile app access'
-      ],
-      limitations: [
-        'Limited to 1 user',
-        'Basic templates only'
-      ],
-      buttonText: 'Start Free',
-      buttonVariant: 'outline' as const,
-      popular: false
-    },
-    {
-      name: 'Professional',
-      price: '$29',
-      period: 'per month',
-      description: 'For growing businesses and marketing teams',
-      features: [
-        'Unlimited social accounts',
-        'Unlimited scheduled posts',
-        'Advanced analytics & reports',
-        'Team collaboration (5 users)',
-        'Priority support',
-        'Custom branding',
-        'Bulk upload & scheduling',
-        'Hashtag suggestions',
-        'Best time to post insights'
-      ],
-      buttonText: 'Start 14-Day Trial',
-      buttonVariant: 'default' as const,
-      popular: true
-    },
-    {
-      name: 'Enterprise',
-      price: '$99',
-      period: 'per month',
-      description: 'For large organizations with advanced needs',
-      features: [
-        'Everything in Professional',
-        'Unlimited team members',
-        'White-label solution',
-        'Advanced security (SSO, 2FA)',
-        'Custom integrations',
-        'Dedicated account manager',
-        'Advanced approval workflows',
-        'Custom analytics dashboard',
-        '24/7 phone support'
-      ],
-      buttonText: 'Contact Sales',
-      buttonVariant: 'outline' as const,
-      popular: false
-    }
+    planDetails.basic,
+    planDetails.professional,
+    planDetails.enterprise,
   ];
+
+  const formatPrice = (monthly: number, yearly: number) => {
+    if (displayPeriod === "monthly") {
+      return { price: monthly, period: "month" }
+    }
+    return { price: yearly, period: "year" }
+  }
 
   const faqs = [
     {
@@ -90,14 +44,14 @@ const Pricing = () => {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-gray-50 to-white py-20">
+      <section className="bg-gradient-to-b from-gray-50 to-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="font-heading text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
             Simple, Transparent
             <span className="text-red-500"> Pricing</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Choose the plan that fits your needs. Start free and scale as you grow. 
+            Choose the plan that fits your needs. Start free and scale as you grow.
             No hidden fees, no commitments.
           </p>
           <div className="inline-flex items-center bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full">
@@ -109,11 +63,33 @@ const Pricing = () => {
       {/* Pricing Cards */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Billing Period Toggle */}
+          <div className="flex justify-center mb-10">
+            <div className="bg-gray-100 rounded-lg p-1 flex">
+              <button
+                onClick={() => setDisplayPeriod("monthly")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${displayPeriod === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                  }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setDisplayPeriod("yearly")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${displayPeriod === "yearly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                  }`}
+              >
+                Yearly
+              </button>
+            </div>
+            {displayPeriod === "yearly" && (
+              <Badge className="ml-3 shadow-none bg-green-100 text-green-800 hover:bg-green-100">Save up to 20%</Badge>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative border-0 shadow-sm hover:shadow-lg transition-shadow ${
-                plan.popular ? 'ring-2 ring-red-500 shadow-lg' : ''
-              }`}>
+              <Card key={index} className={`relative border-0 shadow-sm hover:shadow-lg transition-shadow ${plan.popular ? 'ring-2 ring-red-500 shadow-lg' : ''
+                }`}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <Badge className="bg-red-500 text-white px-4 py-1">
@@ -121,20 +97,23 @@ const Pricing = () => {
                     </Badge>
                   </div>
                 )}
-                
+
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                   <CardDescription className="text-gray-600 mt-2">
                     {plan.description}
                   </CardDescription>
                   <div className="mt-6">
-                    <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                    {plan.period && (
-                      <span className="text-gray-500 ml-1">/{plan.period}</span>
+                    <span className="text-4xl font-bold text-gray-900">${formatPrice(plan.monthly, plan.yearly).price.toFixed(2)}</span>
+                    <span className="text-gray-500 ml-1">/{formatPrice(plan.monthly, plan.yearly).period}</span>
+                    {displayPeriod === "yearly" && (
+                      <div className="text-sm mt-1 text-gray-500">
+                        ${(plan.yearly / 12).toFixed(2)}/month billed annually
+                      </div>
                     )}
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="space-y-6">
                   <div className="space-y-3">
                     {plan.features.map((feature, i) => (
@@ -143,25 +122,15 @@ const Pricing = () => {
                         <span className="text-sm text-gray-700">{feature}</span>
                       </div>
                     ))}
-                    
-                    {plan.limitations && plan.limitations.map((limitation, i) => (
-                      <div key={i} className="flex items-center space-x-3 opacity-60">
-                        <div className="h-5 w-5 flex-shrink-0 flex items-center justify-center">
-                          <div className="h-1 w-3 bg-gray-300 rounded"></div>
-                        </div>
-                        <span className="text-sm text-gray-500">{limitation}</span>
-                      </div>
-                    ))}
                   </div>
-                  
+
                   <Link to="/signup" className="block">
-                    <Button 
-                      className={`w-full ${
-                        plan.popular 
-                          ? 'bg-red-500 hover:bg-red-600 text-white' 
-                          : ''
-                      }`}
-                      variant={plan.buttonVariant}
+                    <Button
+                      className={`w-full ${plan.popular
+                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                        : ''
+                        }`}
+                      variant={plan.popular ? 'default' : 'outline'}
                     >
                       {plan.buttonText}
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -185,31 +154,34 @@ const Pricing = () => {
               See what's included in each plan
             </p>
           </div>
-          
+
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-4 text-left font-medium text-gray-900">Features</th>
-                    <th className="px-6 py-4 text-center font-medium text-gray-900">Starter</th>
+                    <th className="px-6 py-4 text-center font-medium text-gray-900">Basic</th>
                     <th className="px-6 py-4 text-center font-medium text-gray-900">Professional</th>
                     <th className="px-6 py-4 text-center font-medium text-gray-900">Enterprise</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {[
-                    { feature: 'Social Accounts', starter: '3', pro: 'Unlimited', enterprise: 'Unlimited' },
-                    { feature: 'Team Members', starter: '1', pro: '5', enterprise: 'Unlimited' },
-                    { feature: 'Scheduled Posts', starter: '10/month', pro: 'Unlimited', enterprise: 'Unlimited' },
-                    { feature: 'Analytics', starter: 'Basic', pro: 'Advanced', enterprise: 'Custom Dashboard' },
-                    { feature: 'Support', starter: 'Email', pro: 'Priority', enterprise: '24/7 Phone' }
+                    { feature: 'Social Accounts', basic: '5', pro: '15', enterprise: 'Unlimited' },
+                    { feature: 'Scheduled Posts', basic: '100/month', pro: 'Unlimited', enterprise: 'Unlimited' },
+                    { feature: 'Analytics', basic: 'Basic (90 days)', pro: 'Advanced (1 year)', enterprise: 'Advanced (Unlimited)' },
+                    { feature: 'Team Members', basic: '2', pro: '10', enterprise: 'Unlimited' },
+                    { feature: 'GoHighLevel Integration', basic: <X className="h-5 w-5 text-gray-400 mx-auto" />, pro: <Check className="h-5 w-5 text-green-500 mx-auto" />, enterprise: <Check className="h-5 w-5 text-green-500 mx-auto" /> },
+                    { feature: 'API Access', basic: <X className="h-5 w-5 text-gray-400 mx-auto" />, pro: <Check className="h-5 w-5 text-green-500 mx-auto" />, enterprise: <Check className="h-5 w-5 text-green-500 mx-auto" /> },
+                    { feature: 'White Label', basic: <X className="h-5 w-5 text-gray-400 mx-auto" />, pro: <X className="h-5 w-5 text-gray-400 mx-auto" />, enterprise: <Check className="h-5 w-5 text-green-500 mx-auto" /> },
+                    { feature: 'Support', basic: 'Email', pro: 'Priority', enterprise: 'Dedicated' }
                   ].map((row, index) => (
                     <tr key={index}>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">{row.feature}</td>
-                      <td className="px-6 py-4 text-sm text-center text-gray-700">{row.starter}</td>
-                      <td className="px-6 py-4 text-sm text-center text-gray-700">{row.pro}</td>
-                      <td className="px-6 py-4 text-sm text-center text-gray-700">{row.enterprise}</td>
+                      <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.basic === 'string' ? row.basic : row.basic}</td>
+                      <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.pro === 'string' ? row.pro : row.pro}</td>
+                      <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.enterprise === 'string' ? row.enterprise : row.enterprise}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -227,7 +199,7 @@ const Pricing = () => {
               Frequently Asked Questions
             </h2>
           </div>
-          
+
           <div className="space-y-8">
             {faqs.map((faq, index) => (
               <div key={index} className="border-b border-gray-200 pb-8">

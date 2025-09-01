@@ -10,39 +10,61 @@ import {
   Users,
   Layers,
   Settings,
-  ChevronLeft,
-  ChevronRight,
   Plug,
   Workflow,
   Plus,
   CreditCard,
   Building2,
 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface SidebarProps {
   isCollapsed: boolean;
-  onToggle: () => void;
   className?: string;
 }
 
 type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; badge?: number };
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed: propIsCollapsed, className }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(!propIsCollapsed);
+  const [isHovered, setIsHovered] = useState(false); // Re-introduce isHovered state
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Determine the effective collapsed state
+  const isCollapsed = !isExpanded;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node) && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+
+    if (isExpanded) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
 
   const navItems: NavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Planner', href: '/dashboard/planner', icon: Calendar },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-    { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle
+    {
+      name: 'Messages', href: '/dashboard/messages', icon: MessageCircle
       // , badge: 2
-     },
+    },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
     { name: 'Automations', href: '/dashboard/automations', icon: Workflow },
-    { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
     { name: 'CRM', href: '/dashboard/crm', icon: Building2 },
   ];
 
@@ -56,11 +78,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
   const renderLink = (item: NavItem) => {
     const Icon = item.icon;
     const active = isItemActive(item.href);
-  const isPlanner = item.href === '/dashboard/planner';
+    const isPlanner = item.href === '/dashboard/planner';
     return (
       <div key={item.name} className={cn('flex items-center', isCollapsed ? 'justify-center' : '')}>
         <Link
           to={item.href}
+          onClick={() => {
+            setIsExpanded(false); // Collapse sidebar on tab click if expanded
+          }}
           className={cn(
             'flex items-center w-full text-sm font-medium transition-colors mx-auto',
             isCollapsed
@@ -83,9 +108,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
             </span>
           )}
         </Link>
-    {!isCollapsed && isPlanner && (
+        {!isCollapsed && isPlanner && (
           <button
-      onClick={() => navigate('/dashboard/posts/new')}
+            onClick={() => navigate('/dashboard/posts/new')}
             className="ml-2 inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
             aria-label="Create post"
             title="Create post"
@@ -98,24 +123,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle, className }) =
   };
 
   return (
-    <div className={cn(`bg-gray-50 ${isCollapsed ? 'w-20' : 'w-64'} h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-gray-200 transition-all duration-300 z-40 flex flex-col `, className)}>
-      {/* Toggle Button */}
-      <div className="absolute -right-3 top-6 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onToggle}
-          className="w-6 h-6 p-0 rounded-full border shadow-md"
-        >
-          {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
-        </Button>
-      </div>
-
+    <div
+      ref={sidebarRef}
+      className={cn(
+        `bg-gray-50 ${isCollapsed ? 'w-20' : 'w-64'} h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-gray-200 transition-all duration-300 z-40 flex flex-col group`,
+        className
+      )}
+      onClick={() => setIsExpanded(!isExpanded)} // Toggle sidebar expansion on click
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ cursor: isHovered ? 'ew-resize' : 'default' }}
+    >
       <div className="flex-1 flex flex-col p-4 gap-2">
         <nav className="w-full flex-1 space-y-2 overflow-y-auto pr-1">
-          {navItems.map((item) => renderLink(item))}
+          {navItems.map((item) => (
+            <div key={item.name} onClick={(e) => e.stopPropagation()}> {/* Removed e.stopPropagation() */}
+              {renderLink(item)}
+            </div>
+          ))}
         </nav>
-        <div className="w-full shrink-0 pt-2 border-t border-gray-200">
+        <div className="w-full shrink-0 pt-2 border-t border-gray-200" onClick={(e) => e.stopPropagation()}> {/* Collapse sidebar on settings click if expanded */}
           {renderLink(settingsItem)}
         </div>
       </div>

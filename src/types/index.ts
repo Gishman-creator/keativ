@@ -186,3 +186,23 @@ export interface Collaborator {
   avatar?: string;
   lastActive: Date;
 }
+
+export interface SubscriptionTier {
+  id: string;
+  name: string;
+  display_name: string;
+  description: string;
+  price_monthly: number;
+  price_yearly: number;
+  features: {
+    max_social_accounts: number;
+    max_scheduled_posts: number;
+    max_team_members: number;
+    analytics_retention_days: number;
+    api_rate_limit: number;
+    gohighlevel_integration: boolean;
+    advanced_analytics: boolean;
+    priority_support: boolean;
+    white_label: boolean;
+  };
+}

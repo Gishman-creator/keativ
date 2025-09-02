@@ -28,7 +28,7 @@ const PublicNavBar= () => {
             </Link>
           </div>
           
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <div className="ml-10 flex items-baseline space-x-8">
               {navItems.map((item) => (
                 <Link
@@ -46,7 +46,7 @@ const PublicNavBar= () => {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             <Link to="/login">
               <Button variant="ghost" className="text-gray-700 hover:text-red-500">
                 Login
@@ -59,7 +59,7 @@ const PublicNavBar= () => {
             </Link>
           </div>
           <Sheet>
-            <SheetTrigger asChild className="md:hidden">
+            <SheetTrigger asChild className="lg:hidden">
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
               </Button>

@@ -42,7 +42,6 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isCollapsed, onToggle }) 
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
-    { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
   ];
 

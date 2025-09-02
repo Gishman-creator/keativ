@@ -1,18 +1,134 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, ArrowRight, X } from 'lucide-react';
-import { planDetails } from '@/config/billingPlans';
+import { API_ENDPOINTS } from '@/config/constants';
+import { api } from '@/lib/api'; // Import the api client
+
+interface Feature {
+  max_social_accounts: number;
+  max_scheduled_posts: number;
+  max_team_members: number;
+  analytics_retention_days: number;
+  api_rate_limit: number;
+  gohighlevel_integration: boolean;
+  advanced_analytics: boolean;
+  priority_support: boolean;
+  white_label: boolean;
+}
+
+interface Tier {
+  id: string;
+  name: string;
+  display_name: string;
+  description: string;
+  price_monthly: number;
+  price_yearly: number;
+  features: Feature;
+}
+
+interface SubscriptionTiersResponse {
+  success: boolean;
+  tiers: Tier[];
+}
 
 const Pricing = () => {
   const [displayPeriod, setDisplayPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [tiers, setTiers] = useState<Tier[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const plans = [
-    planDetails.basic,
-    planDetails.professional,
-    planDetails.enterprise,
-  ];
+  useEffect(() => {
+    const fetchSubscriptionTiers = async () => {
+      try {
+        const response = await api.getSubscriptionTiers<SubscriptionTiersResponse>();
+        if (response.success && response.data) {
+          setTiers(response.data.tiers);
+        } else {
+          throw new Error(response.error || 'Failed to fetch subscription tiers');
+        }
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscriptionTiers();
+  }, []);
+
+  const SkeletonCard = () => (
+    <div className="relative border md:border-0 transition-shadow rounded-lg bg-white p-6 flex flex-col animate-pulse">
+      <div className="text-center pb-8">
+        <div className="h-6 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
+        <div className="h-4 bg-gray-200 rounded w-full mb-6"></div>
+        <div className="h-10 bg-gray-200 rounded w-1/2 mx-auto"></div>
+      </div>
+      <div className="flex flex-col justify-between h-full">
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-3">
+              <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+              <div className="h-4 w-2/3 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+        <div className="block mt-auto pt-14">
+          <div className="h-10 bg-gray-200 rounded w-full mx-auto"></div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const SkeletonTable = () => (
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden animate-pulse">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-4 text-left font-medium text-gray-900 sticky left-0 bg-gray-50 z-10">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              </th>
+              <th className="px-6 py-4 text-center font-medium text-gray-900">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+              </th>
+              <th className="px-6 py-4 text-center font-medium text-gray-900">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+              </th>
+              <th className="px-6 py-4 text-center font-medium text-gray-900">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {[...Array(8)].map((_, rowIndex) => (
+              <tr key={rowIndex}>
+                <td className="px-6 py-4 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                </td>
+                <td className="px-6 py-4 text-sm text-center text-gray-700">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                </td>
+                <td className="px-6 py-4 text-sm text-center text-gray-700">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                </td>
+                <td className="px-6 py-4 text-sm text-center text-gray-700">
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  if (error) {
+    return <div className="text-center py-20 text-red-500">Error: {error}</div>;
+  }
+
+  const plans = tiers; // Use fetched tiers as plans
 
   const formatPrice = (monthly: number, yearly: number) => {
     if (displayPeriod === "monthly") {
@@ -49,93 +165,97 @@ const Pricing = () => {
             Simple, Transparent
             <span className="text-red-500"> Pricing</span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Choose the plan that fits your needs. Start free and scale as you grow.
             No hidden fees, no commitments.
           </p>
+          <div className="inline-flex items-center bg-green-100 text-green-800 text-sm font-medium px-4 py-2 rounded-full mb-10">
+            <span>🎉 14-day free trial on all plans</span>
+          </div>
         </div>
       </section>
 
       {/* Pricing Cards */}
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Billing Period Toggle */}
-          <div className="relative flex justify-center mb-16 w-fit sm:mx-auto">
-            <div className="p-1 flex">
-              <button
-                onClick={() => setDisplayPeriod("monthly")}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${displayPeriod === "monthly" ? "text-primary border-b-2 border-primary" : "text-gray-600 hover:text-gray-900"
-                  }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setDisplayPeriod("yearly")}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${displayPeriod === "yearly" ? "text-primary border-b-2 border-primary" : "text-gray-600 hover:text-gray-900"
-                  }`}
-              >
-                Yearly
-              </button>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </div>
-            <div className={` absolute left-full ml-4 top-1/2 -translate-y-1/2 transform ${displayPeriod === "yearly" ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-              <Badge className="shadow-none bg-green-100 text-green-800 hover:bg-green-100 whitespace-nowrap">Save up to 20%</Badge>
-            </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+              {plans.map((plan, index) => (
+                <div key={index} className={`relative border md:border-0 transition-shadow rounded-lg bg-white p-6 flex flex-col ${plan.name === 'professional' ? 'ring-2 ring-red-500 shadow-lg' : ''
+                  }`}>
+                  {plan.name === 'professional' && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <Badge className="bg-red-500 text-white px-4 py-1">
+                        Most Popular
+                      </Badge>
+                    </div>
+                  )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
-            {plans.map((plan, index) => (
-              <div key={index} className={`relative border md:border-0 transition-shadow rounded-lg bg-white p-6 flex flex-col ${plan.popular ? 'ring-2 ring-red-500 shadow-lg' : ''
-                }`}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-red-500 text-white px-4 py-1">
-                      Most Popular
-                    </Badge>
+                  <div className="text-center pb-8">
+                    <h3 className="text-2xl font-bold">{plan.display_name}</h3>
+                    <p className="text-gray-600 mt-2">
+                      {plan.description}
+                    </p>
+                    <div className="mt-6">
+                      <span className="text-4xl font-bold text-gray-900">${plan.price_monthly.toFixed(2)}</span>
+                      <span className="text-gray-500 ml-1">/month</span>
+                    </div>
                   </div>
-                )}
 
-                <div className="text-center pb-8">
-                  <h3 className="text-2xl font-bold">{plan.name}</h3>
-                  <p className="text-gray-600 mt-2">
-                    {plan.description}
-                  </p>
-                  <div className="mt-6">
-                    <span className="text-4xl font-bold text-gray-900">${formatPrice(plan.monthly, plan.yearly).price.toFixed(2)}</span>
-                    <span className="text-gray-500 ml-1">/{formatPrice(plan.monthly, plan.yearly).period}</span>
-                    {displayPeriod === "yearly" && (
-                      <div className="text-sm mt-1 text-gray-500">
-                        ${(plan.yearly / 12).toFixed(2)}/month billed annually
-                      </div>
-                    )}
+                  <div className="flex flex-col justify-between h-full">
+                    <div className="space-y-3">
+                      {Object.entries(plan.features).map(([key, value], i) => {
+                        if (typeof value === 'boolean' && !value) return null;
+
+                        let featureText = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        let displayValue: React.ReactNode = '';
+
+                        if (typeof value === 'boolean') {
+                          if (value) {
+                            displayValue = featureText;
+                          } else {
+                            return null;
+                          }
+                        } else if (value === -1) {
+                          displayValue = `Unlimited ${featureText.replace('Max ', '')}`;
+                        } else {
+                          displayValue = `${value} ${featureText.replace('Max ', '')}`;
+                        }
+
+                        return (
+                          <div key={i} className="flex items-center space-x-3">
+                            <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                            <span className="text-sm text-gray-700">
+                              {displayValue}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <Link to="/signup" className="block mt-auto pt-6">
+                      <Button
+                        className={`w-full ${plan.name === 'professional'
+                          ? 'bg-red-500 hover:bg-red-600 text-white'
+                          : ''
+                          }`}
+                        variant={plan.name === 'professional' ? 'default' : 'outline'}
+                      >
+                        Start {plan.display_name}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-
-                <div className="flex flex-col justify-between h-full">
-                  <div className="space-y-3">
-                    {plan.features.map((feature, i) => (
-                      <div key={i} className="flex items-center space-x-3">
-                        <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <span className="text-sm text-gray-700">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Link to="/signup" className="block mt-auto pt-6">
-                    <Button
-                      className={`w-full ${plan.popular
-                        ? 'bg-red-500 hover:bg-red-600 text-white'
-                        : ''
-                        }`}
-                      variant={plan.popular ? 'default' : 'outline'}
-                    >
-                      {plan.buttonText}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -151,39 +271,54 @@ const Pricing = () => {
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left font-medium text-gray-900 sticky left-0 bg-gray-50 z-10">Features</th>
-                    <th className="px-6 py-4 text-center font-medium text-gray-900">Basic</th>
-                    <th className="px-6 py-4 text-center font-medium text-gray-900">Professional</th>
-                    <th className="px-6 py-4 text-center font-medium text-gray-900">Enterprise</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {[
-                    { feature: 'Social Accounts', basic: '5', pro: '15', enterprise: 'Unlimited' },
-                    { feature: 'Scheduled Posts', basic: '100/month', pro: 'Unlimited', enterprise: 'Unlimited' },
-                    { feature: 'Analytics', basic: 'Basic (90 days)', pro: 'Advanced (1 year)', enterprise: 'Advanced (Unlimited)' },
-                    { feature: 'Team Members', basic: '2', pro: '10', enterprise: 'Unlimited' },
-                    { feature: 'GoHighLevel Integration', basic: <X className="h-5 w-5 text-gray-400 mx-auto" />, pro: <Check className="h-5 w-5 text-green-500 mx-auto" />, enterprise: <Check className="h-5 w-5 text-green-500 mx-auto" /> },
-                    { feature: 'API Access', basic: <X className="h-5 w-5 text-gray-400 mx-auto" />, pro: <Check className="h-5 w-5 text-green-500 mx-auto" />, enterprise: <Check className="h-5 w-5 text-green-500 mx-auto" /> },
-                    { feature: 'White Label', basic: <X className="h-5 w-5 text-gray-400 mx-auto" />, pro: <X className="h-5 w-5 text-gray-400 mx-auto" />, enterprise: <Check className="h-5 w-5 text-green-500 mx-auto" /> },
-                    { feature: 'Support', basic: 'Email', pro: 'Priority', enterprise: 'Dedicated' }
-                  ].map((row, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">{row.feature}</td>
-                      <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.basic === 'string' ? row.basic : row.basic}</td>
-                      <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.pro === 'string' ? row.pro : row.pro}</td>
-                      <td className="px-6 py-4 text-sm text-center text-gray-700">{typeof row.enterprise === 'string' ? row.enterprise : row.enterprise}</td>
+          {loading ? (
+            <SkeletonTable />
+          ) : (
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left font-medium text-gray-900 sticky left-0 bg-gray-50 z-10">Features</th>
+                      {plans.map((plan, index) => (
+                        <th key={index} className="px-6 py-4 text-center font-medium text-gray-900">{plan.display_name}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {Object.keys(plans[0]?.features || {}).map((featureKey, index) => {
+                      const featureName = featureKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      return (
+                        <tr key={index}>
+                          <td className="px-6 py-4 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
+                            {featureName}
+                          </td>
+                          {plans.map((plan, planIndex) => {
+                            const featureValue = plan.features[featureKey as keyof Feature];
+                            let displayValue: React.ReactNode;
+
+                            if (typeof featureValue === 'boolean') {
+                              displayValue = featureValue ? <Check className="h-5 w-5 text-green-500 mx-auto" /> : <X className="h-5 w-5 text-gray-400 mx-auto" />;
+                            } else if (featureValue === -1) {
+                              displayValue = 'Unlimited';
+                            } else {
+                              displayValue = featureValue;
+                            }
+
+                            return (
+                              <td key={planIndex} className="px-6 py-4 text-sm text-center text-gray-700">
+                                {displayValue}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

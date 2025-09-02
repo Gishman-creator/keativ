@@ -62,7 +62,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed: propIsCollapsed, classNa
       // , badge: 2
     },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
-    { name: 'Influencers', href: '/dashboard/influencers', icon: Users },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
     { name: 'Automations', href: '/dashboard/automations', icon: Workflow },
     { name: 'CRM', href: '/dashboard/crm', icon: Building2 },
@@ -142,7 +141,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed: propIsCollapsed, classNa
             </div>
           ))}
         </nav>
-        <div className="w-full shrink-0 pt-2 border-t border-gray-200" onClick={(e) => e.stopPropagation()}> {/* Collapse sidebar on settings click if expanded */}
+        <div className="w-full shrink-0 pt-2 border-gray-200" onClick={(e) => e.stopPropagation()}> {/* Collapse sidebar on settings click if expanded */}
           {renderLink(settingsItem)}
         </div>
       </div>

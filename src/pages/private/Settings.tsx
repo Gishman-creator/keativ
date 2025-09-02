@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom'; // Import useNavigate and useLocation
 import Profile from '@/components/influencer-dashboard/settings/Profile';
 import Notifications from '@/components/influencer-dashboard/settings/Notifications';
 import Billing from '@/components/influencer-dashboard/settings/Billing';
@@ -32,6 +33,8 @@ const sidebarTabMap = {
 };
 
 const Settings = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [notificationSettings, setNotificationSettings] = useState({
     newsAndUpdates: true,
@@ -49,7 +52,33 @@ const Settings = () => {
     }));
   };
 
-  const [activeSidebarKey, setActiveSidebarKey] = useState<keyof typeof sidebarTabMap>('account');
+  const getTabFromUrl = () => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab && Object.values(sidebarTabMap).includes(tab)) {
+      const key = (Object.keys(sidebarTabMap) as Array<keyof typeof sidebarTabMap>).find(
+        (k) => sidebarTabMap[k] === tab
+      );
+      return key || 'account';
+    }
+    return 'account';
+  };
+
+  const [activeSidebarKey, setActiveSidebarKey] = useState<keyof typeof sidebarTabMap>(getTabFromUrl());
+
+  useEffect(() => {
+    const tab = sidebarTabMap[activeSidebarKey];
+    navigate(`?tab=${tab}`, { replace: true });
+  }, [activeSidebarKey, navigate]);
+
+  useEffect(() => {
+    setActiveSidebarKey(getTabFromUrl());
+  }, [location.search]);
+
+  const handleSidebarSelect = (key: keyof typeof sidebarTabMap) => {
+    setActiveSidebarKey(key);
+  };
+
   const activeTab = sidebarTabMap[activeSidebarKey] || 'profile';
 
   return (
@@ -61,10 +90,10 @@ const Settings = () => {
           <p className="text-gray-600 text-sm">Customize until match to your workflows</p>
         </div>
       </div>
-      <SettingsTopNav activeKey={activeSidebarKey} onSelect={(key) => setActiveSidebarKey(key as keyof typeof sidebarTabMap)} />
+      <SettingsTopNav activeKey={activeSidebarKey as string} onSelect={handleSidebarSelect as (key: string) => void} />
       <div className="flex min-h-[calc(100vh-14rem)]">
         <div className="sticky top-0 h-full hidden md:block">
-          <SettingsSidebar activeKey={activeSidebarKey} onSelect={(key) => setActiveSidebarKey(key as keyof typeof sidebarTabMap)} />
+          <SettingsSidebar activeKey={activeSidebarKey as string} onSelect={handleSidebarSelect as (key: string) => void} />
         </div>
         <main className="flex-1 overflow-y-auto border-l border-gray-200">
           <div className="mx-auto px-6 py-8">

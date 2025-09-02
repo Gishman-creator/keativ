@@ -1,61 +1,16 @@
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Check, X, Calendar, AlertTriangle, Users, UserPlus } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { CircularProgress } from "@/components/ui/circular-progress"
-
-// Define the full plan details outside the component
-const planDetails = {
-  basic: {
-    name: "Basic Plan",
-    description: "Suitable plan for starter business",
-    monthly: 9.99,
-    yearly: (9.99 * 12 * 0.8), // 20% off yearly
-    features: [
-      "5 Social Accounts",
-      "100 Scheduled Posts/month",
-      "Basic Analytics (90 days)",
-      "2 Team Members",
-    ],
-  },
-  professional: {
-    name: "Professional Plan",
-    description: "Best plan for growing businesses",
-    monthly: 14.99,
-    yearly: (14.99 * 12 * 0.8), // 20% off yearly
-    features: [
-      "15 Social Accounts",
-      "Unlimited Scheduled Posts",
-      "Advanced Analytics (1 year)",
-      "10 Team Members",
-      "GoHighLevel Integration",
-      "API Access",
-      "Priority Support",
-    ],
-  },
-  enterprise: {
-    name: "Enterprise Plan",
-    description: "Comprehensive solution for large enterprises",
-    monthly: 19.99,
-    yearly: (19.99 * 12 * 0.8), // 20% off yearly
-    features: [
-      "Unlimited Social Accounts",
-      "Unlimited Scheduled Posts",
-      "Advanced Analytics (Unlimited)",
-      "Unlimited Team Members",
-      "GoHighLevel Integration",
-      "API Access",
-      "White Label",
-      "Dedicated Support",
-    ],
-  },
-};
+import { api } from "@/lib/api"
+import { SubscriptionTier } from "@/types"
 
 interface BillingData {
-  currentPlanName: keyof typeof planDetails;
-  currentPlanPeriod: "monthly" | "yearly"; // Add this to track the active plan's period
+  currentPlanName: string; // Changed to string as it will come from API
+  currentPlanPeriod: "monthly" | "yearly";
   nextBilling: string;
   billingHistory: {
     id: string;
@@ -67,9 +22,28 @@ interface BillingData {
 }
 
 const Billing: React.FC = () => {
-  const [displayPeriod, setDisplayPeriod] = useState<"monthly" | "yearly">("monthly");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<"billingHistory" | "usageAndLimits">("billingHistory");
+  const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSubscriptionTiers = async () => {
+      setIsLoading(true);
+      setError(null);
+      const response = await api.getSubscriptionTiers<{ tiers: SubscriptionTier[] }>();
+      if (response.success && response.data && Array.isArray(response.data.tiers)) {
+        setTiers(response.data.tiers);
+      } else {
+        setError(response.error || "Failed to fetch subscription tiers or invalid data format.");
+        setTiers([]); // Ensure tiers is an empty array on error
+      }
+      setIsLoading(false);
+    };
+
+    fetchSubscriptionTiers();
+  }, []);
 
   // Hardcoded initial billing data for now, could be fetched from an API
   const initialBillingInfo: BillingData = {
@@ -82,20 +56,14 @@ const Billing: React.FC = () => {
     ],
   };
 
-  const currentPlanDetails = planDetails[initialBillingInfo.currentPlanName];
-
-  const plans = [
-    planDetails.basic,
-    planDetails.professional,
-    planDetails.enterprise,
-  ];
-
-  const formatPrice = (monthly: number, yearly: number) => {
-    if (displayPeriod === "monthly") {
-      return { price: monthly, period: "monthly" }
-    }
-    return { price: yearly, period: "yearly" }
+  const formatPrice = (monthly: number) => {
+    return { price: monthly, period: "monthly" }
   }
+
+  // Find the current plan details from the fetched tiers, only when tiers is available
+  const currentPlanDetails = tiers.length > 0 
+    ? tiers.find(tier => tier.name.toLowerCase().includes(initialBillingInfo.currentPlanName)) 
+    : null;
 
   return (
     <div className="space-y-8">
@@ -105,130 +73,148 @@ const Billing: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-1">Current Subscription</h3>
-            <p className="text-gray-600">You are currently on the {currentPlanDetails.name}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Billing period: {initialBillingInfo.currentPlanPeriod === "monthly" ? "Monthly" : "Yearly"}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">Next payment: {initialBillingInfo.nextBilling}</span>
+            {isLoading ? (
+              <div className="h-4 bg-gray-200 rounded w-48 animate-pulse"></div>
+            ) : (
+              <p className="text-gray-600">You are currently on the {currentPlanDetails?.display_name || 'N/A'}</p>
+            )}
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
-          {/* Billing Period Toggle */}
-          <div className="flex items-center mb-4 sm:mb-0">
-            <div className="bg-gray-100 rounded-lg p-1 flex">
-              <button
-                onClick={() => setDisplayPeriod("monthly")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${displayPeriod === "monthly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-                  }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setDisplayPeriod("yearly")}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${displayPeriod === "yearly" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-                  }`}
-              >
-                Yearly
-              </button>
+        <div className="flex flex-col sm:flex-row items-center justify-between">
+          <div className="flex items-center justify-between w-full gap-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-gray-500" />
+              <span className="text-sm text-gray-600">Next payment: {initialBillingInfo.nextBilling}</span>
             </div>
-            {displayPeriod === "yearly" && (
-              <Badge className="ml-3 shadow-none bg-green-100 text-green-800 hover:bg-green-100">Save up to 20%</Badge>
-            )}
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelDialog(true)}
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel Subscription
+            </Button>
           </div>
-
-          {/* Cancel Subscription Button */}
-          <Button
-            variant="outline"
-            onClick={() => setShowCancelDialog(true)}
-            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Cancel Subscription
-          </Button>
         </div>
       </div>
 
+      {error && (
+        <div className="text-red-500 text-center">{error}</div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {plans.map((plan, planIndex) => {
-          const isActivePlan = initialBillingInfo.currentPlanName === plan.name.toLowerCase().replace(' plan', '') && initialBillingInfo.currentPlanPeriod === displayPeriod;
-          return (
-            <div
-              key={plan.name}
-              className={`rounded-lg p-6 flex flex-col ${isActivePlan
-                ? "bg-secondary text-white"
-                : "bg-white border border-gray-200"
-                }`}
-            >
-              <h3
-                className={`text-lg font-semibold mb-2 ${isActivePlan ? "text-white" : "text-gray-900"
-                  }`}
-              >
-                {plan.name}
-              </h3>
-              <p
-                className={`text-sm mb-4 ${isActivePlan ? "text-secondary-foreground" : "text-gray-600"
-                  }`}
-              >
-                {plan.description}
-              </p>
+        {isLoading ? (
+          // Skeleton Loader
+          Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="rounded-lg p-6 flex flex-col bg-white border border-gray-200 animate-pulse">
+              {/* Title */}
+              <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+              {/* Description */}
+              <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
+              {/* Price */}
               <div className="mb-6">
-                <span
-                  className={`text-3xl font-bold ${isActivePlan ? "text-white" : "text-gray-900"
-                    }`}
-                >
-                  ${formatPrice(plan.monthly, plan.yearly).price.toFixed(2)}
-                </span>
-                <span
-                  className={`ml-1 ${isActivePlan ? "text-secondary-foreground" : "text-gray-600"
-                    }`}
-                >
-                  /{formatPrice(plan.monthly, plan.yearly).period}
-                </span>
-                {displayPeriod === "yearly" && (
-                  <div
-                    className={`text-sm mt-1 ${isActivePlan ? "text-secondary-foreground" : "text-gray-500"
-                      }`}
-                  >
-                    ${(plan.yearly / 12).toFixed(2)}/month billed annually
-                  </div>
-                )}
+                <div className="h-10 bg-gray-200 rounded w-1/2"></div>
               </div>
-              <div className="flex-grow"> {/* This div will push the button to the bottom */}
-                <ul className="space-y-3 mb-6">
-                  {plan.features.map((feature, index) => (
-                    <li
-                      key={index}
-                      className={`flex items-center text-sm ${isActivePlan ? "text-secondary-foreground" : "text-gray-600"
-                        }`}
-                    >
-                      <Check
-                        className={`w-4 h-4 mr-3 ${isActivePlan ? "text-white" : "text-green-500"
-                          }`}
-                      />
-                      {feature}
+              {/* Features list */}
+              <div className="flex-grow">
+                <ul className="space-y-3 mt-6">
+                  {Array.from({ length: 6 }).map((_, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center text-sm">
+                      <Check className="w-4 h-4 mr-3 text-gray-300" />
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="mt-auto"> {/* This div ensures the button is at the bottom */}
-                {isActivePlan ? (
-                  <Button className="w-full bg-white text-secondary hover:bg-gray-100">Active plan</Button>
-                ) : (
-                  <Button variant="outline" className="w-full bg-transparent">
-                    Choose Plan
-                  </Button>
-                )}
+              {/* Button */}
+              <div className="mt-10">
+                <div className="h-10 bg-gray-200 rounded w-full"></div>
               </div>
             </div>
-          );
-        })}
+          ))
+        ) : (
+          tiers.map((plan) => {
+            const isActivePlan = currentPlanDetails?.name === plan.name;
+            const featuresList = [
+              `${plan.features.max_social_accounts === -1 ? 'Unlimited' : plan.features.max_social_accounts} Social Accounts`,
+              `${plan.features.max_scheduled_posts === -1 ? 'Unlimited' : plan.features.max_scheduled_posts} Scheduled Posts`,
+              `${plan.features.max_team_members === -1 ? 'Unlimited' : plan.features.max_team_members} Team Members`,
+              `${plan.features.analytics_retention_days === -1 ? 'Unlimited' : `${plan.features.analytics_retention_days}`} Analytics Retention Days`,
+              `${plan.features.api_rate_limit} Api Rate Limit`,
+              plan.features.gohighlevel_integration && "GoHighLevel Integration",
+              plan.features.advanced_analytics && "Advanced Analytics",
+              plan.features.priority_support && "Priority Support",
+              plan.features.white_label && "White Label",
+            ].filter(Boolean) as string[]; // Filter out false values and assert type
+
+            return (
+              <div
+                key={plan.id}
+                className={`rounded-lg p-6 flex flex-col ${isActivePlan
+                  ? "bg-secondary text-white"
+                  : "bg-white border border-gray-200"
+                  }`}
+              >
+                <h3
+                  className={`text-lg font-semibold mb-2 ${isActivePlan ? "text-white" : "text-gray-900"
+                    }`}
+                >
+                  {plan.display_name}
+                </h3>
+                <p
+                  className={`text-sm mb-4 ${isActivePlan ? "text-secondary-foreground" : "text-gray-600"
+                    }`}
+                >
+                  {plan.description}
+                </p>
+                <div className="mb-6">
+                  <span
+                    className={`text-3xl font-bold ${isActivePlan ? "text-white" : "text-gray-900"
+                      }`}
+                  >
+                    ${formatPrice(plan.price_monthly).price.toFixed(2)}
+                  </span>
+                  <span
+                    className={`ml-1 ${isActivePlan ? "text-secondary-foreground" : "text-gray-600"
+                      }`}
+                  >
+                    /{formatPrice(plan.price_monthly).period}
+                  </span>
+                </div>
+                <div className="flex-grow">
+                  <ul className="space-y-3 mb-6">
+                    {featuresList.map((feature, index) => (
+                      <li
+                        key={index}
+                        className={`flex items-center text-sm ${isActivePlan ? "text-secondary-foreground" : "text-gray-600"
+                          }`}
+                      >
+                        <Check
+                          className={`w-4 h-4 mr-3 ${isActivePlan ? "text-white" : "text-green-500"
+                            }`}
+                        />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-auto">
+                  {isActivePlan ? (
+                    <Button className="w-full bg-white text-secondary hover:bg-gray-100">Active plan</Button>
+                  ) : (
+                    <Button variant="outline" className="w-full bg-transparent">
+                      Choose Plan
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {showCancelDialog && (

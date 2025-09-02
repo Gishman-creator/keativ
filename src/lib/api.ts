@@ -315,15 +315,17 @@ class ApiClient {
     }
   }
 
-  private getHeaders(): HeadersInit {
+  private getHeaders(includeAuth: boolean = true): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-  'Accept': 'application/json',
+      'Accept': 'application/json',
     };
 
-    const token = this.getToken();
-    if (token) {
-      headers['Authorization'] = `Token ${token}`;
+    if (includeAuth) {
+      const token = this.getToken();
+      if (token) {
+        headers['Authorization'] = `Token ${token}`;
+      }
     }
 
     return headers;
@@ -375,8 +377,24 @@ class ApiClient {
     try {
       const response = await fetch(url, {
         method: 'GET',
-  headers: this.getHeaders(),
-  credentials: 'include',
+        headers: this.getHeaders(),
+        credentials: 'include',
+      });
+      return this.handleResponse<T>(response);
+    } catch {
+      return {
+        error: 'Network error',
+        success: false,
+      };
+    }
+  }
+
+  async getPublic<T>(url: string): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(false), // Explicitly do not include auth headers
+        credentials: 'include',
       });
       return this.handleResponse<T>(response);
     } catch {
@@ -668,6 +686,10 @@ class ApiClient {
 
   async updateScheduledPost(id: string, payload: Partial<ScheduledPost>): Promise<ApiResponse<ScheduledPost>> {
     return api.put<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id), payload as Record<string, unknown>);
+  }
+
+  async getSubscriptionTiers<T>(): Promise<ApiResponse<T>> {
+    return this.getPublic<T>(API_ENDPOINTS.CORE.SUBSCRIPTION_TIERS); // Use getPublic for subscription tiers
   }
 }
 

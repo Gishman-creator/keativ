@@ -117,6 +117,7 @@ export const API_ENDPOINTS = {
       WHITELIST: `${API_BASE_URL}/api/core/ip/whitelist/`,
       BLACKLIST: `${API_BASE_URL}/api/core/ip/blacklist/`,
     },
+    SUBSCRIPTION_TIERS: `${API_BASE_URL}/api/core/subscriptions/tiers/`,
   },
 
   // Twitter Integration

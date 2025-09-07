@@ -53,10 +53,58 @@ const IntegrationsPage = () => {
 
   const handleConnectTwitter = async () => {
     setTwitterLoading(true);
-    const res = await api.getTwitterAuthorizeUrl();
-    setTwitterLoading(false);
-    if (res.success && res.data?.authorize_url) {
-      window.location.href = res.data.authorize_url;
+    try {
+      const res = await api.getTwitterAuthorizeUrl();
+      if (res.success && res.data?.authorize_url) {
+        // Use popup for OAuth instead of full page redirect
+        const popup = window.open(res.data.authorize_url, 'twitter-oauth', 'width=600,height=700,scrollbars=yes,resizable=yes');
+        
+        // Listen for popup to complete OAuth
+        const messageHandler = async (event: MessageEvent) => {
+          if (event.data?.source === 'twitter-oauth') {
+            try {
+              const payload = JSON.parse(event.data.data || '{}');
+              if (payload.success) {
+                // Bind tokens using the API
+                const bindRes = await api.bindTwitterTokens(payload);
+                if (bindRes.success) {
+                  setIsTwitterConnected(true);
+                  console.log('Twitter connected successfully');
+                } else {
+                  console.error('Failed to bind Twitter tokens:', bindRes.error);
+                }
+              } else {
+                console.error('Twitter OAuth failed:', payload);
+              }
+            } catch (e) {
+              console.error('Failed to parse Twitter OAuth response:', e);
+            }
+            window.removeEventListener('message', messageHandler);
+            if (popup && !popup.closed) {
+              popup.close();
+            }
+          }
+        };
+        
+        window.addEventListener('message', messageHandler);
+        
+        // Fallback: check if popup was closed manually
+        const checkClosed = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', messageHandler);
+            // Recheck connection status in case it was successful
+            setTimeout(async () => {
+              const twitterRes = await api.verifyTwitterCredentials();
+              setIsTwitterConnected(Boolean(twitterRes.success && twitterRes.data && twitterRes.data.account));
+            }, 1000);
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error connecting Twitter:', error);
+    } finally {
+      setTwitterLoading(false);
     }
   };
 
@@ -96,10 +144,58 @@ const IntegrationsPage = () => {
 
   const handleConnectLinkedIn = async () => {
     setLinkedInLoading(true);
-    const res = await api.getLinkedInAuthorizeUrl();
-    setLinkedInLoading(false);
-    if (res.success && res.data?.authorize_url) {
-      window.location.href = res.data.authorize_url;
+    try {
+      const res = await api.getLinkedInAuthorizeUrl();
+      if (res.success && res.data?.authorize_url) {
+        // Use popup for OAuth instead of full page redirect
+        const popup = window.open(res.data.authorize_url, 'linkedin-oauth', 'width=600,height=700,scrollbars=yes,resizable=yes');
+        
+        // Listen for popup to complete OAuth
+        const messageHandler = async (event: MessageEvent) => {
+          if (event.data?.source === 'linkedin-oauth') {
+            try {
+              const payload = JSON.parse(event.data.data || '{}');
+              if (payload.success) {
+                // Bind tokens using the API
+                const bindRes = await api.bindLinkedInTokens(payload);
+                if (bindRes.success) {
+                  setIsLinkedInConnected(true);
+                  console.log('LinkedIn connected successfully');
+                } else {
+                  console.error('Failed to bind LinkedIn tokens:', bindRes.error);
+                }
+              } else {
+                console.error('LinkedIn OAuth failed:', payload);
+              }
+            } catch (e) {
+              console.error('Failed to parse LinkedIn OAuth response:', e);
+            }
+            window.removeEventListener('message', messageHandler);
+            if (popup && !popup.closed) {
+              popup.close();
+            }
+          }
+        };
+        
+        window.addEventListener('message', messageHandler);
+        
+        // Fallback: check if popup was closed manually
+        const checkClosed = setInterval(() => {
+          if (popup?.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', messageHandler);
+            // Recheck connection status in case it was successful
+            setTimeout(async () => {
+              const linkedInRes = await api.verifyLinkedInCredentials();
+              setIsLinkedInConnected(Boolean(linkedInRes.success && linkedInRes.data && linkedInRes.data.account));
+            }, 1000);
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error connecting LinkedIn:', error);
+    } finally {
+      setLinkedInLoading(false);
     }
   };
 

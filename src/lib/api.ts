@@ -588,7 +588,8 @@ class ApiClient {
   }
 
   async getLinkedInAuthorizeUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
-    return this.get<{ authorize_url: string }>(API_ENDPOINTS.LINKEDIN_AUTHORIZE);
+    // Use headless mode (redirect=false) for popup OAuth flow
+    return this.get<{ authorize_url: string }>(`${API_ENDPOINTS.LINKEDIN_AUTHORIZE}?redirect=false`);
   }
 
   async linkedInCallback(params: { code: string; state?: string }): Promise<ApiResponse<LinkedInCallbackResponse>> {

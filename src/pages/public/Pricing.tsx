@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, ArrowRight, X } from 'lucide-react';
-import { API_ENDPOINTS } from '@/config/constants';
 import { api } from '@/lib/api'; // Import the api client
 
 interface Feature {
@@ -34,7 +33,6 @@ interface SubscriptionTiersResponse {
 }
 
 const Pricing = () => {
-  const [displayPeriod, setDisplayPeriod] = useState<"monthly" | "yearly">("monthly");
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +46,9 @@ const Pricing = () => {
         } else {
           throw new Error(response.error || 'Failed to fetch subscription tiers');
         }
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -130,13 +129,6 @@ const Pricing = () => {
 
   const plans = tiers; // Use fetched tiers as plans
 
-  const formatPrice = (monthly: number, yearly: number) => {
-    if (displayPeriod === "monthly") {
-      return { price: monthly, period: "month" }
-    }
-    return { price: yearly, period: "year" }
-  }
-
   const faqs = [
     {
       question: 'Can I change plans anytime?',
@@ -213,7 +205,7 @@ const Pricing = () => {
                       {Object.entries(plan.features).map(([key, value], i) => {
                         if (typeof value === 'boolean' && !value) return null;
 
-                        let featureText = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const featureText = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                         let displayValue: React.ReactNode = '';
 
                         if (typeof value === 'boolean') {

@@ -256,6 +256,116 @@ export interface PostLinkedInPayload extends Record<string, unknown> {
   content: string;
 }
 
+// Facebook Types
+export interface FacebookAccount {
+  id: string;
+  platform: string;
+  username: string;
+  display_name: string;
+  profile_image_url?: string;
+  is_verified: boolean;
+}
+
+export interface FacebookPost {
+  success: boolean;
+  message: string;
+  post_id: string;
+  url?: string;
+}
+
+export interface FacebookOAuthTokens {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  [key: string]: unknown;
+}
+
+export interface FacebookCallbackAccount {
+  platform: string;
+  platform_user_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  profile_image_url?: string;
+  [key: string]: unknown;
+}
+
+export interface FacebookCallbackResponse {
+  account: FacebookCallbackAccount;
+  tokens: FacebookOAuthTokens;
+}
+
+export interface BindFacebookTokensPayload extends Record<string, unknown> {
+  account: FacebookCallbackAccount;
+  tokens: FacebookOAuthTokens;
+}
+
+export interface PostFacebookPayload extends Record<string, unknown> {
+  content: string;
+}
+
+// TikTok Types
+export interface TikTokAccount {
+  id: string;
+  platform: string;
+  username: string;
+  display_name: string;
+  profile_image_url?: string;
+  is_verified: boolean;
+}
+
+export interface TikTokPost {
+  success: boolean;
+  message: string;
+  post_id: string;
+  url?: string;
+}
+
+export interface TikTokOAuthTokens {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  token_type?: string;
+  scope?: string;
+  [key: string]: unknown;
+}
+
+export interface TikTokCallbackAccount {
+  platform: string;
+  platform_user_id: string;
+  username: string;
+  display_name: string;
+  profile_image_url?: string;
+  [key: string]: unknown;
+}
+
+export interface TikTokCallbackResponse {
+  account: TikTokCallbackAccount;
+  tokens: TikTokOAuthTokens;
+}
+
+export interface BindTikTokTokensPayload extends Record<string, unknown> {
+  account: TikTokCallbackAccount;
+  tokens: TikTokOAuthTokens;
+}
+
+export interface PostTikTokPayload extends Record<string, unknown> {
+  content: string;
+  video_path?: string;
+}
+
+export interface TikTokAnalytics {
+  success: boolean;
+  analytics: {
+    views: number;
+    likes: number;
+    shares: number;
+    comments: number;
+  };
+}
+
 export interface CalendarPostItem {
   id: string;
   title: string;
@@ -298,6 +408,45 @@ const isFileLike = (v: unknown): v is File => {
 
 // API Client Class
 class ApiClient {
+  // TikTok Integration Methods
+  async getTikTokAuthUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
+    return this.get(API_ENDPOINTS.TIKTOK_AUTH_URL);
+  }
+
+  async tiktokCallback(params: { code: string; state?: string }): Promise<ApiResponse<TikTokCallbackResponse>> {
+    const url = new URL(API_ENDPOINTS.TIKTOK_CALLBACK);
+    url.searchParams.set('code', params.code);
+    if (params.state) url.searchParams.set('state', params.state);
+    return this.get(url.toString());
+  }
+
+  async getTikTokAccounts(): Promise<ApiResponse<TikTokAccount[]>> {
+    return this.get(API_ENDPOINTS.TIKTOK_ACCOUNTS);
+  }
+
+  async disconnectTikTokAccount(accountId: string): Promise<ApiResponse<{ success: boolean; message: string }>> {
+    return this.post(API_ENDPOINTS.TIKTOK_DISCONNECT(accountId), {});
+  }
+
+  async createTikTokPost(payload: PostTikTokPayload): Promise<ApiResponse<TikTokPost>> {
+    return this.post(API_ENDPOINTS.TIKTOK_CREATE_POST, payload);
+  }
+
+  async getTikTokPosts(): Promise<ApiResponse<TikTokPost[]>> {
+    return this.get(API_ENDPOINTS.TIKTOK_POSTS);
+  }
+
+  async getTikTokPostDetail(postId: string): Promise<ApiResponse<TikTokPost>> {
+    return this.get(API_ENDPOINTS.TIKTOK_POST_DETAIL(postId));
+  }
+
+  async deleteTikTokPost(postId: string): Promise<ApiResponse<{ success: boolean; message: string }>> {
+    return this.post(API_ENDPOINTS.TIKTOK_DELETE_POST(postId), {});
+  }
+
+  async getTikTokAnalytics(): Promise<ApiResponse<TikTokAnalytics>> {
+    return this.get(API_ENDPOINTS.TIKTOK_ANALYTICS);
+  }
   private baseURL: string;
   private token: string | null = null;
 
@@ -601,6 +750,122 @@ class ApiClient {
 
   async bindLinkedInTokens(payload: BindLinkedInTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
     return this.post<{ success: boolean }>(API_ENDPOINTS.LINKEDIN_BIND_TOKENS, payload);
+  }
+
+  // Facebook Integration Methods
+
+  async verifyFacebookCredentials(): Promise<ApiResponse<{ success: boolean; message: string; account: FacebookAccount }>> {
+    return this.get<{ success: boolean; message: string; account: FacebookAccount }>(API_ENDPOINTS.FACEBOOK_VERIFY);
+  }
+
+  async postFacebookShare(payload: PostFacebookPayload): Promise<ApiResponse<{ success: boolean; message: string; post: FacebookPost }>> {
+    return this.post<{ success: boolean; message: string; post: FacebookPost }>(API_ENDPOINTS.FACEBOOK_POST, payload);
+  }
+
+  async getFacebookAuthorizeUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
+    // Use headless mode (redirect=false) for popup OAuth flow
+    return this.get<{ authorize_url: string }>(`${API_ENDPOINTS.FACEBOOK_AUTHORIZE}?redirect=false`);
+  }
+
+  async facebookCallback(params: { code: string; state?: string }): Promise<ApiResponse<FacebookCallbackResponse>> {
+    const url = new URL(API_ENDPOINTS.FACEBOOK_CALLBACK);
+    url.searchParams.set('code', params.code);
+    if (params.state) url.searchParams.set('state', params.state);
+    return this.get<FacebookCallbackResponse>(url.toString());
+  }
+
+  async bindFacebookTokens(payload: BindFacebookTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
+    return this.post<{ success: boolean }>(API_ENDPOINTS.FACEBOOK_BIND_TOKENS, payload);
+  }
+
+  // Facebook Account Management Methods
+  async getFacebookAccountDetails(): Promise<ApiResponse<{
+    success: boolean;
+    account: {
+      id: string;
+      username: string;
+      display_name: string;
+      profile_image_url: string;
+      platform_user_id: string;
+      is_verified: boolean;
+      followers_count: number;
+      signature: string;
+      connected_at: string;
+      facebook_info: {
+        user_id: string;
+        email: string;
+        name: string;
+      };
+    };
+    pages: Array<{
+      id: string;
+      name: string;
+      category: string;
+      has_manage_posts: boolean;
+      has_page_token: boolean;
+    }>;
+    permissions: Array<{
+      permission: string;
+      status: string;
+    }>;
+  }>> {
+    return this.get(API_ENDPOINTS.FACEBOOK_ACCOUNT_DETAILS);
+  }
+
+  async updateFacebookAccount(payload: {
+    signature?: string;
+    display_name?: string;
+  }): Promise<ApiResponse<{
+    success: boolean;
+    message: string;
+    account: {
+      signature: string;
+      display_name: string;
+    };
+  }>> {
+    return this.put(API_ENDPOINTS.FACEBOOK_UPDATE_ACCOUNT, payload);
+  }
+
+  async refreshFacebookToken(): Promise<ApiResponse<{
+    success: boolean;
+    message: string;
+  }>> {
+    return this.post(API_ENDPOINTS.FACEBOOK_REFRESH_TOKEN, {});
+  }
+
+  async getFacebookPostingAnalytics(): Promise<ApiResponse<{
+    success: boolean;
+    analytics: {
+      total_posts: number;
+      published_posts: number;
+      failed_posts: number;
+      scheduled_posts: number;
+      success_rate: number;
+    };
+    recent_posts: Array<{
+      id: string;
+      content: string;
+      status: string;
+      created_at: string;
+      scheduled_time?: string;
+      published_at?: string;
+    }>;
+  }>> {
+    return this.get(API_ENDPOINTS.FACEBOOK_POSTING_ANALYTICS);
+  }
+
+  async testFacebookConnection(): Promise<ApiResponse<{
+    success: boolean;
+    connection_status: {
+      account_verified: boolean;
+      pages_accessible: boolean;
+      pages_count: number;
+      has_required_permissions: boolean;
+      can_post: boolean;
+      account_name: string;
+    };
+  }>> {
+    return this.post(API_ENDPOINTS.FACEBOOK_TEST_CONNECTION, {});
   }
 
   // Posts API Methods

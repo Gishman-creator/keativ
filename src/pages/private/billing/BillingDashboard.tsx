@@ -131,19 +131,19 @@ const BillingDashboard: React.FC = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600">Social Accounts</p>
-                        <p className="font-semibold">{subscription.tier.max_social_accounts}</p>
+                        <p className="font-semibold">{subscription.tier.features.max_social_accounts}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Monthly Posts</p>
-                        <p className="font-semibold">{subscription.tier.max_scheduled_posts}</p>
+                        <p className="font-semibold">{subscription.tier.features.max_scheduled_posts}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Team Members</p>
-                        <p className="font-semibold">{subscription.tier.max_team_members}</p>
+                        <p className="font-semibold">{subscription.tier.features.max_team_members}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Analytics History</p>
-                        <p className="font-semibold">{subscription.tier.analytics_retention_days} days</p>
+                        <p className="font-semibold">{subscription.tier.features.analytics_retention_days} days</p>
                       </div>
                     </div>
                   </div>

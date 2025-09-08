@@ -37,6 +37,7 @@ import Notifications from '../pages/private/Notifications';
 import Automations from '../pages/private/Automations';
 import TwitterCallback from '../pages/private/integrations/TwitterCallback';
 import LinkedInCallback from '../pages/private/integrations/LinkedInCallback';
+import FacebookAccountManagement from '../components/FacebookAccountManagement';
 import CreatePost from '../pages/private/CreatePost';
 import PostAnalyticsPage from '@/pages/private/PostAnalyticsPage';
 // import Influencers from '@/pages/private/Influencers';
@@ -101,6 +102,7 @@ export const router = createBrowserRouter([
       { path: 'settings', element: <Settings /> },
       { path: 'settingspage', element: <SettingsPage /> },
       { path: 'integrations', element: <IntegrationsPage /> },
+      { path: 'integrations/facebook/manage', element: <FacebookAccountManagement /> },
       { path: 'integrations/twitter/callback', element: <TwitterCallback /> },
       { path: 'integrations/linkedin/callback', element: <LinkedInCallback /> },
       { path: 'notifications', element: <Notifications /> },

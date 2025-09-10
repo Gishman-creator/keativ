@@ -59,3 +59,4 @@ export const CORE_SUBSCRIPTION_TIERS_RESPONSE = {
       }
     }
   ]
+}

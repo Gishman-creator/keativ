@@ -118,7 +118,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">Social Accounts</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.max_social_accounts === -1 ? 'Unlimited' : tier.max_social_accounts}
+                            {tier.features.max_social_accounts === -1 ? 'Unlimited' : tier.features.max_social_accounts}
                           </td>
                         ))}
                       </tr>
@@ -126,7 +126,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">Scheduled Posts per Month</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.max_scheduled_posts === -1 ? 'Unlimited' : tier.max_scheduled_posts}
+                            {tier.features.max_scheduled_posts === -1 ? 'Unlimited' : tier.features.max_scheduled_posts}
                           </td>
                         ))}
                       </tr>
@@ -134,7 +134,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">Team Members</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.max_team_members}
+                            {tier.features.max_team_members}
                           </td>
                         ))}
                       </tr>
@@ -142,7 +142,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">Analytics History</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.analytics_retention_days} days
+                            {tier.features.analytics_retention_days} days
                           </td>
                         ))}
                       </tr>
@@ -150,7 +150,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">GoHighLevel CRM Integration</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.gohighlevel_integration ? (
+                            {tier.features.gohighlevel_integration ? (
                               <Check className="h-5 w-5 text-green-500 mx-auto" />
                             ) : (
                               <span className="text-gray-400">—</span>
@@ -162,7 +162,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">Advanced Analytics</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.advanced_analytics ? (
+                            {tier.features.advanced_analytics ? (
                               <Check className="h-5 w-5 text-green-500 mx-auto" />
                             ) : (
                               <span className="text-gray-400">—</span>
@@ -174,7 +174,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">Priority Support</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.priority_support ? (
+                            {tier.features.priority_support ? (
                               <Check className="h-5 w-5 text-green-500 mx-auto" />
                             ) : (
                               <span className="text-gray-400">—</span>
@@ -186,7 +186,7 @@ const EnhancedPricing: React.FC = () => {
                         <td className="p-4 font-medium">White Label</td>
                         {sortedTiers.map((tier) => (
                           <td key={tier.id} className="text-center p-4">
-                            {tier.white_label ? (
+                            {tier.features.white_label ? (
                               <Check className="h-5 w-5 text-green-500 mx-auto" />
                             ) : (
                               <span className="text-gray-400">—</span>

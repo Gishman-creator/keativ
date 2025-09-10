@@ -140,7 +140,33 @@ export const API_ENDPOINTS = {
   LINKEDIN_AUTHORIZE: `${API_BASE_URL}/api/integrations/linkedin/authorize/`,
   LINKEDIN_CALLBACK: `${API_BASE_URL}/api/integrations/linkedin/callback/`,
   LINKEDIN_BIND_TOKENS: `${API_BASE_URL}/api/integrations/linkedin/bind-tokens/`,
+
+  // Facebook Integration
+  FACEBOOK_VERIFY: `${API_BASE_URL}/api/integrations/facebook/verify/`,
+  FACEBOOK_POST: `${API_BASE_URL}/api/integrations/facebook/post/`,
+  FACEBOOK_AUTHORIZE: `${API_BASE_URL}/api/integrations/facebook/authorize/`,
+  FACEBOOK_CALLBACK: `${API_BASE_URL}/api/integrations/facebook/callback/`,
+  FACEBOOK_BIND_TOKENS: `${API_BASE_URL}/api/integrations/facebook/bind-tokens/`,
   
+  // Facebook Account Management
+  FACEBOOK_ACCOUNT_DETAILS: `${API_BASE_URL}/api/integrations/facebook/account/`,
+  FACEBOOK_UPDATE_ACCOUNT: `${API_BASE_URL}/api/integrations/facebook/account/update/`,
+  FACEBOOK_REFRESH_TOKEN: `${API_BASE_URL}/api/integrations/facebook/account/refresh-token/`,
+  FACEBOOK_POSTING_ANALYTICS: `${API_BASE_URL}/api/integrations/facebook/account/analytics/`,
+  FACEBOOK_TEST_CONNECTION: `${API_BASE_URL}/api/integrations/facebook/account/test-connection/`,
+
+  // TikTok Integration
+  TIKTOK_AUTH_URL: `${API_BASE_URL}/api/integrations/tiktok/auth-url/`,
+  TIKTOK_CALLBACK: `${API_BASE_URL}/api/integrations/tiktok/callback/`,
+  TIKTOK_CALLBACK_GET: `${API_BASE_URL}/api/integrations/tiktok/callback-get/`,
+  TIKTOK_ACCOUNTS: `${API_BASE_URL}/api/integrations/tiktok/accounts/`,
+  TIKTOK_DISCONNECT: (accountId: string) => `${API_BASE_URL}/api/integrations/tiktok/disconnect/${accountId}/`,
+  TIKTOK_CREATE_POST: `${API_BASE_URL}/api/integrations/tiktok/create-post/`,
+  TIKTOK_POSTS: `${API_BASE_URL}/api/integrations/tiktok/posts/`,
+  TIKTOK_POST_DETAIL: (postId: string) => `${API_BASE_URL}/api/integrations/tiktok/posts/${postId}/`,
+  TIKTOK_DELETE_POST: (postId: string) => `${API_BASE_URL}/api/integrations/tiktok/posts/${postId}/delete/`,
+  TIKTOK_ANALYTICS: `${API_BASE_URL}/api/integrations/tiktok/analytics/`,
+
   // Messaging
   MESSAGING: {
     MESSAGES: {

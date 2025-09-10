@@ -59,14 +59,14 @@ export const SubscriptionTierCard: React.FC<SubscriptionTierCardProps> = ({
     : 0;
 
   const features = [
-    { label: `${tier.max_social_accounts} Social Accounts`, included: tier.max_social_accounts > 0 },
-    { label: `${tier.max_scheduled_posts} Scheduled Posts/Month`, included: tier.max_scheduled_posts > 0 },
-    { label: `${tier.max_team_members} Team Members`, included: tier.max_team_members > 0 },
-    { label: `${tier.analytics_retention_days} Days Analytics History`, included: tier.analytics_retention_days > 0 },
-    { label: 'GoHighLevel CRM Integration', included: tier.gohighlevel_integration },
-    { label: 'Advanced Analytics', included: tier.advanced_analytics },
-    { label: 'Priority Support', included: tier.priority_support },
-    { label: 'White Label', included: tier.white_label },
+    { label: `${tier.features.max_social_accounts} Social Accounts`, included: tier.features.max_social_accounts > 0 },
+    { label: `${tier.features.max_scheduled_posts} Scheduled Posts/Month`, included: tier.features.max_scheduled_posts > 0 },
+    { label: `${tier.features.max_team_members} Team Members`, included: tier.features.max_team_members > 0 },
+    { label: `${tier.features.analytics_retention_days} Days Analytics History`, included: tier.features.analytics_retention_days > 0 },
+    { label: 'GoHighLevel CRM Integration', included: tier.features.gohighlevel_integration },
+    { label: 'Advanced Analytics', included: tier.features.advanced_analytics },
+    { label: 'Priority Support', included: tier.features.priority_support },
+    { label: 'White Label', included: tier.features.white_label },
   ];
 
   const includedFeatures = features.filter(f => f.included);

@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Check, ArrowRight, X } from 'lucide-react';
 import { API_ENDPOINTS } from '@/config/constants';
 import { api } from '@/lib/api'; // Import the api client
+import { Separator } from '@/components/ui/separator';
+import NetworkError from "@/pages/public/NetworkError" // Import NetworkError component
 
 interface Feature {
   max_social_accounts: number;
@@ -38,6 +40,7 @@ const Pricing = () => {
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasNetworkError, setHasNetworkError] = useState(false); // New state for network error
 
   useEffect(() => {
     const fetchSubscriptionTiers = async () => {
@@ -49,7 +52,11 @@ const Pricing = () => {
           throw new Error(response.error || 'Failed to fetch subscription tiers');
         }
       } catch (e: any) {
-        setError(e.message);
+        if (e.message === 'Network error' || (e.response && e.response.status === 503)) {
+          setHasNetworkError(true); // Set network error state to true
+        } else {
+          setError(e.message);
+        }
       } finally {
         setLoading(false);
       }
@@ -124,6 +131,10 @@ const Pricing = () => {
     </div>
   );
 
+  if (hasNetworkError) {
+    return <NetworkError />;
+  }
+
   if (error) {
     return <div className="text-center py-20 text-red-500">Error: {error}</div>;
   }
@@ -197,7 +208,7 @@ const Pricing = () => {
                     </div>
                   )}
 
-                  <div className="text-center pb-8">
+                  <div className="pb-4">
                     <h3 className="text-2xl font-bold">{plan.display_name}</h3>
                     <p className="text-gray-600 mt-2">
                       {plan.description}
@@ -207,6 +218,20 @@ const Pricing = () => {
                       <span className="text-gray-500 ml-1">/month</span>
                     </div>
                   </div>
+
+                  {/* Modified Button to call onPlanSelect */}
+                  <Button
+                    className={`w-full mt-2 ${plan.name === 'professional'
+                      ? 'bg-red-500 hover:bg-red-600 text-white'
+                      : ''
+                      }`}
+                    variant={plan.name === 'professional' ? 'default' : 'outline'}
+                  >
+                    Start Trial
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+
+                  <Separator className="my-8" />
 
                   <div className="flex flex-col justify-between h-full">
                     <div className="space-y-3">
@@ -238,19 +263,6 @@ const Pricing = () => {
                         );
                       })}
                     </div>
-
-                    <Link to="/signup" className="block mt-auto pt-6">
-                      <Button
-                        className={`w-full ${plan.name === 'professional'
-                          ? 'bg-red-500 hover:bg-red-600 text-white'
-                          : ''
-                          }`}
-                        variant={plan.name === 'professional' ? 'default' : 'outline'}
-                      >
-                        Start {plan.display_name}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </Link>
                   </div>
                 </div>
               ))}

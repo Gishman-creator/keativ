@@ -19,6 +19,7 @@ export interface User {
   first_name: string;
   last_name: string;
   is_staff: boolean;
+  subscription_tier_id?: string;
   profile?: {
     company_name: string;
     avatar?: string;
@@ -56,6 +57,7 @@ export interface UserProfileData {
   company_name?: string;
   avatar?: string;
   subscription_type?: string;
+  subscription_tier_id?: string;
   timezone?: string;
   time_format?: string;
   email_notifications?: boolean;
@@ -741,6 +743,7 @@ export const authApi = {
     last_name?: string;
     company_name?: string;
     role?: string;
+    subscription_tier_id?: string;
   }) => {
     console.log('🚀 Attempting registration with data:', userData);
     const response = await api.post<{ message: string; user_id: number; username: string; profile_uuid: string }>(

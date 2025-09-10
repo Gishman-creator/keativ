@@ -8,20 +8,17 @@ import Features from '../pages/public/Features';
 import Pricing from '../pages/public/Pricing';
 import About from '../pages/public/About';
 import Contact from '../pages/public/Contact';
-import Login from '../pages/public/Login';
-import Signup from '../pages/public/Signup';
 import PrivacyPolicy from '../pages/public/PrivacyPolicy';
 import TermsOfService from '../pages/public/TermsOfService';
 import NotFound from '../pages/public/NotFound';
 
 // Email verification components
-import { EmailVerification, VerificationPending, ResendVerification } from '../components/auth';
+import { EmailVerification, VerificationPending, ResendVerification, Register } from '@/pages/auth';
+import Login from '../pages/auth/Login';
 
 // Import the Enhanced Pricing component
 import EnhancedPricing from '../pages/public/EnhancedPricing';
 
-// Import the Plan Selection component
-import PlanSelection from '../pages/auth/PlanSelection';
 
 // Private pages
 import Dashboard from '../pages/private/Dashboard';
@@ -69,8 +66,7 @@ export const router = createBrowserRouter([
       { path: 'privacy', element: <PrivacyPolicy /> },
       { path: 'terms', element: <TermsOfService /> },
       { path: 'login', element: <Login /> },
-      { path: 'signup', element: <Signup /> },
-      { path: 'plan-selection', element: <PlanSelection /> },
+      { path: 'signup', element: <Register /> },
       { path: 'verify-email/:token', element: <EmailVerification /> },
       { path: 'verification-pending', element: <VerificationPending /> },
       { path: 'resend-verification', element: <ResendVerification /> },

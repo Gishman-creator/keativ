@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { authApi } from '@/lib/api';
-import { CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw, BadgeX, BadgeCheck, LoaderCircle } from 'lucide-react';
 
 interface VerificationResult {
   success: boolean;
@@ -20,7 +20,7 @@ export function EmailVerification() {
       try {
         setIsLoading(true);
         const response = await authApi.verifyEmail(token!);
-        
+
         if (response.success) {
           setVerificationResult({
             success: true,
@@ -55,20 +55,20 @@ export function EmailVerification() {
   }, [token]);
 
   const handleLoginRedirect = () => {
-    navigate('/login', { 
-      state: { 
+    navigate('/login', {
+      state: {
         message: 'Email verified successfully! You can now log in.',
-        username: verificationResult?.username 
+        username: verificationResult?.username
       }
     });
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 p-8">
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-white">
+        <div className="max-w-md w-full space-y-8 px-8">
           <div className="text-center">
-            <RefreshCw className="mx-auto h-12 w-12 text-blue-600 animate-spin" />
+            <LoaderCircle className="mx-auto h-12 w-12 text-primary animate-spin" />
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
               Verifying your email...
             </h2>
@@ -82,30 +82,30 @@ export function EmailVerification() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-white">
       <div className="max-w-md w-full space-y-8 p-8">
         <div className="text-center">
           {verificationResult?.success ? (
             <>
-              <CheckCircle className="mx-auto h-12 w-12 text-green-600" />
+              <BadgeCheck className="mx-auto h-12 w-12 text-green-600" />
               <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
                 Email Verified!
               </h2>
               <p className="mt-2 text-sm text-gray-600">
-                {verificationResult.message}
+                {verificationResult?.message}
               </p>
               <div className="mt-8 space-y-4">
-                <button
-                  onClick={handleLoginRedirect}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                <Link
+                  to="/login"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/80"
                 >
                   Continue to Login
-                </button>
+                </Link>
               </div>
             </>
           ) : (
             <>
-              <XCircle className="mx-auto h-12 w-12 text-red-600" />
+              <BadgeX className="mx-auto h-12 w-12 text-red-600" />
               <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
                 Verification Failed
               </h2>
@@ -115,13 +115,13 @@ export function EmailVerification() {
               <div className="mt-8 space-y-4">
                 <Link
                   to="/resend-verification"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/80"
                 >
                   Request New Verification Email
                 </Link>
                 <Link
                   to="/login"
-                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Back to Login
                 </Link>

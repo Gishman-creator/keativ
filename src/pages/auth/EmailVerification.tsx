@@ -54,15 +54,6 @@ export function EmailVerification() {
     }
   }, [token]);
 
-  const handleLoginRedirect = () => {
-    navigate('/login', {
-      state: {
-        message: 'Email verified successfully! You can now log in.',
-        username: verificationResult?.username
-      }
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-white">

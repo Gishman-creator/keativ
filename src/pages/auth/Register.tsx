@@ -134,20 +134,37 @@ export function Register() {
         navigate('/verification-pending', {
           state: {
             email: formData.email,
-            username: formData.username,
+            username: formData.email,
             message: result.data.message,
           },
         });
       } else {
-        console.error('Registration failed:', result);
-        showCustomToast('Sign Up Failer', result.error || 'Registration failed. Please try again.', 'error');
-      }
-    } catch (error: any) { // Explicitly type error as 'any' or 'Error'
-      console.error('Registration error:', error);
-      if (error.message === 'Network error' || (error.response && error.response.status === 503)) {
-        showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
-      } else {
-        showCustomToast('Sign Up Failer', error.message, 'error');
+        const error = result.error || 'Registration failed';
+        console.error('Registration failed:', error);
+        if (error === 'Network error') {
+          showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
+        } else {
+          // Check if error is an object with key-value pairs
+          if (typeof error === 'object' && error !== null) {
+            const errorMessages = Object.entries(error)
+              .filter(([key, value]) => key !== 'username')
+              .map(([key, value]) => {
+                let message;
+                if (Array.isArray(value)) {
+                  message = value.join(', ');
+                } else {
+                  // Convert to string to handle numbers, booleans, etc.
+                  message = String(value);
+                }
+                // Add period only if the message doesn't already end with one
+                return message.endsWith('.') ? message : message + '.';
+              })
+              .join(' ');
+            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+          } else {
+            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+          }
+        }
       }
     } finally {
       setIsLoading(false);
@@ -226,7 +243,7 @@ export function Register() {
                   name="first_name"
                   type="text"
                   autoComplete="given-name"
-                  className={`${errors.first_name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                  className={`${errors.first_name ? "border-red-500 focus:border-secondary" : ""
                     }`}
                   placeholder="First Name"
                   value={formData.first_name}
@@ -245,7 +262,7 @@ export function Register() {
                   name="last_name"
                   type="text"
                   autoComplete="family-name"
-                  className={`${errors.last_name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                  className={`${errors.last_name ? "border-red-500 focus:border-secondary" : ""
                     }`}
                   placeholder="Last Name"
                   value={formData.last_name}
@@ -265,7 +282,7 @@ export function Register() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                className={`${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                className={`${errors.email ? "border-red-500 focus:border-secondary" : ""
                   }`}
                 placeholder="Email"
                 value={formData.email}
@@ -285,7 +302,7 @@ export function Register() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  className={`pr-12 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                  className={`pr-12 ${errors.password ? "border-red-500 focus:border-secondary" : ""
                     }`}
                   placeholder="Password"
                   value={formData.password}
@@ -317,7 +334,7 @@ export function Register() {
                   name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  className={`pr-12 ${errors.confirmPassword ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                  className={`pr-12 ${errors.confirmPassword ? "border-red-500 focus:border-secondary" : ""
                     }`}
                   placeholder="Confirm Password"
                   value={formData.confirmPassword}

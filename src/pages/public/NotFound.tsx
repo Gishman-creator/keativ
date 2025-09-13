@@ -5,12 +5,12 @@ import { Share2, Home, ArrowLeft } from 'lucide-react';
 const NotFound = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col px-4 sm:px-6 lg:px-8">
-      <div className='flex items-center justify-start gap-2 py-4'>
-        <Share2 className="h-6 w-6 text-red-500" />
-        <span className="font-heading text-lg font-bold text-gray-900">
+      <Link to="/" className='flex items-center justify-start gap-2 py-4'>
+        <Share2 className="h-8 w-8 text-red-500" />
+        <span className="font-heading text-xl font-bold text-gray-900">
           Keativ
         </span>
-      </div>
+      </Link>
       <div className="min-h-full mx-auto my-auto max-w-md w-full text-center">
         <div className="mb-8">
           <img src="/404.png" className="h-40 w-40 text-red-500 mx-auto mb-4" />
@@ -24,13 +24,13 @@ const NotFound = () => {
         </div>
 
         <div className="space-y-4">
-          <Button
+          <Link
+            to=".."
             className="w-auto"
-            onClick={() => window.history.back()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Go Back
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

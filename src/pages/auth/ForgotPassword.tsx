@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { authApi } from "@/lib/api"
 import { Link } from "react-router-dom" // Assuming Link is still needed for "Back to Login" or "Sign up"
+import { showCustomToast } from "@/components/CustomToast"
 
-export function ResendVerification() {
+export function ForgotPassword() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null)
@@ -35,25 +36,41 @@ export function ResendVerification() {
     setResult(null)
 
     try {
-      const response = await authApi.resendVerificationEmail(email)
+      const response = await authApi.forgotPassword(email)
 
       if (response.success) {
-        setResult({
-          success: true,
-          message: "Verification email sent successfully! Please check your inbox.",
-        })
+        showCustomToast("Email Sent", "Verification email has been sent to your inbox.", "success")
         setEmail("")
       } else {
-        setResult({
-          success: false,
-          message: response.error || "Failed to send verification email",
-        })
+        const error = response.error || 'Registration failed';
+        console.error('Registration failed:', error);
+        if (error === 'Network error') {
+          showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
+        } else {
+          // Check if error is an object with key-value pairs
+          if (typeof error === 'object' && error !== null) {
+            const errorMessages = Object.entries(error)
+              .filter(([key, value]) => key !== 'username')
+              .map(([key, value]) => {
+                let message;
+                if (Array.isArray(value)) {
+                  message = value.join(', ');
+                } else {
+                  // Convert to string to handle numbers, booleans, etc.
+                  message = String(value);
+                }
+                // Add period only if the message doesn't already end with one
+                return message.endsWith('.') ? message : message + '.';
+              })
+              .join(' ');
+            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+          } else {
+            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+          }
+        }
       }
     } catch {
-      setResult({
-        success: false,
-        message: "An error occurred. Please try again.",
-      })
+      showCustomToast("Failed To Send Email", "Failed to send verification email", "error")
     } finally {
       setIsLoading(false)
     }
@@ -75,42 +92,12 @@ export function ResendVerification() {
               className="text-3xl font-bold mb-2 font-headers"
               style={{ color: "#2D3748", fontFamily: "Roboto Slab" }}
             >
-              Resend Verification
+              Forgot Your Password?
             </h1>
             <p className="font-body" style={{ color: "#6B7280", fontFamily: "Poppins" }}>
-              Enter your email address and we'll send you a new verification link
+              Enter your email address and we'll send you a password reset link
             </p>
           </div>
-
-          {result && (
-            <div
-              className={`rounded-lg p-4 mb-6 border ${
-                result.success
-                  ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
-                  : "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"
-              }`}
-            >
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  {result.success ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-                  )}
-                </div>
-                <div className="ml-3">
-                  <p
-                    className={`text-sm font-medium font-body ${
-                      result.success ? "text-green-800 dark:text-green-400" : "text-red-800 dark:text-red-400"
-                    }`}
-                    style={{ fontFamily: "Poppins" }}
-                  >
-                    {result.message}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -119,13 +106,19 @@ export function ResendVerification() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                className="font-body"
+                className={`${result ? "border-red-500 focus:border-secondary" : ""
+                  }`}
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 style={{ fontFamily: "Poppins" }}
               />
+              {result && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  {result.message}
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end">
@@ -148,7 +141,7 @@ export function ResendVerification() {
                     Sending...
                   </span>
                 ) : (
-                  "Send Verification Email"
+                  "Send Email"
                 )}
               </Button>
             </div>

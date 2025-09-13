@@ -291,7 +291,7 @@ class MediaApiService {
   /**
    * Convert file to MediaLibraryFile format for component compatibility
    */
-  static convertToMediaLibraryFile(mediaFile: MediaFile): import('@/components/MediaLibrary/MediaLibrary').MediaLibraryFile {
+  static convertToMediaLibraryFile(mediaFile: MediaFile): import('@/components/media-library/FilterBar').MediaLibraryFile {
     return {
       id: mediaFile.id,
       name: mediaFile.name,
@@ -309,7 +309,7 @@ class MediaApiService {
   /**
    * Convert File to MediaLibraryFile format for component compatibility
    */
-  static convertFileToMediaLibraryFile(file: File): import('@/components/MediaLibrary/MediaLibrary').MediaLibraryFile {
+  static convertFileToMediaLibraryFile(file: File): import('@/components/media-library/FilterBar').MediaLibraryFile {
     const fileType = file.type.startsWith('image/') ? 'image' : 'video';
     const previewUrl = URL.createObjectURL(file);
     

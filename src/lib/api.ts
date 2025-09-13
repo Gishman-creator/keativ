@@ -510,7 +510,7 @@ class ApiClient {
           data
         });
         return {
-          error: data.error || data.message || `HTTP ${response.status}: ${response.statusText}`,
+          error: data || `HTTP ${response.status}: ${response.statusText}`,
           success: false,
           data: data // Include the error details from backend
         };
@@ -1114,6 +1114,14 @@ export const authApi = {
 
   requestDataExport: async () => {
     return api.post<{ message: string; export_id: string }>('/api/auth/export-data/', {});
+  },
+
+  forgotPassword: async (email: string) => {
+    return api.post<{ message: string }>('/api/auth/forgot-password/', { email });
+  },
+
+  resetPassword: async (token: string, password: string, confirmPassword: string) => {
+    return api.post<{ message: string }>('/api/auth/reset-password/', { token, password, password_confirm: confirmPassword });
   },
 
   deleteAccount: async (password: string) => {

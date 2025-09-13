@@ -4,6 +4,7 @@ import { authApi } from '@/lib/api';
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { showCustomToast } from '@/components/CustomToast';
 
 interface LocationState {
   email?: string;
@@ -25,11 +26,7 @@ export function VerificationPending() {
     const emailToSend = state?.email;
 
     if (!emailToSend) {
-      toast({
-        title: "Error",
-        description: "No email address found. Please try registering again.",
-        variant: "destructive",
-      });
+      showCustomToast("Failed To Send Email", "No email address found. Please try registering again.", "error");
       return;
     }
 
@@ -37,25 +34,40 @@ export function VerificationPending() {
 
     try {
       const response = await authApi.resendVerificationEmail(emailToSend);
+      console.log('Response', response)
 
       if (response.success) {
-        toast({
-          title: "Email Sent",
-          description: "Verification email has been resent to your inbox.",
-        });
+        showCustomToast("Email Sent", "Verification email has been resent to your inbox.", "success");
       } else {
-        toast({
-          title: "Error",
-          description: response.error || 'Failed to send verification email',
-          variant: "destructive",
-        });
+        const error = response.error || 'Registration failed';
+        console.error('Registration failed:', error);
+        if (error === 'Network error') {
+          showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
+        } else {
+          // Check if error is an object with key-value pairs
+          if (typeof error === 'object' && error !== null) {
+            const errorMessages = Object.entries(error)
+              .filter(([key, value]) => key !== 'username')
+              .map(([key, value]) => {
+                let message;
+                if (Array.isArray(value)) {
+                  message = value.join(', ');
+                } else {
+                  // Convert to string to handle numbers, booleans, etc.
+                  message = String(value);
+                }
+                // Add period only if the message doesn't already end with one
+                return message.endsWith('.') ? message : message + '.';
+              })
+              .join(' ');
+            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+          } else {
+            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+          }
+        }
       }
     } catch {
-      toast({
-        title: "Error",
-        description: 'An error occurred. Please try again.',
-        variant: "destructive",
-      });
+      showCustomToast("Failed To Send Email", "Failed to send verification email", "error");
     } finally {
       setIsResending(false);
     }
@@ -89,28 +101,30 @@ export function VerificationPending() {
           <div className="text-center mb-8">
             <div className="mb-6">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-foreground">{state?.email || "your email address"}</p>
+                <p className="bg-gray-100 py-2 px-6 mx-auto rounded-md text-sm font-medium text-foreground font-fira-code">
+                  {state?.email || "your email address"}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <Button onClick={handleResendEmail} className="w-full font-medium">
               Resend Verification Email
             </Button>
-          </div>
+          </div> */}
         </div>
 
-        <div className="text-center mt-8">
+        <div className="text-center mt-24">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link
-              to="/login"
+            Didn't get the email?{" "}
+            <button
+              onClick={handleResendEmail}
               type="button"
               className="text-primary hover:underline font-medium transition-colors"
             >
-              Log in
-            </Link>
+              Resend now
+            </button>
           </p>
         </div>
       </div>

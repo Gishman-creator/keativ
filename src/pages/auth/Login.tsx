@@ -4,7 +4,6 @@ import { Eye, EyeOff, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import NetworkError from "@/pages/public/NetworkError" // Import NetworkError component
 import { useDispatch } from "react-redux"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { loginFailure, loginStart, loginSuccess } from "@/redux/slices/authSlice"
@@ -28,7 +27,6 @@ const Login = () => {
   const [errors, setErrors] = useState<FormErrors>({})
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [hasNetworkError, setHasNetworkError] = useState(false)
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const dispatch = useDispatch();
@@ -68,7 +66,6 @@ const Login = () => {
 
     setIsLoading(true)
     setErrors({})
-    setHasNetworkError(false) // Reset network error state on new submission
 
     try {
       const response = await authApi.login({ username: formData.email, password: formData.password });
@@ -89,18 +86,19 @@ const Login = () => {
         if (error === 'Network error') {
           showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
         } else {
-          showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+          // Check if error is an object with key-value pairs
+          if (typeof error === 'object' && error !== null) {
+            const errorMessages = Object.entries(error)
+              .map(([key, value]) => `${Array.isArray(value) ? value.join(', ') : value}`)
+              .join('. ');
+            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+          } else {
+            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+          }
         }
-        console.log(error);
+        console.log(response);
         setErrorMessage(error);
         dispatch(loginFailure(error));
-      }
-    } catch (error: any) { // Explicitly type error as 'any' or 'Error'
-      console.error('Login error:', error)
-      if (error.message === 'Network error' || (error.response && error.response.status === 503)) {
-        setHasNetworkError(true); // Set network error state to true
-      } else {
-        setErrors({ general: 'Login failed. Please check your credentials and try again.' })
       }
     } finally {
       setIsLoading(false)
@@ -115,13 +113,6 @@ const Login = () => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }))
     }
-  }
-
-  const handleForgotPassword = () => {
-    toast({
-      title: "Password Reset",
-      description: "Password reset functionality will be implemented soon.",
-    })
   }
 
   return (
@@ -144,22 +135,14 @@ const Login = () => {
             </p>
           </div>
 
-          {errors.general && (
-            <div className="rounded-lg p-4 mb-6 bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800">
-              <div className="text-sm text-red-600 dark:text-red-400">
-                {errors.general}
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
             <div>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
-                className={`${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                className={`${errors.email ? "border-red-500 focus:border-secondary" : ""
                   }`}
                 placeholder="Email address"
                 value={formData.email}
@@ -179,7 +162,7 @@ const Login = () => {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  className={`pr-12 ${errors.password ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+                  className={`pr-12 ${errors.password ? "border-red-500 focus:border-secondary" : ""
                     }`}
                   placeholder="Password"
                   value={formData.password}
@@ -202,22 +185,21 @@ const Login = () => {
                   {errors.password}
                 </p>
               )}
+
+              <div className="flex items-center justify-end mt-2">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end">
-              <button
-                type="button"
-                className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-                onClick={handleForgotPassword}
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            <div className="flex justify-end"> {/* New div to align the button to the right */}
+            <div className="flex justify-end">
               <Button
                 type="submit"
-                className="w-full font-medium"
+                className="w-full font-medium mt-4"
                 disabled={isLoading}
               >
                 {isLoading ? (

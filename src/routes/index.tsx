@@ -13,7 +13,7 @@ import TermsOfService from '../pages/public/TermsOfService';
 import NotFound from '../pages/public/NotFound';
 
 // Email verification components
-import { EmailVerification, VerificationPending, ResendVerification, Register } from '@/pages/auth';
+import { EmailVerification, VerificationPending, ForgotPassword, Register } from '@/pages/auth';
 import Login from '../pages/auth/Login';
 
 // Import the Enhanced Pricing component
@@ -52,6 +52,7 @@ import CRMContactsList from '../components/crm/CRMContactsList';
 // Demo page for dialog components
 import DialogsDemoPage from '../pages/private/demo/DialogsDemoPage';
 import Settings from '@/pages/private/Settings';
+import { ResetPassword } from '@/pages/auth/ResetPassword';
 
 export const router = createBrowserRouter([
   {
@@ -69,8 +70,9 @@ export const router = createBrowserRouter([
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Register /> },
       { path: 'verify-email/:token', element: <EmailVerification /> },
+      { path: 'reset-password/:token', element: <ResetPassword /> },
       { path: 'verification-pending', element: <VerificationPending /> },
-      { path: 'resend-verification', element: <ResendVerification /> },
+      { path: 'forgot-password', element: <ForgotPassword /> },
     ],
   },
   {

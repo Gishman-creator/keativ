@@ -85,7 +85,7 @@ function SchedulePostPage({ onClose }: SchedulePostPageProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className={`flex bg-white flex-col lg:flex-row ${isLargeScreen ? "max-w-6xl rounded-lg" : "w-full h-full"} shadow-xl relative lg:gap-4 ${isLargeScreen ? "h-[calc(100vh-100px)]" : "h-full"} overflow-hidden`} onClick={(e) => e.stopPropagation()}>
+      <div className={`flex flex-col lg:flex-row ${isLargeScreen ? "max-w-6xl rounded-lg" : "w-full h-full"} shadow-xl relative lg:gap-4 ${isLargeScreen ? "h-[calc(100vh-100px)]" : "h-full"} overflow-hidden`} onClick={(e) => e.stopPropagation()}>
         {/* Image Selection Modal - Conditionally rendered and wrapped based on screen size */}
         {showImageModal &&
           (isLargeScreen ? (

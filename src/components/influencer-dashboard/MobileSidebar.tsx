@@ -13,6 +13,7 @@ import {
   Settings,
   Share2,
   X,
+  Globe,
 } from 'lucide-react';
 import {
   Sheet,
@@ -43,6 +44,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isCollapsed, onToggle }) 
     { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
+    { name: 'Integrations', href: '/dashboard/integrations', icon: Globe },
   ];
 
   const settingsItem = { name: 'Settings', href: '/dashboard/settings', icon: Settings };

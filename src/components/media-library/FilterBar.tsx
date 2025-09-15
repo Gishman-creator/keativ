@@ -43,15 +43,6 @@ export function FilterBar({
           Videos
         </Button>
       </div>
-
-      {/* Stats */}
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">
-            {counter} of {total} files
-          </span>
-        </div>
-      </div>
     </div>
   )
 }

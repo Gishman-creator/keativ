@@ -490,7 +490,7 @@ const IntegrationsPage = () => {
           <Card key={integration.key}>
             <CardHeader className="flex flex-row items-center justify-between">
               <div className="flex items-center gap-4">
-                <img src={integration.logo} alt={integration.name} className="h-8 w-8" />
+                <img src={integration.logo} alt={integration.name} className="h-8 w-8 object-cover" />
                 <CardTitle>{integration.name}</CardTitle>
               </div>
             </CardHeader>

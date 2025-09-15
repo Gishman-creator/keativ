@@ -15,6 +15,7 @@ import {
   Plus,
   CreditCard,
   Building2,
+  Globe,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -58,12 +59,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed: propIsCollapsed, classNa
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Planner', href: '/dashboard/planner', icon: Calendar },
     { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-    {
-      name: 'Messages', href: '/dashboard/messages', icon: MessageCircle
-      // , badge: 2
-    },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageCircle },
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
+    { name: 'Integrations', href: '/dashboard/integrations', icon: Globe },
     { name: 'Automations', href: '/dashboard/automations', icon: Workflow },
     { name: 'CRM', href: '/dashboard/crm', icon: Building2 },
   ];
@@ -108,16 +107,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed: propIsCollapsed, classNa
             </span>
           )}
         </Link>
-        {!isCollapsed && isPlanner && (
-          <button
-            onClick={() => navigate('/dashboard/posts/new')}
-            className="ml-2 inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
-            aria-label="Create post"
-            title="Create post"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        )}
       </div>
     );
   };

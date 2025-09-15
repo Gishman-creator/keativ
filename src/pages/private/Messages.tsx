@@ -416,45 +416,6 @@ const Messages = () => {
           )}
         </Card>
       </div>
-
-      {/* Message Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <MessageCircle className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{messages.length}</p>
-            <p className="text-sm text-gray-600">Total Messages</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <div className="h-3 w-3 bg-red-500 rounded-full"></div>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">{messages.filter(m => m.status !== 'delivered' && m.status !== 'sent').length}</p>
-            <p className="text-sm text-gray-600">Pending/Failed</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <Reply className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{messages.filter(m => m.status === 'sent' || m.status === 'delivered').length}</p>
-            <p className="text-sm text-gray-600">Delivered</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-purple-600 font-bold text-sm">—</span>
-            </div>
-            <p className="text-2xl font-bold text-gray-900">—</p>
-            <p className="text-sm text-gray-600">Avg Response</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };

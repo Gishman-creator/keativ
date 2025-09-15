@@ -121,7 +121,6 @@ export function MediaGrid({
                 "group relative cursor-pointer transition-all hover:scale-[1.02]",
                 file.selected && "ring-1 ring-secondary rounded-lg"
               )}
-              onClick={() => handleFileClick(file)}
             >
               {/* Media Preview */}
               <div className="aspect-square bg-accent rounded-lg overflow-hidden border border-border">

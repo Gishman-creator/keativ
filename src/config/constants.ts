@@ -120,6 +120,11 @@ export const API_ENDPOINTS = {
     SUBSCRIPTION_TIERS: `${API_BASE_URL}/api/core/subscriptions/tiers/`,
   },
 
+  // Core (Rate limiting & IP management)
+  MEDIA: {
+    LIBRARY: `${API_BASE_URL}/api/media/library/`,
+  },
+
   // Twitter Integration
   TWITTER_VERIFY: `${API_BASE_URL}/api/integrations/twitter/verify/`,
   TWITTER_POST: `${API_BASE_URL}/api/integrations/twitter/post/`,

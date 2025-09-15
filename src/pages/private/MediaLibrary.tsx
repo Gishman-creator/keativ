@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { FilterBar, type MediaType } from "@/components/media-library/FilterBar"
 import { UploadArea } from "@/components/media-library/UploadArea"
 import { MediaGrid, type MediaFile } from "@/components/media-library/MediaGridProps"
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import { FolderOpen, Upload as UploadIcon, ChevronDown, HardDrive, Cloud } from "lucide-react"
+import { api } from "@/lib/api" // Import the api object
 
 // Sample media files for demonstration
 const generateSampleFiles = (): MediaFile[] => {
@@ -62,6 +63,19 @@ const MediaLibrary = () => {
   }, [mediaFiles, selectedType])
 
   const selectedCount = mediaFiles.filter(file => file.selected).length
+
+  // Fetch media library data on component mount
+  // useEffect(() => {
+  //   const fetchMediaLibrary = async () => {
+  //     try {
+  //       const response = await api.getMediaLibrary()
+  //       console.log("Media Library API Response:", response)
+  //     } catch (error) {
+  //       console.error("Error fetching media library:", error)
+  //     }
+  //   }
+  //   fetchMediaLibrary()
+  // }, [])
 
   const handleFilesUploaded = (files: File[]) => {
     const newMediaFiles: MediaFile[] = files.map((file, index) => ({
@@ -133,9 +147,9 @@ const MediaLibrary = () => {
   return (
     <div className="min-h-screen bg-transparent flex flex-col p-6">
       {/* Header */}
-      <header className="bg-transparent">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between">
+      <div>
+        <div className="container mx-auto min-w-full">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
             <div>
               <h1 className="text-3xl font-bold">Media Library</h1>
               <p className="text-muted-foreground">
@@ -145,7 +159,7 @@ const MediaLibrary = () => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button>
+                <Button className="mt-4 md:mt-0 w-fit">
                   <UploadIcon className="w-4 h-4 mr-2" />
                   Upload Media
                   <ChevronDown className="w-4 h-4 ml-2" />
@@ -168,7 +182,7 @@ const MediaLibrary = () => {
             </DropdownMenu>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Upload Area */}
       {showUploadArea && (

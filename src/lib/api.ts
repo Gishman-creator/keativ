@@ -2,7 +2,7 @@
  * API Service Layer for SMMS Frontend
  */
 
-import { API_ENDPOINTS } from '@/config/constants';
+import { API_ENDPOINTS } from "@/config/constants";
 
 // Types
 export interface ApiResponse<T = unknown> {
@@ -36,9 +36,9 @@ export interface Post {
   image?: string;
   video?: string;
   scheduled_time: string;
-  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  status: "draft" | "scheduled" | "published" | "failed";
   platform: string;
-  post_type: 'post' | 'story' | 'reel' | 'video';
+  post_type: "post" | "story" | "reel" | "video";
   created_at: string;
   updated_at: string;
 }
@@ -94,68 +94,68 @@ export interface TwitterPost {
 }
 
 export interface Tweet {
-    id: string;
-    text: string;
-    created_at: string;
-    retweet_count: number;
-    like_count: number;
-    reply_count: number;
-    quote_count: number;
-    url: string;
-    has_media: boolean;
-    media_keys?: string[];
+  id: string;
+  text: string;
+  created_at: string;
+  retweet_count: number;
+  like_count: number;
+  reply_count: number;
+  quote_count: number;
+  url: string;
+  has_media: boolean;
+  media_keys?: string[];
 }
 
 export interface TweetAnalytics {
-    success: boolean;
-    tweet_id: string;
-    metrics: {
-        retweet_count: number;
-        like_count: number;
-        reply_count: number;
-        quote_count: number;
-        impression_count: number;
-    };
-    created_at: string;
-    text: string;
-    url: string;
-}
-
-export interface MyTwitterPost {
-    id: string;
-    user: number;
-    social_media_account: string;
-    tweet_text: string;
-    tweet_id: string;
-    media_paths: string[];
+  success: boolean;
+  tweet_id: string;
+  metrics: {
     retweet_count: number;
     like_count: number;
     reply_count: number;
     quote_count: number;
     impression_count: number;
-    status: string;
-    scheduled_at: string | null;
-    published_at: string | null;
-    created_at: string;
-    updated_at: string;
-    error_message: string | null;
-    last_analytics_update: string | null;
-    twitter_url?: string;
-    engagement_rate?: number;
-    total_engagements?: number;
+  };
+  created_at: string;
+  text: string;
+  url: string;
+}
+
+export interface MyTwitterPost {
+  id: string;
+  user: number;
+  social_media_account: string;
+  tweet_text: string;
+  tweet_id: string;
+  media_paths: string[];
+  retweet_count: number;
+  like_count: number;
+  reply_count: number;
+  quote_count: number;
+  impression_count: number;
+  status: string;
+  scheduled_at: string | null;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+  error_message: string | null;
+  last_analytics_update: string | null;
+  twitter_url?: string;
+  engagement_rate?: number;
+  total_engagements?: number;
 }
 
 export interface TwitterRateLimit {
-    success: boolean;
-    data: unknown;
-    timestamp: string;
+  success: boolean;
+  data: unknown;
+  timestamp: string;
 }
 
 export interface PostTweetPayload {
-    tweet_text: string;
-    media_paths?: string[];
-    scheduled_at?: string;
-    [key: string]: unknown;
+  tweet_text: string;
+  media_paths?: string[];
+  scheduled_at?: string;
+  [key: string]: unknown;
 }
 
 export interface TwitterOAuthTokens {
@@ -181,8 +181,18 @@ export interface TwitterCallbackResponse {
 }
 
 // Integration extra types
-export interface SlackHistoryItem { type?: string; user?: string; text?: string; ts: string }
-export interface SlackHistoryResponse { ok: boolean; messages?: SlackHistoryItem[]; error?: string; response_metadata?: { next_cursor?: string } }
+export interface SlackHistoryItem {
+  type?: string;
+  user?: string;
+  text?: string;
+  ts: string;
+}
+export interface SlackHistoryResponse {
+  ok: boolean;
+  messages?: SlackHistoryItem[];
+  error?: string;
+  response_metadata?: { next_cursor?: string };
+}
 export interface SlackConversation {
   id: string;
   name?: string;
@@ -193,15 +203,49 @@ export interface SlackConversation {
   is_member?: boolean;
   created?: number;
 }
-export interface SlackAuthStatus { ok: boolean; auth_test?: Record<string, unknown>; scopes?: string[]; error?: string }
-export interface DriveFile { id: string; name: string; mime_type?: string }
-export interface DriveFilesResponse { files: DriveFile[] }
-export interface DropboxFile { id: string; name: string; path: string }
-export interface DropboxFilesResponse { files: DropboxFile[] }
-export interface HashtagSuggestions { hashtags: string[] }
-export interface OptimalPostingTime { hour: number; score?: number; recommendation?: string; avg_engagement?: number; avg_reach?: number }
-export interface OptimalPostingTimesResponse { optimal_posting_times?: OptimalPostingTime[]; optimal_times?: unknown; confidence?: number; analysis_period?: string }
-export interface CalendarShareResponse { queued: boolean; slack: number; emails: number }
+export interface SlackAuthStatus {
+  ok: boolean;
+  auth_test?: Record<string, unknown>;
+  scopes?: string[];
+  error?: string;
+}
+export interface DriveFile {
+  id: string;
+  name: string;
+  mime_type?: string;
+}
+export interface DriveFilesResponse {
+  files: DriveFile[];
+}
+export interface DropboxFile {
+  id: string;
+  name: string;
+  path: string;
+}
+export interface DropboxFilesResponse {
+  files: DropboxFile[];
+}
+export interface HashtagSuggestions {
+  hashtags: string[];
+}
+export interface OptimalPostingTime {
+  hour: number;
+  score?: number;
+  recommendation?: string;
+  avg_engagement?: number;
+  avg_reach?: number;
+}
+export interface OptimalPostingTimesResponse {
+  optimal_posting_times?: OptimalPostingTime[];
+  optimal_times?: unknown;
+  confidence?: number;
+  analysis_period?: string;
+}
+export interface CalendarShareResponse {
+  queued: boolean;
+  slack: number;
+  emails: number;
+}
 
 export interface BindTwitterTokensPayload extends Record<string, unknown> {
   account: TwitterCallbackAccount;
@@ -388,24 +432,29 @@ export interface ScheduledPost {
   media_url?: string;
   scheduled_time: string; // ISO string
   timezone?: string;
-  post_type?: 'post' | 'story' | 'reel' | 'video';
-  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  post_type?: "post" | "story" | "reel" | "video";
+  status: "draft" | "scheduled" | "published" | "failed";
   platform?: string;
   created_at?: string;
   updated_at?: string;
 }
 
 // Extra types for file uploads
-export type PostCreateWithMedia = Omit<Partial<Post>, 'image' | 'video'> & {
+export type PostCreateWithMedia = Omit<Partial<Post>, "image" | "video"> & {
   image?: File;
   video?: File;
 };
 
 // Type guards
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null;
 const isFileLike = (v: unknown): v is File => {
   if (!isRecord(v)) return false;
-  return typeof v.name === 'string' && typeof v.size === 'number' && typeof v.type === 'string';
+  return (
+    typeof v.name === "string" &&
+    typeof v.size === "number" &&
+    typeof v.type === "string"
+  );
 };
 
 // API Client Class
@@ -415,10 +464,13 @@ class ApiClient {
     return this.get(API_ENDPOINTS.TIKTOK_AUTH_URL);
   }
 
-  async tiktokCallback(params: { code: string; state?: string }): Promise<ApiResponse<TikTokCallbackResponse>> {
+  async tiktokCallback(params: {
+    code: string;
+    state?: string;
+  }): Promise<ApiResponse<TikTokCallbackResponse>> {
     const url = new URL(API_ENDPOINTS.TIKTOK_CALLBACK);
-    url.searchParams.set('code', params.code);
-    if (params.state) url.searchParams.set('state', params.state);
+    url.searchParams.set("code", params.code);
+    if (params.state) url.searchParams.set("state", params.state);
     return this.get(url.toString());
   }
 
@@ -426,11 +478,15 @@ class ApiClient {
     return this.get(API_ENDPOINTS.TIKTOK_ACCOUNTS);
   }
 
-  async disconnectTikTokAccount(accountId: string): Promise<ApiResponse<{ success: boolean; message: string }>> {
+  async disconnectTikTokAccount(
+    accountId: string
+  ): Promise<ApiResponse<{ success: boolean; message: string }>> {
     return this.post(API_ENDPOINTS.TIKTOK_DISCONNECT(accountId), {});
   }
 
-  async createTikTokPost(payload: PostTikTokPayload): Promise<ApiResponse<TikTokPost>> {
+  async createTikTokPost(
+    payload: PostTikTokPayload
+  ): Promise<ApiResponse<TikTokPost>> {
     return this.post(API_ENDPOINTS.TIKTOK_CREATE_POST, payload);
   }
 
@@ -442,7 +498,9 @@ class ApiClient {
     return this.get(API_ENDPOINTS.TIKTOK_POST_DETAIL(postId));
   }
 
-  async deleteTikTokPost(postId: string): Promise<ApiResponse<{ success: boolean; message: string }>> {
+  async deleteTikTokPost(
+    postId: string
+  ): Promise<ApiResponse<{ success: boolean; message: string }>> {
     return this.post(API_ENDPOINTS.TIKTOK_DELETE_POST(postId), {});
   }
 
@@ -453,13 +511,14 @@ class ApiClient {
   private token: string | null = null;
 
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-    this.token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    this.baseURL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+    this.token =
+      typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
 
     // Keep in sync if another tab updates auth_token
-    if (typeof window !== 'undefined') {
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'auth_token') {
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", (e) => {
+        if (e.key === "auth_token") {
           this.token = e.newValue;
         }
       });
@@ -468,14 +527,14 @@ class ApiClient {
 
   private getHeaders(includeAuth: boolean = true): HeadersInit {
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     if (includeAuth) {
       const token = this.getToken();
       if (token) {
-        headers['Authorization'] = `Token ${token}`;
+        headers["Authorization"] = `Token ${token}`;
       }
     }
 
@@ -485,11 +544,11 @@ class ApiClient {
   // Authorization-only headers (no Content-Type) for FormData requests
   private getAuthHeaders(): HeadersInit {
     const headers: HeadersInit = {
-      'Accept': 'application/json',
+      Accept: "application/json",
     };
     const token = this.getToken();
     if (token) {
-      headers['Authorization'] = `Token ${token}`;
+      headers["Authorization"] = `Token ${token}`;
     }
     return headers;
   }
@@ -497,26 +556,26 @@ class ApiClient {
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     try {
       const data = await response.json();
-      
+
       if (response.ok) {
         return {
           data,
           success: true,
         };
       } else {
-        console.error('API Error Response:', {
+        console.error("API Error Response:", {
           status: response.status,
           statusText: response.statusText,
-          data
+          data,
         });
         return {
           error: data || `HTTP ${response.status}: ${response.statusText}`,
           success: false,
-          data: data // Include the error details from backend
+          data: data, // Include the error details from backend
         };
       }
     } catch (parseError) {
-      console.error('Response parsing error:', parseError);
+      console.error("Response parsing error:", parseError);
       return {
         error: `Network error or invalid response (${response.status})`,
         success: false,
@@ -527,14 +586,14 @@ class ApiClient {
   async get<T>(url: string): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
-        credentials: 'include',
+        credentials: "include",
       });
       return this.handleResponse<T>(response);
     } catch {
       return {
-        error: 'Network error',
+        error: "Network error",
         success: false,
       };
     }
@@ -543,48 +602,54 @@ class ApiClient {
   async getPublic<T>(url: string): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(false), // Explicitly do not include auth headers
-        credentials: 'include',
+        credentials: "include",
       });
       return this.handleResponse<T>(response);
     } catch {
       return {
-        error: 'Network error',
+        error: "Network error",
         success: false,
       };
     }
   }
 
-  async post<T>(url: string, data?: Record<string, unknown>): Promise<ApiResponse<T>> {
+  async post<T>(
+    url: string,
+    data?: Record<string, unknown>
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'POST',
-  headers: this.getHeaders(),
-  credentials: 'include',
+        method: "POST",
+        headers: this.getHeaders(),
+        credentials: "include",
         body: data ? JSON.stringify(data) : undefined,
       });
       return this.handleResponse<T>(response);
     } catch {
       return {
-        error: 'Network error',
+        error: "Network error",
         success: false,
       };
     }
   }
 
-  async put<T>(url: string, data?: Record<string, unknown>): Promise<ApiResponse<T>> {
+  async put<T>(
+    url: string,
+    data?: Record<string, unknown>
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'PUT',
-  headers: this.getHeaders(),
-  credentials: 'include',
+        method: "PUT",
+        headers: this.getHeaders(),
+        credentials: "include",
         body: data ? JSON.stringify(data) : undefined,
       });
       return this.handleResponse<T>(response);
     } catch {
       return {
-        error: 'Network error',
+        error: "Network error",
         success: false,
       };
     }
@@ -593,31 +658,34 @@ class ApiClient {
   async delete<T>(url: string): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'DELETE',
-  headers: this.getHeaders(),
-  credentials: 'include',
+        method: "DELETE",
+        headers: this.getHeaders(),
+        credentials: "include",
       });
       return this.handleResponse<T>(response);
     } catch {
       return {
-        error: 'Network error',
+        error: "Network error",
         success: false,
       };
     }
   }
 
-  async patch<T>(url: string, data?: Record<string, unknown>): Promise<ApiResponse<T>> {
+  async patch<T>(
+    url: string,
+    data?: Record<string, unknown>
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'PATCH',
-  headers: this.getHeaders(),
-  credentials: 'include',
+        method: "PATCH",
+        headers: this.getHeaders(),
+        credentials: "include",
         body: data ? JSON.stringify(data) : undefined,
       });
       return this.handleResponse<T>(response);
     } catch {
       return {
-        error: 'Network error',
+        error: "Network error",
         success: false,
       };
     }
@@ -627,49 +695,49 @@ class ApiClient {
   async postForm<T>(url: string, form: FormData): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'POST',
-  headers: this.getAuthHeaders(),
-  credentials: 'include',
+        method: "POST",
+        headers: this.getAuthHeaders(),
+        credentials: "include",
         body: form,
       });
-        return this.handleResponse<T>(response);
+      return this.handleResponse<T>(response);
     } catch {
-      return { success: false, error: 'Network error' };
+      return { success: false, error: "Network error" };
     }
   }
 
   async putForm<T>(url: string, form: FormData): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(url, {
-        method: 'PUT',
-  headers: this.getAuthHeaders(),
-  credentials: 'include',
+        method: "PUT",
+        headers: this.getAuthHeaders(),
+        credentials: "include",
         body: form,
       });
       return this.handleResponse<T>(response);
     } catch {
-      return { success: false, error: 'Network error' };
+      return { success: false, error: "Network error" };
     }
   }
 
   // Authentication methods
   setToken(token: string) {
     this.token = token;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auth_token", token);
     }
   }
 
   clearToken() {
     this.token = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
     }
   }
 
   getToken() {
-    if (!this.token && typeof window !== 'undefined') {
-      const stored = localStorage.getItem('auth_token');
+    if (!this.token && typeof window !== "undefined") {
+      const stored = localStorage.getItem("auth_token");
       if (stored) this.token = stored;
     }
     return this.token;
@@ -677,201 +745,337 @@ class ApiClient {
 
   // Twitter Integration Methods
 
-  async verifyTwitterCredentials(): Promise<ApiResponse<{ success: boolean; message: string; account: TwitterAccount }>> {
-    return this.get<{ success: boolean; message: string; account: TwitterAccount }>(API_ENDPOINTS.TWITTER_VERIFY);
+  async verifyTwitterCredentials(): Promise<
+    ApiResponse<{ success: boolean; message: string; account: TwitterAccount }>
+  > {
+    return this.get<{
+      success: boolean;
+      message: string;
+      account: TwitterAccount;
+    }>(API_ENDPOINTS.TWITTER_VERIFY);
   }
 
-  async postTweet(payload: PostTweetPayload): Promise<ApiResponse<{ success: boolean; message: string; tweet: TwitterPost }>> {
-    return this.post<{ success: boolean; message: string; tweet: TwitterPost }>(API_ENDPOINTS.TWITTER_POST, payload);
+  async postTweet(
+    payload: PostTweetPayload
+  ): Promise<
+    ApiResponse<{ success: boolean; message: string; tweet: TwitterPost }>
+  > {
+    return this.post<{ success: boolean; message: string; tweet: TwitterPost }>(
+      API_ENDPOINTS.TWITTER_POST,
+      payload
+    );
   }
 
-  async getUserTweets(count: number = 10): Promise<ApiResponse<{ success: boolean; tweets: Tweet[]; count: number }>> {
-    return this.get<{ success: boolean; tweets: Tweet[]; count: number }>(`${API_ENDPOINTS.TWITTER_USER_TWEETS}?count=${count}`);
+  async getUserTweets(
+    count: number = 10
+  ): Promise<
+    ApiResponse<{ success: boolean; tweets: Tweet[]; count: number }>
+  > {
+    return this.get<{ success: boolean; tweets: Tweet[]; count: number }>(
+      `${API_ENDPOINTS.TWITTER_USER_TWEETS}?count=${count}`
+    );
   }
 
-  async getTweetAnalytics(tweetId: string): Promise<ApiResponse<{ success: boolean; analytics: TweetAnalytics }>> {
-    return this.get<{ success: boolean; analytics: TweetAnalytics }>(`${API_ENDPOINTS.TWITTER_TWEET_ANALYTICS}/${tweetId}/`);
+  async getTweetAnalytics(
+    tweetId: string
+  ): Promise<ApiResponse<{ success: boolean; analytics: TweetAnalytics }>> {
+    return this.get<{ success: boolean; analytics: TweetAnalytics }>(
+      `${API_ENDPOINTS.TWITTER_TWEET_ANALYTICS}/${tweetId}/`
+    );
   }
 
-  async searchTweets(query: string, count: number = 10): Promise<ApiResponse<{ success: boolean; query: string; tweets: Tweet[]; count: number }>> {
-    return this.get<{ success: boolean; query: string; tweets: Tweet[]; count: number }>(`${API_ENDPOINTS.TWITTER_SEARCH}?query=${encodeURIComponent(query)}&count=${count}`);
+  async searchTweets(
+    query: string,
+    count: number = 10
+  ): Promise<
+    ApiResponse<{
+      success: boolean;
+      query: string;
+      tweets: Tweet[];
+      count: number;
+    }>
+  > {
+    return this.get<{
+      success: boolean;
+      query: string;
+      tweets: Tweet[];
+      count: number;
+    }>(
+      `${API_ENDPOINTS.TWITTER_SEARCH}?query=${encodeURIComponent(
+        query
+      )}&count=${count}`
+    );
   }
 
-  async deleteTweet(tweetId: string): Promise<ApiResponse<{ success: boolean; message: string; tweet_id: string }>> {
-    return this.delete<{ success: boolean; message: string; tweet_id: string }>(`${API_ENDPOINTS.TWITTER_DELETE}/${tweetId}/`);
+  async deleteTweet(
+    tweetId: string
+  ): Promise<
+    ApiResponse<{ success: boolean; message: string; tweet_id: string }>
+  > {
+    return this.delete<{ success: boolean; message: string; tweet_id: string }>(
+      `${API_ENDPOINTS.TWITTER_DELETE}/${tweetId}/`
+    );
   }
 
-  async getMyTwitterPosts(status?: string, limit: number = 20): Promise<ApiResponse<{ success: boolean; posts: MyTwitterPost[]; count: number }>> {
+  async getMyTwitterPosts(
+    status?: string,
+    limit: number = 20
+  ): Promise<
+    ApiResponse<{ success: boolean; posts: MyTwitterPost[]; count: number }>
+  > {
     let url = `${API_ENDPOINTS.TWITTER_MY_POSTS}?limit=${limit}`;
     if (status) {
       url += `&status=${status}`;
     }
-    return this.get<{ success: boolean; posts: MyTwitterPost[]; count: number }>(url);
+    return this.get<{
+      success: boolean;
+      posts: MyTwitterPost[];
+      count: number;
+    }>(url);
   }
 
   async getTwitterRateLimit(): Promise<ApiResponse<TwitterRateLimit>> {
     return this.get<TwitterRateLimit>(API_ENDPOINTS.TWITTER_RATE_LIMIT);
   }
 
-  async getTwitterAuthorizeUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
+  async getTwitterAuthorizeUrl(): Promise<
+    ApiResponse<{ authorize_url: string }>
+  > {
     return this.get<{ authorize_url: string }>(API_ENDPOINTS.TWITTER_AUTHORIZE);
   }
 
-  async twitterCallback(params: { code: string; state?: string }): Promise<ApiResponse<TwitterCallbackResponse>> {
+  async twitterCallback(params: {
+    code: string;
+    state?: string;
+  }): Promise<ApiResponse<TwitterCallbackResponse>> {
     const url = new URL(API_ENDPOINTS.TWITTER_CALLBACK);
-    url.searchParams.set('code', params.code);
-    if (params.state) url.searchParams.set('state', params.state);
+    url.searchParams.set("code", params.code);
+    if (params.state) url.searchParams.set("state", params.state);
     return this.get<TwitterCallbackResponse>(url.toString());
   }
 
-  async bindTwitterTokens(payload: BindTwitterTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
-    return this.post<{ success: boolean }>(API_ENDPOINTS.TWITTER_BIND_TOKENS, payload);
+  async bindTwitterTokens(
+    payload: BindTwitterTokensPayload
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    return this.post<{ success: boolean }>(
+      API_ENDPOINTS.TWITTER_BIND_TOKENS,
+      payload
+    );
   }
 
   // LinkedIn Integration Methods
 
-  async verifyLinkedInCredentials(): Promise<ApiResponse<{ success: boolean; message: string; account: LinkedInAccount }>> {
-    return this.get<{ success: boolean; message: string; account: LinkedInAccount }>(API_ENDPOINTS.LINKEDIN_VERIFY);
+  async verifyLinkedInCredentials(): Promise<
+    ApiResponse<{ success: boolean; message: string; account: LinkedInAccount }>
+  > {
+    return this.get<{
+      success: boolean;
+      message: string;
+      account: LinkedInAccount;
+    }>(API_ENDPOINTS.LINKEDIN_VERIFY);
   }
 
-  async postLinkedInShare(payload: PostLinkedInPayload): Promise<ApiResponse<{ success: boolean; message: string; post: LinkedInPost }>> {
-    return this.post<{ success: boolean; message: string; post: LinkedInPost }>(API_ENDPOINTS.LINKEDIN_POST, payload);
+  async postLinkedInShare(
+    payload: PostLinkedInPayload
+  ): Promise<
+    ApiResponse<{ success: boolean; message: string; post: LinkedInPost }>
+  > {
+    return this.post<{ success: boolean; message: string; post: LinkedInPost }>(
+      API_ENDPOINTS.LINKEDIN_POST,
+      payload
+    );
   }
 
-  async getLinkedInAuthorizeUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
+  async getLinkedInAuthorizeUrl(): Promise<
+    ApiResponse<{ authorize_url: string }>
+  > {
     // Use headless mode (redirect=false) for popup OAuth flow
-    return this.get<{ authorize_url: string }>(`${API_ENDPOINTS.LINKEDIN_AUTHORIZE}?redirect=false`);
+    return this.get<{ authorize_url: string }>(
+      `${API_ENDPOINTS.LINKEDIN_AUTHORIZE}?redirect=false`
+    );
   }
 
-  async linkedInCallback(params: { code: string; state?: string }): Promise<ApiResponse<LinkedInCallbackResponse>> {
+  async linkedInCallback(params: {
+    code: string;
+    state?: string;
+  }): Promise<ApiResponse<LinkedInCallbackResponse>> {
     const url = new URL(API_ENDPOINTS.LINKEDIN_CALLBACK);
-    url.searchParams.set('code', params.code);
-    if (params.state) url.searchParams.set('state', params.state);
+    url.searchParams.set("code", params.code);
+    if (params.state) url.searchParams.set("state", params.state);
     return this.get<LinkedInCallbackResponse>(url.toString());
   }
 
-  async bindLinkedInTokens(payload: BindLinkedInTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
-    return this.post<{ success: boolean }>(API_ENDPOINTS.LINKEDIN_BIND_TOKENS, payload);
+  async bindLinkedInTokens(
+    payload: BindLinkedInTokensPayload
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    return this.post<{ success: boolean }>(
+      API_ENDPOINTS.LINKEDIN_BIND_TOKENS,
+      payload
+    );
   }
 
   // Facebook Integration Methods
 
-  async verifyFacebookCredentials(): Promise<ApiResponse<{ success: boolean; message: string; account: FacebookAccount }>> {
-    return this.get<{ success: boolean; message: string; account: FacebookAccount }>(API_ENDPOINTS.FACEBOOK_VERIFY);
+  async verifyFacebookCredentials(): Promise<
+    ApiResponse<{ success: boolean; message: string; account: FacebookAccount }>
+  > {
+    return this.get<{
+      success: boolean;
+      message: string;
+      account: FacebookAccount;
+    }>(API_ENDPOINTS.FACEBOOK_VERIFY);
   }
 
-  async postFacebookShare(payload: PostFacebookPayload): Promise<ApiResponse<{ success: boolean; message: string; post: FacebookPost }>> {
-    return this.post<{ success: boolean; message: string; post: FacebookPost }>(API_ENDPOINTS.FACEBOOK_POST, payload);
+  async postFacebookShare(
+    payload: PostFacebookPayload
+  ): Promise<
+    ApiResponse<{ success: boolean; message: string; post: FacebookPost }>
+  > {
+    return this.post<{ success: boolean; message: string; post: FacebookPost }>(
+      API_ENDPOINTS.FACEBOOK_POST,
+      payload
+    );
   }
 
-  async getFacebookAuthorizeUrl(): Promise<ApiResponse<{ authorize_url: string }>> {
+  async getFacebookAuthorizeUrl(): Promise<
+    ApiResponse<{ authorize_url: string }>
+  > {
     // Use headless mode (redirect=false) for popup OAuth flow
-    return this.get<{ authorize_url: string }>(`${API_ENDPOINTS.FACEBOOK_AUTHORIZE}?redirect=false`);
+    return this.get<{ authorize_url: string }>(
+      `${API_ENDPOINTS.FACEBOOK_AUTHORIZE}?redirect=false`
+    );
   }
 
-  async facebookCallback(params: { code: string; state?: string }): Promise<ApiResponse<FacebookCallbackResponse>> {
+  async facebookCallback(params: {
+    code: string;
+    state?: string;
+  }): Promise<ApiResponse<FacebookCallbackResponse>> {
     const url = new URL(API_ENDPOINTS.FACEBOOK_CALLBACK);
-    url.searchParams.set('code', params.code);
-    if (params.state) url.searchParams.set('state', params.state);
+    url.searchParams.set("code", params.code);
+    if (params.state) url.searchParams.set("state", params.state);
     return this.get<FacebookCallbackResponse>(url.toString());
   }
 
-  async bindFacebookTokens(payload: BindFacebookTokensPayload): Promise<ApiResponse<{ success: boolean }>> {
-    return this.post<{ success: boolean }>(API_ENDPOINTS.FACEBOOK_BIND_TOKENS, payload);
+  async bindFacebookTokens(
+    payload: BindFacebookTokensPayload
+  ): Promise<ApiResponse<{ success: boolean }>> {
+    return this.post<{ success: boolean }>(
+      API_ENDPOINTS.FACEBOOK_BIND_TOKENS,
+      payload
+    );
   }
 
   // Facebook Account Management Methods
-  async getFacebookAccountDetails(): Promise<ApiResponse<{
-    success: boolean;
-    account: {
-      id: string;
-      username: string;
-      display_name: string;
-      profile_image_url: string;
-      platform_user_id: string;
-      is_verified: boolean;
-      followers_count: number;
-      signature: string;
-      connected_at: string;
-      facebook_info: {
-        user_id: string;
-        email: string;
-        name: string;
+  async getFacebookAccountDetails(): Promise<
+    ApiResponse<{
+      success: boolean;
+      account: {
+        id: string;
+        username: string;
+        display_name: string;
+        profile_image_url: string;
+        platform_user_id: string;
+        is_verified: boolean;
+        followers_count: number;
+        signature: string;
+        connected_at: string;
+        facebook_info: {
+          user_id: string;
+          email: string;
+          name: string;
+        };
       };
-    };
-    pages: Array<{
-      id: string;
-      name: string;
-      category: string;
-      has_manage_posts: boolean;
-      has_page_token: boolean;
-    }>;
-    permissions: Array<{
-      permission: string;
-      status: string;
-    }>;
-  }>> {
+      pages: Array<{
+        id: string;
+        name: string;
+        category: string;
+        has_manage_posts: boolean;
+        has_page_token: boolean;
+      }>;
+      permissions: Array<{
+        permission: string;
+        status: string;
+      }>;
+    }>
+  > {
     return this.get(API_ENDPOINTS.FACEBOOK_ACCOUNT_DETAILS);
   }
 
   async updateFacebookAccount(payload: {
     signature?: string;
     display_name?: string;
-  }): Promise<ApiResponse<{
-    success: boolean;
-    message: string;
-    account: {
-      signature: string;
-      display_name: string;
-    };
-  }>> {
+  }): Promise<
+    ApiResponse<{
+      success: boolean;
+      message: string;
+      account: {
+        signature: string;
+        display_name: string;
+      };
+    }>
+  > {
     return this.put(API_ENDPOINTS.FACEBOOK_UPDATE_ACCOUNT, payload);
   }
 
-  async refreshFacebookToken(): Promise<ApiResponse<{
-    success: boolean;
-    message: string;
-  }>> {
+  async refreshFacebookToken(): Promise<
+    ApiResponse<{
+      success: boolean;
+      message: string;
+    }>
+  > {
     return this.post(API_ENDPOINTS.FACEBOOK_REFRESH_TOKEN, {});
   }
 
-  async getFacebookPostingAnalytics(): Promise<ApiResponse<{
-    success: boolean;
-    analytics: {
-      total_posts: number;
-      published_posts: number;
-      failed_posts: number;
-      scheduled_posts: number;
-      success_rate: number;
-    };
-    recent_posts: Array<{
-      id: string;
-      content: string;
-      status: string;
-      created_at: string;
-      scheduled_time?: string;
-      published_at?: string;
-    }>;
-  }>> {
+  async getFacebookPostingAnalytics(): Promise<
+    ApiResponse<{
+      success: boolean;
+      analytics: {
+        total_posts: number;
+        published_posts: number;
+        failed_posts: number;
+        scheduled_posts: number;
+        success_rate: number;
+      };
+      recent_posts: Array<{
+        id: string;
+        content: string;
+        status: string;
+        created_at: string;
+        scheduled_time?: string;
+        published_at?: string;
+      }>;
+    }>
+  > {
     return this.get(API_ENDPOINTS.FACEBOOK_POSTING_ANALYTICS);
   }
 
-  async testFacebookConnection(): Promise<ApiResponse<{
-    success: boolean;
-    connection_status: {
-      account_verified: boolean;
-      pages_accessible: boolean;
-      pages_count: number;
-      has_required_permissions: boolean;
-      can_post: boolean;
-      account_name: string;
-    };
-  }>> {
+  async testFacebookConnection(): Promise<
+    ApiResponse<{
+      success: boolean;
+      connection_status: {
+        account_verified: boolean;
+        pages_accessible: boolean;
+        pages_count: number;
+        has_required_permissions: boolean;
+        can_post: boolean;
+        account_name: string;
+      };
+    }>
+  > {
     return this.post(API_ENDPOINTS.FACEBOOK_TEST_CONNECTION, {});
   }
 
+  // Media Library API
+  async getMediaLibrary(): Promise<ApiResponse<unknown>> {
+    return this.get<unknown>(API_ENDPOINTS.MEDIA.LIBRARY);
+  }
+
   // Posts API Methods
-  async getPosts(params?: { page?: number; status?: string; platform?: string }): Promise<ApiResponse<{ results: Post[]; count: number }>> {
+  async getPosts(params?: {
+    page?: number;
+    status?: string;
+    platform?: string;
+  }): Promise<ApiResponse<{ results: Post[]; count: number }>> {
     const url = new URL(API_ENDPOINTS.POSTS.LIST);
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -888,11 +1092,13 @@ class ApiClient {
   }
 
   // Create post with files using FormData
-  async createPostWithFiles(data: PostCreateWithMedia): Promise<ApiResponse<Post>> {
+  async createPostWithFiles(
+    data: PostCreateWithMedia
+  ): Promise<ApiResponse<Post>> {
     const fd = new FormData();
     Object.entries(data).forEach(([k, v]) => {
       if (v === undefined || v === null) return;
-      if (k === 'image' || k === 'video') {
+      if (k === "image" || k === "video") {
         if (isFileLike(v)) {
           fd.append(k, v);
         } else {
@@ -905,16 +1111,22 @@ class ApiClient {
     return api.postForm<Post>(API_ENDPOINTS.POSTS.CREATE, fd);
   }
 
-  async updatePost(id: string, postData: Partial<Post>): Promise<ApiResponse<Post>> {
+  async updatePost(
+    id: string,
+    postData: Partial<Post>
+  ): Promise<ApiResponse<Post>> {
     return api.put<Post>(API_ENDPOINTS.POSTS.DETAIL(id), postData);
   }
 
   // Update post with files using FormData
-  async updatePostWithFiles(id: string, data: PostCreateWithMedia): Promise<ApiResponse<Post>> {
+  async updatePostWithFiles(
+    id: string,
+    data: PostCreateWithMedia
+  ): Promise<ApiResponse<Post>> {
     const fd = new FormData();
     Object.entries(data).forEach(([k, v]) => {
       if (v === undefined || v === null) return;
-      if (k === 'image' || k === 'video') {
+      if (k === "image" || k === "video") {
         if (isFileLike(v)) {
           fd.append(k, v);
         } else {
@@ -939,8 +1151,13 @@ class ApiClient {
     return api.get<unknown>(API_ENDPOINTS.POSTS.CALENDAR);
   }
 
-  async schedulePost(id: string, scheduled_at_iso: string): Promise<ApiResponse<void>> {
-    return api.post(API_ENDPOINTS.POSTS.SCHEDULE(id), { scheduled_at: scheduled_at_iso });
+  async schedulePost(
+    id: string,
+    scheduled_at_iso: string
+  ): Promise<ApiResponse<void>> {
+    return api.post(API_ENDPOINTS.POSTS.SCHEDULE(id), {
+      scheduled_at: scheduled_at_iso,
+    });
   }
 
   // Scheduled posts
@@ -948,12 +1165,23 @@ class ApiClient {
     return api.get<ScheduledPost[]>(API_ENDPOINTS.POSTS.SCHEDULED_LIST);
   }
 
-  async createScheduledPost(payload: Partial<ScheduledPost>): Promise<ApiResponse<ScheduledPost>> {
-    return api.post<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_LIST, payload as Record<string, unknown>);
+  async createScheduledPost(
+    payload: Partial<ScheduledPost>
+  ): Promise<ApiResponse<ScheduledPost>> {
+    return api.post<ScheduledPost>(
+      API_ENDPOINTS.POSTS.SCHEDULED_LIST,
+      payload as Record<string, unknown>
+    );
   }
 
-  async updateScheduledPost(id: string, payload: Partial<ScheduledPost>): Promise<ApiResponse<ScheduledPost>> {
-    return api.put<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id), payload as Record<string, unknown>);
+  async updateScheduledPost(
+    id: string,
+    payload: Partial<ScheduledPost>
+  ): Promise<ApiResponse<ScheduledPost>> {
+    return api.put<ScheduledPost>(
+      API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id),
+      payload as Record<string, unknown>
+    );
   }
 
   async getSubscriptionTiers<T>(): Promise<ApiResponse<T>> {
@@ -983,15 +1211,50 @@ export const authApi = {
   },
   // Integrations extras
   integrations: {
-  slackHistory: async (channel: string): Promise<ApiResponse<SlackHistoryResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.SLACK_HISTORY(channel)),
-  slackAuthStatus: async (): Promise<ApiResponse<SlackAuthStatus>> => api.get(API_ENDPOINTS.INTEGRATIONS.SLACK_AUTH_STATUS),
-  googleDriveFiles: async (): Promise<ApiResponse<DriveFilesResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.GOOGLE_DRIVE_FILES),
-  googleDriveImport: async (file_id: string): Promise<ApiResponse<{ imported: boolean; file_id: string }>> => api.post(API_ENDPOINTS.INTEGRATIONS.GOOGLE_DRIVE_IMPORT, { file_id }),
-  dropboxFiles: async (): Promise<ApiResponse<DropboxFilesResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.DROPBOX_FILES),
-  dropboxImport: async (path: string): Promise<ApiResponse<{ imported: boolean; path: string }>> => api.post(API_ENDPOINTS.INTEGRATIONS.DROPBOX_IMPORT, { path }),
-  hashtagSuggestions: async (content: string, platform='instagram'): Promise<ApiResponse<HashtagSuggestions>> => api.post(API_ENDPOINTS.INTEGRATIONS.HASHTAG_SUGGEST, { content, platform }),
-  optimalPostingTimes: async (): Promise<ApiResponse<OptimalPostingTimesResponse>> => api.get(API_ENDPOINTS.INTEGRATIONS.OPTIMAL_TIMES),
-  shareCalendar: async (entries: {platform:string; scheduled_time:string; title:string; status:string}[], slack_recipients: string[], emails: string[]): Promise<ApiResponse<CalendarShareResponse>> => api.post('/api/messaging/share-calendar/', { entries, slack_recipients, emails }),
+    slackHistory: async (
+      channel: string
+    ): Promise<ApiResponse<SlackHistoryResponse>> =>
+      api.get(API_ENDPOINTS.INTEGRATIONS.SLACK_HISTORY(channel)),
+    slackAuthStatus: async (): Promise<ApiResponse<SlackAuthStatus>> =>
+      api.get(API_ENDPOINTS.INTEGRATIONS.SLACK_AUTH_STATUS),
+    googleDriveFiles: async (): Promise<ApiResponse<DriveFilesResponse>> =>
+      api.get(API_ENDPOINTS.INTEGRATIONS.GOOGLE_DRIVE_FILES),
+    googleDriveImport: async (
+      file_id: string
+    ): Promise<ApiResponse<{ imported: boolean; file_id: string }>> =>
+      api.post(API_ENDPOINTS.INTEGRATIONS.GOOGLE_DRIVE_IMPORT, { file_id }),
+    dropboxFiles: async (): Promise<ApiResponse<DropboxFilesResponse>> =>
+      api.get(API_ENDPOINTS.INTEGRATIONS.DROPBOX_FILES),
+    dropboxImport: async (
+      path: string
+    ): Promise<ApiResponse<{ imported: boolean; path: string }>> =>
+      api.post(API_ENDPOINTS.INTEGRATIONS.DROPBOX_IMPORT, { path }),
+    hashtagSuggestions: async (
+      content: string,
+      platform = "instagram"
+    ): Promise<ApiResponse<HashtagSuggestions>> =>
+      api.post(API_ENDPOINTS.INTEGRATIONS.HASHTAG_SUGGEST, {
+        content,
+        platform,
+      }),
+    optimalPostingTimes: async (): Promise<
+      ApiResponse<OptimalPostingTimesResponse>
+    > => api.get(API_ENDPOINTS.INTEGRATIONS.OPTIMAL_TIMES),
+    shareCalendar: async (
+      entries: {
+        platform: string;
+        scheduled_time: string;
+        title: string;
+        status: string;
+      }[],
+      slack_recipients: string[],
+      emails: string[]
+    ): Promise<ApiResponse<CalendarShareResponse>> =>
+      api.post("/api/messaging/share-calendar/", {
+        entries,
+        slack_recipients,
+        emails,
+      }),
   },
 
   logout: async () => {
@@ -1010,12 +1273,14 @@ export const authApi = {
     role?: string;
     subscription_tier_id?: string;
   }) => {
-    console.log('🚀 Attempting registration with data:', userData);
-    const response = await api.post<{ message: string; user_id: number; username: string; profile_uuid: string }>(
-      API_ENDPOINTS.AUTH.REGISTER,
-      userData
-    );
-    console.log('📥 Registration response:', response);
+    console.log("🚀 Attempting registration with data:", userData);
+    const response = await api.post<{
+      message: string;
+      user_id: number;
+      username: string;
+      profile_uuid: string;
+    }>(API_ENDPOINTS.AUTH.REGISTER, userData);
+    console.log("📥 Registration response:", response);
     return response;
   },
 
@@ -1032,14 +1297,14 @@ export const authApi = {
   },
 
   resendVerificationEmail: async (email: string) => {
-    return api.post('/api/auth/resend-verification/', { email });
+    return api.post("/api/auth/resend-verification/", { email });
   },
 
   // Enhanced methods for navbar and settings integration
   uploadAvatar: async (avatarFile: File) => {
     const formData = new FormData();
-    formData.append('avatar', avatarFile);
-    
+    formData.append("avatar", avatarFile);
+
     return api.putForm<{ avatar: string; message: string }>(
       API_ENDPOINTS.AUTH.PROFILE,
       formData
@@ -1050,17 +1315,21 @@ export const authApi = {
     current_password: string;
     new_password: string;
   }) => {
-    return api.post<{ message: string }>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, passwordData);
+    return api.post<{ message: string }>(
+      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      passwordData
+    );
   },
 
   updateNotificationSettings: async (settings: {
     email_notifications?: boolean;
     slack_notifications?: boolean;
   }) => {
-    return api.post<{ message: string; email_notifications: boolean; slack_notifications: boolean }>(
-      API_ENDPOINTS.AUTH.UPDATE_NOTIFICATIONS,
-      settings
-    );
+    return api.post<{
+      message: string;
+      email_notifications: boolean;
+      slack_notifications: boolean;
+    }>(API_ENDPOINTS.AUTH.UPDATE_NOTIFICATIONS, settings);
   },
 
   getUserStats: async () => {
@@ -1086,26 +1355,31 @@ export const authApi = {
 
   // Account security methods
   enable2FA: async () => {
-    return api.post<{ qr_code: string; secret: string }>('/api/auth/2fa/setup/', {});
+    return api.post<{ qr_code: string; secret: string }>(
+      "/api/auth/2fa/setup/",
+      {}
+    );
   },
 
   confirm2FA: async (token: string) => {
-    return api.post<{ message: string }>('/api/auth/2fa/confirm/', { token });
+    return api.post<{ message: string }>("/api/auth/2fa/confirm/", { token });
   },
 
   disable2FA: async (token: string) => {
-    return api.post<{ message: string }>('/api/auth/2fa/disable/', { token });
+    return api.post<{ message: string }>("/api/auth/2fa/disable/", { token });
   },
 
   getActiveSessions: async () => {
-    return api.get<{ sessions: Array<{
-      id: string;
-      ip_address: string;
-      user_agent: string;
-      created_at: string;
-      last_activity: string;
-      is_current: boolean;
-    }> }>('/api/auth/sessions/');
+    return api.get<{
+      sessions: Array<{
+        id: string;
+        ip_address: string;
+        user_agent: string;
+        created_at: string;
+        last_activity: string;
+        is_current: boolean;
+      }>;
+    }>("/api/auth/sessions/");
   },
 
   terminateSession: async (sessionId: string) => {
@@ -1113,31 +1387,53 @@ export const authApi = {
   },
 
   requestDataExport: async () => {
-    return api.post<{ message: string; export_id: string }>('/api/auth/export-data/', {});
+    return api.post<{ message: string; export_id: string }>(
+      "/api/auth/export-data/",
+      {}
+    );
   },
 
   forgotPassword: async (email: string) => {
-    return api.post<{ message: string }>('/api/auth/forgot-password/', { email });
+    return api.post<{ message: string }>("/api/auth/forgot-password/", {
+      email,
+    });
   },
 
-  resetPassword: async (token: string, password: string, confirmPassword: string) => {
-    return api.post<{ message: string }>('/api/auth/reset-password/', { token, password, password_confirm: confirmPassword });
+  resetPassword: async (
+    token: string,
+    password: string,
+    confirmPassword: string
+  ) => {
+    return api.post<{ message: string }>("/api/auth/reset-password/", {
+      token,
+      password,
+      password_confirm: confirmPassword,
+    });
   },
 
   deleteAccount: async (password: string) => {
-    return api.post<{ message: string }>('/api/auth/delete-account/', { password });
+    return api.post<{ message: string }>("/api/auth/delete-account/", {
+      password,
+    });
   },
 };
 
 // Slack API Client
 export const slackApi = {
   listConversations: async (types?: string) => {
-    const qs = types ? `?types=${encodeURIComponent(types)}` : '';
-  return api.get<{ ok?: boolean; channels?: SlackConversation[]; response_metadata?: { next_cursor?: string } }>(`/api/integrations/slack/conversations/${qs}`);
+    const qs = types ? `?types=${encodeURIComponent(types)}` : "";
+    return api.get<{
+      ok?: boolean;
+      channels?: SlackConversation[];
+      response_metadata?: { next_cursor?: string };
+    }>(`/api/integrations/slack/conversations/${qs}`);
   },
   sendMessage: async (recipient: string, text: string) => {
-    return api.post<{ ok?: boolean; ts?: string; error?: string }>(`/api/integrations/slack/send/`, { recipient, text });
-  }
+    return api.post<{ ok?: boolean; ts?: string; error?: string }>(
+      `/api/integrations/slack/send/`,
+      { recipient, text }
+    );
+  },
 };
 
 export const postsApi = {
@@ -1166,7 +1462,7 @@ export const postsApi = {
     const fd = new FormData();
     Object.entries(data).forEach(([k, v]) => {
       if (v === undefined || v === null) return;
-      if (k === 'image' || k === 'video') {
+      if (k === "image" || k === "video") {
         if (isFileLike(v)) {
           fd.append(k, v);
         } else {
@@ -1188,7 +1484,7 @@ export const postsApi = {
     const fd = new FormData();
     Object.entries(data).forEach(([k, v]) => {
       if (v === undefined || v === null) return;
-      if (k === 'image' || k === 'video') {
+      if (k === "image" || k === "video") {
         if (isFileLike(v)) {
           fd.append(k, v);
         } else {
@@ -1213,23 +1509,32 @@ export const postsApi = {
     return api.get<unknown>(API_ENDPOINTS.POSTS.CALENDAR);
   },
 
-  schedulePost: async (id: string, scheduled_at_iso: string): Promise<ApiResponse<void>> => {
-    return api.post(API_ENDPOINTS.POSTS.SCHEDULE(id), { scheduled_at: scheduled_at_iso });
+  schedulePost: async (
+    id: string,
+    scheduled_at_iso: string
+  ): Promise<ApiResponse<void>> => {
+    return api.post(API_ENDPOINTS.POSTS.SCHEDULE(id), {
+      scheduled_at: scheduled_at_iso,
+    });
   },
 
   // Scheduled posts
-  listScheduled: async () => api.get<ScheduledPost[]>(API_ENDPOINTS.POSTS.SCHEDULED_LIST),
+  listScheduled: async () =>
+    api.get<ScheduledPost[]>(API_ENDPOINTS.POSTS.SCHEDULED_LIST),
   createScheduled: async (payload: Partial<ScheduledPost>) =>
-    api.post<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_LIST, payload as Record<string, unknown>),
+    api.post<ScheduledPost>(
+      API_ENDPOINTS.POSTS.SCHEDULED_LIST,
+      payload as Record<string, unknown>
+    ),
   updateScheduled: async (id: string, payload: Partial<ScheduledPost>) =>
-    api.put<ScheduledPost>(API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id), payload as Record<string, unknown>),
+    api.put<ScheduledPost>(
+      API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id),
+      payload as Record<string, unknown>
+    ),
 };
 
 export const analyticsApi = {
-  getOverview: async (params?: {
-    start_date?: string;
-    end_date?: string;
-  }) => {
+  getOverview: async (params?: { start_date?: string; end_date?: string }) => {
     const url = new URL(API_ENDPOINTS.ANALYTICS.OVERVIEW);
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -1242,7 +1547,7 @@ export const analyticsApi = {
   },
 
   getPostAnalytics: async (postId?: string) => {
-    const url = postId 
+    const url = postId
       ? `${API_ENDPOINTS.ANALYTICS.POSTS}?post_id=${postId}`
       : API_ENDPOINTS.ANALYTICS.POSTS;
     return api.get(url);
@@ -1254,7 +1559,10 @@ export const socialAccountsApi = {
     return api.get<SocialAccount[]>(API_ENDPOINTS.SOCIAL_ACCOUNTS);
   },
 
-  connectAccount: async (platform: string, credentials: Record<string, unknown>) => {
+  connectAccount: async (
+    platform: string,
+    credentials: Record<string, unknown>
+  ) => {
     return api.post<SocialAccount>(API_ENDPOINTS.SOCIAL_ACCOUNTS, {
       platform,
       ...credentials,

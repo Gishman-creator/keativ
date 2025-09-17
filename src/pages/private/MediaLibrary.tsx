@@ -198,8 +198,6 @@ const MediaLibrary = () => {
         selectedType={selectedType}
         onTypeChange={setSelectedType}
         onClearFilters={handleClearFilters}
-        counter={filteredFiles.length}
-        total={mediaFiles.length}
       />
 
       {/* Media Grid */}

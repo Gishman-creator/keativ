@@ -29,7 +29,7 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeKey, onSelect }
                 'w-full text-left px-3 py-2 rounded-md transition-colors font-medium flex items-center gap-2',
                 activeKey === item.key
                   ? 'text-red-500'
-                  : 'text-gray-600 hover:bg-gray-50'
+                  : 'text-gray-600 hover:text-black'
               )}
               onClick={() => onSelect(item.key)}
             >

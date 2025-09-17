@@ -61,8 +61,8 @@ const Billing: React.FC = () => {
   }
 
   // Find the current plan details from the fetched tiers, only when tiers is available
-  const currentPlanDetails = tiers.length > 0 
-    ? tiers.find(tier => tier.name.toLowerCase().includes(initialBillingInfo.currentPlanName)) 
+  const currentPlanDetails = tiers.length > 0
+    ? tiers.find(tier => tier.name.toLowerCase().includes(initialBillingInfo.currentPlanName))
     : null;
 
   return (
@@ -84,21 +84,19 @@ const Billing: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between">
-          <div className="flex items-center justify-between w-full gap-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-600">Next payment: {initialBillingInfo.nextBilling}</span>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowCancelDialog(true)}
-              className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Cancel Subscription
-            </Button>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600">Next payment: {initialBillingInfo.nextBilling}</span>
           </div>
+          <Button
+            variant="outline"
+            onClick={() => setShowCancelDialog(true)}
+            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 w-fit"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Cancel Subscription
+          </Button>
         </div>
       </div>
 

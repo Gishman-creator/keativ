@@ -215,13 +215,6 @@ const Profile: React.FC = () => {
               <Input id="email" type="email" {...registerProfile('email', { required: 'Email is required.' })} />
               {profileErrors.email && <p className="text-red-500 text-sm">{profileErrors.email.message}</p>}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="companyName" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                Company Name
-              </Label>
-              <Input id="companyName" {...registerProfile('companyName')} />
-            </div>
           </div>
           <Button type="submit" className="mt-4">Save Profile Changes</Button>
         </form>
@@ -340,7 +333,7 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Two-Factor Authentication Section */}
-      <div className="flex items-center justify-between pt-8 pb-2 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-8 pb-2 rounded-lg">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Smartphone className="h-5 w-5" />
@@ -348,11 +341,11 @@ const Profile: React.FC = () => {
           </div>
           <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
         </div>
-        <Button variant="outline">Setup 2FA</Button>
+        <Button className='w-fit mt-2 sm:mt-0' variant="outline">Setup 2FA</Button>
       </div>
 
       {/* Active Sessions Section */}
-      <div className="flex items-center justify-between py-2 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 rounded-lg">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
@@ -360,11 +353,11 @@ const Profile: React.FC = () => {
           </div>
           <p className="text-sm text-gray-600">Manage your active login sessions</p>
         </div>
-        <Button variant="outline">View Sessions</Button>
+        <Button className='w-fit mt-2 sm:mt-0' variant="outline">View Sessions</Button>
       </div>
 
       {/* Download account data Section */}
-      <div className="flex items-center justify-between pt-2 pb-4 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-2 pb-4 rounded-lg">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Download className="h-5 w-5" />
@@ -372,7 +365,7 @@ const Profile: React.FC = () => {
           </div>
           <p className="text-sm text-gray-600">Download a copy of your account data</p>
         </div>
-        <Button variant="outline">Request Download</Button>
+        <Button className='w-fit mt-2 sm:mt-0' variant="outline">Request Download</Button>
       </div>
 
       <Separator />

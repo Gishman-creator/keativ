@@ -310,9 +310,9 @@ const Landing = () => {
                       {features
                         .slice(slideIndex * featuresPerSlide, (slideIndex + 1) * featuresPerSlide)
                         .map((feature, index) => (
-                          <Card key={index} className="border-0 shadow-sm">
+                          <Card key={index} className="border-0 shadow-none">
                             <CardContent className="p-8 text-center">
-                              <div className="bg-red-100 p-4 rounded-2xl w-fit mx-auto mb-6">
+                              <div className="bg-red-100 p-4 rounded-lg w-fit mx-auto mb-6">
                                 <feature.icon className="h-8 w-8 text-red-600" />
                               </div>
                               <h3 className="font-heading text-xl font-semibold text-gray-900 mb-4">

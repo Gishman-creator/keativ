@@ -22,7 +22,6 @@ import React, { useState, useEffect, useRef } from 'react';
 interface SidebarProps {
   isCollapsed: boolean;
   className?: string;
-  onToggle: () => void; // Add onToggle prop
 }
 
 type NavItem = { name: string; href: string; icon: React.ComponentType<{ className?: string }>; badge?: number };

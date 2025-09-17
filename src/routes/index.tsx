@@ -28,7 +28,6 @@ import Analytics from '../pages/private/Analytics';
 import MediaLibrary from '../pages/private/MediaLibrary';
 import SocialSets from '../pages/private/SocialSets';
 import Posts from '../pages/private/Posts';
-import SettingsPage from '../pages/private/SettingsPage';
 import IntegrationsPage from '../pages/private/IntegrationsPage';
 import Notifications from '../pages/private/Notifications';
 import Automations from '../pages/private/Automations';
@@ -98,7 +97,6 @@ export const router = createBrowserRouter([
       { path: 'posts', element: <Planner /> },
       { path: 'posts/new', element: <Posts /> },
       { path: 'settings', element: <Settings /> },
-      { path: 'settingspage', element: <SettingsPage /> },
       { path: 'integrations', element: <IntegrationsPage /> },
       { path: 'integrations/facebook/manage', element: <FacebookAccountManagement /> },
       { path: 'integrations/twitter/callback', element: <TwitterCallback /> },

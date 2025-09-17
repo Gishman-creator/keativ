@@ -8,16 +8,12 @@ interface FilterBarProps {
   selectedType: MediaType
   onTypeChange: (type: MediaType) => void
   onClearFilters: () => void
-  counter: number
-  total: number
 }
 
 export function FilterBar({
   selectedType,
   onTypeChange,
-  onClearFilters,
-  counter,
-  total,
+  onClearFilters
 }: FilterBarProps) {
   return (
     <div className="flex flex-row items-center justify-between gap-4 py-6">

@@ -16,7 +16,7 @@ interface SettingsTopNavProps {
 
 const SettingsTopNav: React.FC<SettingsTopNavProps> = ({ activeKey, onSelect }) => {
   return (
-    <nav className="flex overflow-x-auto whitespace-nowrap border-b border-gray-200 md:hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+    <nav className="flex bg-gray-50 sticky z-20 top-0 overflow-x-auto whitespace-nowrap border-b border-gray-200 md:hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {sidebarItems.map(item => (
         <button
           key={item.key}

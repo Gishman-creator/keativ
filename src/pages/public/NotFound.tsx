@@ -23,15 +23,13 @@ const NotFound = () => {
           </p>
         </div>
 
-        <div className="space-y-4">
-          <Link
-            to=".."
-            className="w-auto"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Go Back
-          </Link>
-        </div>
+        <Link
+          to=".."
+          className="w-fit mx-auto flex items-center justify-center text-gray-700 hover:text-black"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Go Back
+        </Link>
       </div>
     </div>
   );

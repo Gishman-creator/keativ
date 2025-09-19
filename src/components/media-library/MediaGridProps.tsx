@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { MediaPreviewModal } from "./MediaPreviewModal"
 import { api } from "@/lib/api"
 import { showCustomToast } from "../CustomToast"
+import ConfirmDelete from "./ConfirmDelete"
 
 export interface MediaFile {
   id: string
@@ -34,6 +35,7 @@ export function MediaGrid({
 }: MediaGridProps) {
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const selectedFiles = files.filter(file => file.selected)
   const selectedFileIds = selectedFiles.map(file => file.id)
@@ -123,6 +125,15 @@ export function MediaGrid({
     handleClearSelection()
   }
 
+  const handleConfirmDelete = () => {
+    handleDelete(); // This function already handles single or bulk deletion
+    setShowConfirm(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirm(false);
+  };
+
   // Unified function for single and bulk deletion
   const handleDelete = async (file?: MediaFile) => {
     const idsToDelete = file ? [file.id] : selectedFileIds;
@@ -141,11 +152,40 @@ export function MediaGrid({
           handleClearSelection();
         }
       } else {
-        showCustomToast('Failed to delete file(s)', 'An unexpected error occurred deleting your file(s), please try again.', 'error');
+        // Handle upload failure
+        const error = response.error || 'Upload failed';
+        console.error('Upload failed:', error);
+        if (error === 'Network error') {
+          showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
+        } else {
+          // Check if error is an object with key-value pairs
+          if (typeof error === 'object' && error !== null) {
+            const errorMessages = Object.entries(error)
+              .map(([key, value]) => {
+                let message;
+                if (Array.isArray(value)) {
+                  message = value.join(', ');
+                } else {
+                  // Convert to string to handle numbers, booleans, etc.
+                  message = String(value);
+                }
+                // Add period only if the message doesn't already end with one
+                return message.endsWith('.') ? message : message + '.';
+              })
+              .join(' ');
+            showCustomToast('Failed to delete file(s)', errorMessages || 'An unexpected error occurred deleting your file(s), please try again.', 'error');
+          } else {
+            // Generic upload failed message if error is not an object
+            showCustomToast('Failed to delete file(s)', 'An unexpected error occurred deleting your file(s), please try again.', 'error');
+          }
+        }
       }
     } catch (error) {
       console.error("Deletion failed:", error);
       showCustomToast('Failed to delete file(s)', 'An unexpected error occurred deleting your file(s), please try again.', 'error');
+    } finally {
+      // This ensures the pop-up closes whether the API call succeeds or fails
+      setShowConfirm(false);
     }
   };
 
@@ -194,13 +234,22 @@ export function MediaGrid({
               <Download className="w-4 h-4 mr-2" />
               Download {selectedCount > 1 ? 'as ZIP' : ''}
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleDelete()}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
+            <div className="relative">
+              <Button
+                variant="destructive"
+                onClick={() => setShowConfirm(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+              {showConfirm && (
+                <ConfirmDelete
+                  onConfirm={handleDelete}
+                  onCancel={() => setShowConfirm(false)}
+                  message={`Are you sure you want to delete ${selectedCount} file(s)? This action cannot be undone.`}
+                />
+              )}
+            </div>
           </div>
         </div>
       )}

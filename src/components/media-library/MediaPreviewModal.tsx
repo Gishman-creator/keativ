@@ -2,6 +2,8 @@ import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { X, Download, Trash2 } from "lucide-react"
 import type { MediaFile } from "./MediaGridProps"
+import { useState } from "react"
+import ConfirmDelete from "./ConfirmDelete"
 
 interface MediaPreviewModalProps {
   file: MediaFile | null
@@ -14,18 +16,27 @@ interface MediaPreviewModalProps {
 export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload }: MediaPreviewModalProps) {
   if (!file) return null
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const handleDownload = () => {
     if (onDownload) {
       onDownload(file)
     }
   }
 
-  const handleDelete = () => {
+  const handleConfirmDelete = async () => {
     if (onDelete) {
-      onDelete(file)
-      onClose()
+      try {
+        await onDelete(file); // onDelete is now an async function passed from MediaGrid
+      } catch (error) {
+        console.error("Deletion failed from modal:", error);
+      } finally {
+        // Close both the confirmation dialog and the main modal
+        setShowConfirm(false);
+        onClose();
+      }
     }
-  }
+  };
 
   const handleContentAreaClick = (e: React.MouseEvent) => {
     // Close if clicking on the content area div, but not on the image/video itself
@@ -43,7 +54,7 @@ export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="min-h-[100vh] min-w-[100vw] flex flex-col p-0 bg-transparent shadow-lg border-none [&>button]:hidden">
         {/* Header */}
-        <div 
+        <div
           className="flex items-center justify-between p-4 bg-black/30 backdrop-blur-sm text-white"
           onClick={handleHeaderClick}
         >
@@ -59,15 +70,24 @@ export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload 
             >
               <Download className="w-4 h-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              className="h-10 w-10 p-0 text-destructive hover:text-destructive bg-transparent hover:bg-white/20"
-              title="Delete"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowConfirm(true)}
+                className="h-10 w-10 p-0 text-destructive hover:text-destructive bg-transparent hover:bg-white/20"
+                title="Delete"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+              {showConfirm && (
+                <ConfirmDelete
+                  onConfirm={handleConfirmDelete}
+                  onCancel={() => setShowConfirm(false)}
+                  message="Are you sure you want to delete this file? This action cannot be undone."
+                />
+              )}
+            </div>
             <DialogClose asChild>
               <Button
                 variant="ghost"
@@ -82,7 +102,7 @@ export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload 
         </div>
 
         {/* Content */}
-        <div 
+        <div
           className="flex-1 flex items-center justify-center py-4 bg-transparent cursor-pointer"
           onClick={handleContentAreaClick}
         >
@@ -98,7 +118,7 @@ export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload 
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the image
               />
             ) : (
-              <div 
+              <div
                 className="relative max-h-[70vh] cursor-default"
                 onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the video container
               >

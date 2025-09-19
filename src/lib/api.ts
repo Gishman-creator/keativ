@@ -671,6 +671,27 @@ class ApiClient {
     }
   }
 
+  // Add this new method to your ApiClient class
+  async deleteWithBody<T>(
+    url: string,
+    data?: Record<string, unknown>
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: this.getHeaders(),
+        credentials: "include",
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return this.handleResponse<T>(response);
+    } catch {
+      return {
+        error: "Network error",
+        success: false,
+      };
+    }
+  }
+
   async patch<T>(
     url: string,
     data?: Record<string, unknown>
@@ -1068,6 +1089,19 @@ class ApiClient {
   // Media Library API
   async getMediaLibrary(): Promise<ApiResponse<unknown>> {
     return this.get<unknown>(API_ENDPOINTS.MEDIA.LIBRARY);
+  }
+
+  // Media Library API
+  async uploadbulk(files: File[]): Promise<ApiResponse<unknown>> {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file); // Assuming the backend expects a field named 'files'
+    });
+    return this.postForm<unknown>(API_ENDPOINTS.MEDIA.BULK_UPLOAD, formData);
+  }
+
+  async bulkMediaDelete(ids: string[]): Promise<ApiResponse<unknown>> {
+    return api.deleteWithBody(API_ENDPOINTS.MEDIA.BULK_DELETE, { ids });
   }
 
   // Posts API Methods

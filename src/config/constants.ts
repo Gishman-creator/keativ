@@ -123,6 +123,9 @@ export const API_ENDPOINTS = {
   // Core (Rate limiting & IP management)
   MEDIA: {
     LIBRARY: `${API_BASE_URL}/api/media/library/`,
+    UPLOAD: `${API_BASE_URL}/api/media/upload/`,
+    BULK_UPLOAD: `${API_BASE_URL}/api/media/upload/bulk/`,
+    BULK_DELETE: `${API_BASE_URL}/api/media/bulk-delete/`,
   },
 
   // Twitter Integration

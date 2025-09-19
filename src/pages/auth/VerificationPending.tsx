@@ -37,10 +37,10 @@ export function VerificationPending() {
       console.log('Response', response)
 
       if (response.success) {
-        showCustomToast("Email Sent", "Verification email has been resent to your inbox.", "success");
+        showCustomToast("Email Sent", "Verification email has been sent to your inbox.", "success");
       } else {
-        const error = response.error || 'Registration failed';
-        console.error('Registration failed:', error);
+        const error = response.error || 'Failed to resend verification email.';
+        console.error('Resend verification email error:', error);
         if (error === 'Network error') {
           showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
         } else {
@@ -60,9 +60,9 @@ export function VerificationPending() {
                 return message.endsWith('.') ? message : message + '.';
               })
               .join(' ');
-            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+            showCustomToast('Failed To Send Email', errorMessages || 'Failed to resend verification email. Please try again.', 'error');
           } else {
-            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+            showCustomToast('Failed To Send Email', 'Failed to resend verification email. Please try again.', 'error');
           }
         }
       }

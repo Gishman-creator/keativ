@@ -1,9 +1,11 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Check, Play, Download, Trash2, Eye } from "lucide-react"
+import { Check, Play, Download, Trash2, Eye, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { MediaPreviewModal } from "./MediaPreviewModal" 
+import { MediaPreviewModal } from "./MediaPreviewModal"
+import { api } from "@/lib/api"
+import { showCustomToast } from "../CustomToast"
 
 export interface MediaFile {
   id: string
@@ -18,7 +20,7 @@ export interface MediaFile {
 
 interface MediaGridProps {
   files: MediaFile[]
-  onFileSelect: (fileId: string) => void
+  // onFileSelect: (fileId: string) => void
   onFileToggle: (fileId: string) => void
   selectedCount: number
   onBulkAction: (action: string, fileIds: string[]) => void
@@ -26,14 +28,13 @@ interface MediaGridProps {
 
 export function MediaGrid({
   files,
-  onFileSelect,
   onFileToggle,
   selectedCount,
   onBulkAction,
 }: MediaGridProps) {
   const [previewFile, setPreviewFile] = useState<MediaFile | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  
+
   const selectedFiles = files.filter(file => file.selected)
   const selectedFileIds = selectedFiles.map(file => file.id)
 
@@ -52,20 +53,104 @@ export function MediaGrid({
     onFileToggle(fileId)
   }
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  const downloadFile = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      console.error('Download failed:', error)
+    }
   }
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(date)
+  const createZipAndDownload = async (files: MediaFile[]) => {
+    try {
+      // Dynamically import JSZip
+      const JSZip = (await import('jszip')).default
+      const zip = new JSZip()
+
+      // Add each file to the zip
+      for (const file of files) {
+        try {
+          const response = await fetch(file.url)
+          const blob = await response.blob()
+          zip.file(file.name, blob)
+        } catch (error) {
+          console.error(`Failed to add ${file.name} to zip:`, error)
+        }
+      }
+
+      // Generate the zip file
+      const content = await zip.generateAsync({ type: "blob" })
+
+      // Create download link
+      const downloadUrl = window.URL.createObjectURL(content)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = 'keativ-media.zip'
+      link.target = '_blank'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      console.error('Zip creation failed:', error)
+      // Fallback: download files individually
+      files.forEach(file => downloadFile(file.url, file.name))
+    }
+  }
+
+  const handleDownload = (file: MediaFile) => {
+    downloadFile(file.url, file.name)
+  }
+
+  const handleBulkDownload = () => {
+    if (selectedFiles.length === 1) {
+      // Single file - download directly
+      downloadFile(selectedFiles[0].url, selectedFiles[0].name)
+    } else if (selectedFiles.length > 1) {
+      // Multiple files - create zip
+      createZipAndDownload(selectedFiles)
+    }
+    handleClearSelection()
+  }
+
+  // Unified function for single and bulk deletion
+  const handleDelete = async (file?: MediaFile) => {
+    const idsToDelete = file ? [file.id] : selectedFileIds;
+    if (idsToDelete.length === 0) return;
+
+    try {
+      const response = await api.bulkMediaDelete(idsToDelete);
+      if (response.success) {
+        const message = idsToDelete.length === 1
+          ? "File deleted successfully."
+          : `${idsToDelete.length} files deleted successfully.`;
+        // Notify parent to refresh the file list
+        onBulkAction('delete', idsToDelete);
+        // Clear selection for bulk delete
+        if (!file) {
+          handleClearSelection();
+        }
+      } else {
+        showCustomToast('Failed to delete file(s)', 'An unexpected error occurred deleting your file(s), please try again.', 'error');
+      }
+    } catch (error) {
+      console.error("Deletion failed:", error);
+      showCustomToast('Failed to delete file(s)', 'An unexpected error occurred deleting your file(s), please try again.', 'error');
+    }
+  };
+
+  const handleClearSelection = () => {
+    selectedFiles.forEach(file => onFileToggle(file.id))
   }
 
   if (files.length === 0) {
@@ -89,20 +174,29 @@ export function MediaGrid({
       {/* Action Bar */}
       {selectedCount > 0 && (
         <div className="sticky top-[1rem] z-20 flex items-center justify-between p-4 mb-6 bg-white backdrop-blur-sm border border-border rounded-lg">
-          <span className="font-medium text-foreground">
+          <span className="font-medium text-foreground flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearSelection}
+              className="w-8 h-8 p-0 hover:bg-gray-100 rounded-lg"
+              title="Clear selection"
+            >
+              <X className="w-4 h-4" />
+            </Button>
             {selectedCount} file{selectedCount !== 1 ? 's' : ''} selected
           </span>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              onClick={() => onBulkAction('download', selectedFileIds)}
+              onClick={handleBulkDownload}
             >
               <Download className="w-4 h-4 mr-2" />
-              Download
+              Download {selectedCount > 1 ? 'as ZIP' : ''}
             </Button>
             <Button
               variant="destructive"
-              onClick={() => onBulkAction('delete', selectedFileIds)}
+              onClick={() => handleDelete()}
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete
@@ -117,6 +211,7 @@ export function MediaGrid({
           {files.map((file) => (
             <div
               key={file.id}
+              onClick={() => handleFileClick(file)}
               className={cn(
                 "group relative cursor-pointer transition-all hover:scale-[1.02]",
                 file.selected && "ring-1 ring-secondary rounded-lg"
@@ -147,9 +242,9 @@ export function MediaGrid({
                     </div>
                   </div>
                 )}
-                
+
                 {/* Checkbox */}
-                <div 
+                <div
                   className={cn(
                     "absolute top-2 left-2 transition-opacity",
                     file.selected ? "opacity-100" : selectedCount > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"
@@ -162,7 +257,7 @@ export function MediaGrid({
                   <Checkbox
                     checked={file.selected}
                     className={cn(
-                      "bg-background border border-gray-300 hover:border-gray-500 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
+                      "bg-white/20 backdrop-blur-md border-2 border-gray-300 hover:border-gray-600 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary flex items-center justify-center"
                     )}
                   />
                 </div>
@@ -172,10 +267,12 @@ export function MediaGrid({
         </div>
       </div>
 
-      <MediaPreviewModal 
+      <MediaPreviewModal
         file={previewFile}
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
+        onDownload={handleDownload}
+        onDelete={handleDelete}
       />
     </div>
   )

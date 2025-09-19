@@ -66,8 +66,8 @@ export function ResetPassword() {
           navigate("/login");
         }, 2000); // Navigate after 2 seconds
       } else {
-        const error = response.error || 'Registration failed';
-        console.error('Registration failed:', error);
+        const error = response.error || 'Password reset failed.';
+        console.error('Password reset error:', error);
         if (error === 'Network error') {
           showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
         } else {
@@ -87,9 +87,9 @@ export function ResetPassword() {
                 return message.endsWith('.') ? message : message + '.';
               })
               .join(' ');
-            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+            showCustomToast('Password Reset Failed', errorMessages || 'Password reset failed. Please try again.', 'error');
           } else {
-            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+            showCustomToast('Password Reset Failed', 'Password reset failed. Please try again.', 'error');
           }
         }
       }

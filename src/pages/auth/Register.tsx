@@ -160,9 +160,9 @@ export function Register() {
                 return message.endsWith('.') ? message : message + '.';
               })
               .join(' ');
-            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+            showCustomToast('Registratin Failed', errorMessages || 'Registratin failed. Please check your credentials and try again.', 'error');
           } else {
-            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+            showCustomToast('Registratin Failed', 'Registratin failed. Please check your credentials and try again.', 'error');
           }
         }
       }

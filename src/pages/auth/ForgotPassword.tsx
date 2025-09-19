@@ -42,15 +42,14 @@ export function ForgotPassword() {
         showCustomToast("Email Sent", "Verification email has been sent to your inbox.", "success")
         setEmail("")
       } else {
-        const error = response.error || 'Registration failed';
-        console.error('Registration failed:', error);
+        const error = response.error || 'Failed to send reset email.';
+        console.error('Forgot password error:', error);
         if (error === 'Network error') {
           showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
         } else {
           // Check if error is an object with key-value pairs
           if (typeof error === 'object' && error !== null) {
             const errorMessages = Object.entries(error)
-              .filter(([key, value]) => key !== 'username')
               .map(([key, value]) => {
                 let message;
                 if (Array.isArray(value)) {
@@ -63,9 +62,9 @@ export function ForgotPassword() {
                 return message.endsWith('.') ? message : message + '.';
               })
               .join(' ');
-            showCustomToast('Login Failed', errorMessages || 'Login failed. Please check your credentials and try again.', 'error');
+            showCustomToast('Failed To Send Email', errorMessages || 'Failed to send reset email. Please check your email address and try again.', 'error');
           } else {
-            showCustomToast('Login Failed', 'Login failed. Please check your credentials and try again or account not verified.', 'error');
+            showCustomToast('Failed To Send Email', 'Failed to send reset email. Please check your email address and try again.', 'error');
           }
         }
       }

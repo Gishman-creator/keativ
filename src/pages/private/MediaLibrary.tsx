@@ -74,16 +74,19 @@ const MediaLibrary = () => {
   const [hasNetworkError, setHasNetworkError] = useState(false) // State for network error
 
   // Add Google Drive picker hook
-  const { openGoogleDrivePicker } = useGoogleDrivePicker((files) => {
-    // This callback will be called when files are selected from Google Drive
-    console.log('Files selected from Google Drive:', files);
-    handleSubmit(files); // Use your existing handleSubmit function
-  });
+  const { openGoogleDrivePicker } = useGoogleDrivePicker(
+    (files) => {
+      // This callback will be called when files are selected from Google Drive
+      console.log('Files selected from Google Drive:', files);
+      handleSubmit(files); // Use your existing handleSubmit function
+    },
+    setIsUploading // Pass setIsUploading to manage loading state
+  );
 
     // Effect to handle loading toast based on isUploading state
   useEffect(() => {
     if (isUploading) {
-      showSmallToast("Uploading files...", 'loading', 0) // Duration 0 means it won't auto-dismiss
+      showSmallToast("Uploading files...", 'loading', 300000000) // Duration 0 means it won't auto-dismiss
     } else {
       // Dismiss any existing toasts when upload is complete
       toast.dismiss()

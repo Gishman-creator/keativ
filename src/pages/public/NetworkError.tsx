@@ -2,12 +2,13 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Share2, Home, ArrowLeft, RotateCw } from 'lucide-react';
 
-const NetworkError = () => {
+const NetworkError = ({ noIcon = false }) => {
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-white flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className={`bg-transparent flex items-center justify-center px-4 sm:px-6 lg:px-8 ${noIcon ? "" : "min-h-[calc(100vh-4rem)]"}`}>
       <div className="max-w-md w-full text-center">
-        <div className="mb-8">
-          <img src="/networkError_3.png" className="h-40 w-40 mx-auto mb-4" />
+        <div className={`mb-8 ${noIcon ? "mt-16" : ""}`}>
+          <img src="/networkError_3.png" className={`h-40 w-40 mx-auto mb-4 ${noIcon ? "hidden" : ""}`} />
           <h2 className="font-heading text-xl font-semibold text-foreground mb-2">
             No Internet Connection
           </h2>

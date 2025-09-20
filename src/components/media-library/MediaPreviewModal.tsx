@@ -111,7 +111,7 @@ export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload 
               <img
                 src={file.url}
                 alt=""
-                className="max-h-[70vh] w-auto h-auto object-contain cursor-default"
+                className="max-h-[70vh] w-auto h-auto object-contain cursor-default bg-white"
                 onError={(e) => {
                   e.currentTarget.src = "/image-placeholder.png"
                 }}
@@ -125,6 +125,9 @@ export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload 
                 <video
                   src={file.url}
                   controls
+                  autoPlay
+                  muted
+                  loop
                   className="max-h-[70vh] w-auto h-auto object-contain"
                   poster={file.thumbnailUrl || "/image-placeholder.png"}
                 />

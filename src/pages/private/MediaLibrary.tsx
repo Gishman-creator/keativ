@@ -6,7 +6,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from "@/hooks/use-toast"
 import { Upload as UploadIcon, ChevronDown, HardDrive, LoaderCircle } from "lucide-react" // Import LoaderCircle
 import { api } from "@/lib/api" // Import the api object
-import { showCustomToast } from "@/components/CustomToast"
+import { showCustomToast, showSmallToast } from "@/components/CustomToast"
+import NetworkError from "../public/NetworkError"
+import useGoogleDrivePicker from "@/components/media-library/GoogleDrivePicker"
+import toast from 'react-hot-toast'
 
 // Define the expected API response structure
 interface UploadResultFile {
@@ -68,7 +71,24 @@ const MediaLibrary = () => {
   const [selectedType, setSelectedType] = useState<MediaType>("all")
   const [isLoading, setIsLoading] = useState(true) // Add loading state
   const [isUploading, setIsUploading] = useState(false) // State for upload loading
-  const { toast } = useToast()
+  const [hasNetworkError, setHasNetworkError] = useState(false) // State for network error
+
+  // Add Google Drive picker hook
+  const { openGoogleDrivePicker } = useGoogleDrivePicker((files) => {
+    // This callback will be called when files are selected from Google Drive
+    console.log('Files selected from Google Drive:', files);
+    handleSubmit(files); // Use your existing handleSubmit function
+  });
+
+    // Effect to handle loading toast based on isUploading state
+  useEffect(() => {
+    if (isUploading) {
+      showSmallToast("Uploading files...", 'loading', 0) // Duration 0 means it won't auto-dismiss
+    } else {
+      // Dismiss any existing toasts when upload is complete
+      toast.dismiss()
+    }
+  }, [isUploading])
 
   // Filter files based on selected criteria
   const filteredFiles = useMemo(() => {
@@ -111,10 +131,33 @@ const MediaLibrary = () => {
           }))
           setMediaFiles(fetchedFiles)
         } else {
-          // If response is not successful or data is missing, show error and use sample data (if available)
-          showCustomToast('Error', 'Failed to fetch media library. Displaying sample data.', 'error')
-          // In a real scenario, you might want to set some default sample files here
-          // For now, we'll leave mediaFiles as undefined if fetch fails and no data is returned
+          // Handle upload failure
+          const error = response.error || 'Upload failed';
+          console.error('Upload failed:', error);
+          if (error === 'Network error') {
+            setHasNetworkError(true)
+          } else {
+            // Check if error is an object with key-value pairs
+            if (typeof error === 'object' && error !== null) {
+              const errorMessages = Object.entries(error)
+                .map(([key, value]) => {
+                  let message;
+                  if (Array.isArray(value)) {
+                    message = value.join(', ');
+                  } else {
+                    // Convert to string to handle numbers, booleans, etc.
+                    message = String(value);
+                  }
+                  // Add period only if the message doesn't already end with one
+                  return message.endsWith('.') ? message : message + '.';
+                })
+                .join(' ');
+              showCustomToast('Failed to get your files', errorMessages || 'Failed to get your files. Please try again.', 'error');
+            } else {
+              // Generic upload failed message if error is not an object
+              showCustomToast('Failed to get your files', 'Failed to get your files. Please try again.', 'error');
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching media library:", error)
@@ -142,7 +185,8 @@ const MediaLibrary = () => {
 
   // Function to handle file upload from device using the provided fetch logic
   async function handleSubmit(files: File[]) {
-    setIsUploading(true) // Set uploading state to true
+    !isUploading && setIsUploading(true) // Set uploading state to true
+
     // Create a new FormData object to hold the files.
     // FormData is used to send files and other data in a multipart/form-data format.
     const formData = new FormData();
@@ -180,8 +224,10 @@ const MediaLibrary = () => {
           if (!prevMediaFiles) {
             return newFiles;
           }
-          return [ ...newFiles, ...prevMediaFiles];
+          return [...newFiles, ...prevMediaFiles];
         });
+
+        showSmallToast('File(s) uploaded successfully!');
 
       } else {
         // Handle upload failure
@@ -235,6 +281,11 @@ const MediaLibrary = () => {
     input.click()
   }
 
+  // Update the Google Drive dropdown item click handler
+  const handleUploadFromGoogleDrive = () => {
+    openGoogleDrivePicker();
+  };
+
   // Define handleBulkAction
   const handleBulkAction = (action: string, fileIds: string[]) => {
     if (fileIds.length === 0) {
@@ -243,34 +294,20 @@ const MediaLibrary = () => {
     }
 
     // Check if the action is one of the supported actions
-    const supportedActions = ['delete', 'download', 'share'];
+    const supportedActions = ['delete'];
     if (!supportedActions.includes(action)) {
       console.error(`Unsupported bulk action: ${action}`);
       showCustomToast('Error', `Unsupported action: ${action}`, 'error');
       return;
     }
 
-    switch (action) {
-      case 'delete':
-        console.log('Deleting files:', fileIds);
-        // Implement delete logic here
-        showCustomToast('Action', 'Delete action not yet implemented.', 'info');
-        break;
-      case 'download':
-        console.log('Downloading files:', fileIds);
-        // Implement download logic here
-        showCustomToast('Action', 'Download action not yet implemented.', 'info');
-        break;
-      case 'share':
-        console.log('Sharing files:', fileIds);
-        // Implement share logic here
-        showCustomToast('Action', 'Share action not yet implemented.', 'info');
-        break;
-      default:
-        // This case should ideally not be reached due to the check above, but included for safety.
-        console.error(`Unexpected action: ${action}`);
-        showCustomToast('Error', `Unexpected action: ${action}`, 'error');
-        break;
+    // If the action is 'delete', remove the files from the state
+    if (action === 'delete') {
+      setMediaFiles(prevFiles => {
+        if (!prevFiles) return undefined;
+        // Filter out the files whose IDs are in the fileIds array
+        return prevFiles.filter(file => !fileIds.includes(file.id));
+      });
     }
   };
 
@@ -278,14 +315,16 @@ const MediaLibrary = () => {
   const renderMediaGridContent = () => {
     if (isLoading) {
       // Render skeleton loaders
-      return <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      return <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-6">
         {Array.from({ length: 12 }).map((_, index) => ( // Render 12 skeletons as a placeholder
           <MediaCardSkeleton key={index} />
         ))}
       </div>
+    } else if (hasNetworkError) {
+      return <NetworkError noIcon={true} />;
     } else if (!mediaFiles || mediaFiles.length === 0 || filteredFiles.length === 0) {
       // Render a message if no files are found after filtering or if mediaFiles is not yet loaded
-      return <div className="text-center text-muted-foreground py-8">No media files found.</div>
+      return <div className="text-center text-muted-foreground py-8 mt-6">No media files found.</div>
     } else {
       // Render actual media files
       return (
@@ -329,7 +368,7 @@ const MediaLibrary = () => {
                   <HardDrive className="w-4 h-4 mr-2" />
                   From Device
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { }}>
+                <DropdownMenuItem onClick={handleUploadFromGoogleDrive}>
                   <img src="/integrated apps/google-drive-logo.png" alt="" className="w-4 h-4 mr-2 object-cover" />
                   Google Drive
                 </DropdownMenuItem>

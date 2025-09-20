@@ -16,7 +16,7 @@ export function FilterBar({
   onClearFilters
 }: FilterBarProps) {
   return (
-    <div className="flex flex-row items-center justify-between gap-4 py-6">
+    <div className="flex flex-row items-center justify-between gap-4 pt-6 pb-[0.5rem]">
 
       {/* Media Type Filter - Inline Buttons */}
       <div className="flex items-center gap-2">

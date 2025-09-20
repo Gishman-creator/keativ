@@ -5,7 +5,7 @@ import { Check, Play, Download, Trash2, Eye, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { MediaPreviewModal } from "./MediaPreviewModal"
 import { api } from "@/lib/api"
-import { showCustomToast } from "../CustomToast"
+import { showCustomToast, showSmallToast } from "../CustomToast"
 import ConfirmDelete from "./ConfirmDelete"
 
 export interface MediaFile {
@@ -112,27 +112,21 @@ export function MediaGrid({
 
   const handleDownload = (file: MediaFile) => {
     downloadFile(file.url, file.name)
+    showSmallToast('Your files have started downloading.')
   }
 
   const handleBulkDownload = () => {
     if (selectedFiles.length === 1) {
       // Single file - download directly
       downloadFile(selectedFiles[0].url, selectedFiles[0].name)
+      showSmallToast('Your files have started downloading.')
     } else if (selectedFiles.length > 1) {
       // Multiple files - create zip
       createZipAndDownload(selectedFiles)
+      showSmallToast('Your files have started downloading.')
     }
     handleClearSelection()
   }
-
-  const handleConfirmDelete = () => {
-    handleDelete(); // This function already handles single or bulk deletion
-    setShowConfirm(false);
-  };
-
-  const handleCancelDelete = () => {
-    setShowConfirm(false);
-  };
 
   // Unified function for single and bulk deletion
   const handleDelete = async (file?: MediaFile) => {
@@ -147,6 +141,7 @@ export function MediaGrid({
           : `${idsToDelete.length} files deleted successfully.`;
         // Notify parent to refresh the file list
         onBulkAction('delete', idsToDelete);
+        showSmallToast('File(s) deleted successfully.');
         // Clear selection for bulk delete
         if (!file) {
           handleClearSelection();
@@ -213,50 +208,71 @@ export function MediaGrid({
     <div className="flex-1 flex flex-col">
       {/* Action Bar */}
       {selectedCount > 0 && (
-        <div className="sticky top-[1rem] z-20 flex items-center justify-between p-4 mb-6 bg-white backdrop-blur-sm border border-border rounded-lg">
-          <span className="font-medium text-foreground flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearSelection}
-              className="w-8 h-8 p-0 hover:bg-gray-100 rounded-lg"
-              title="Clear selection"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-            {selectedCount} file{selectedCount !== 1 ? 's' : ''} selected
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={handleBulkDownload}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download {selectedCount > 1 ? 'as ZIP' : ''}
-            </Button>
-            <div className="relative">
+        <div className="sticky top-[0rem] z-20 bg-white/20 backdrop-blur-sm pt-[1rem] pb-0 rounded-b-lg">
+          <div className="flex items-center justify-between p-4 bg-white border border-border rounded-lg">
+            <span className="font-medium text-foreground flex items-center gap-2">
               <Button
-                variant="destructive"
-                onClick={() => setShowConfirm(true)}
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSelection}
+                className="w-8 h-8 p-0 hover:bg-gray-100 rounded-lg"
+                title="Clear selection"
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
+                <X className="w-4 h-4" />
               </Button>
-              {showConfirm && (
-                <ConfirmDelete
-                  onConfirm={handleDelete}
-                  onCancel={() => setShowConfirm(false)}
-                  message={`Are you sure you want to delete ${selectedCount} file(s)? This action cannot be undone.`}
-                />
-              )}
+              {selectedCount} file{selectedCount !== 1 ? 's' : ''} selected
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleBulkDownload}
+                className="hidden sm:inline-flex"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download {selectedCount > 1 ? 'as ZIP' : ''}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleBulkDownload}
+                className="h-10 w-10 p-0 bg-transparent hover:bg-gray-100 sm:hidden border-gray-200"
+                title="Download"
+              >
+                <Download className="w-4 h-4" />
+              </Button>
+              <div className="relative">
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowConfirm(true)}
+                  className="hidden sm:inline-flex"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowConfirm(true)}
+                  className="h-10 w-10 p-0 text-white sm:hidden"
+                  title="Delete"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+                {showConfirm && (
+                  <ConfirmDelete
+                    onConfirm={handleDelete}
+                    onCancel={() => setShowConfirm(false)}
+                    message={`Are you sure you want to delete ${selectedCount} file(s)? This action cannot be undone.`}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* Media Grid */}
-      <div className="flex-1">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="flex-1 mt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-0.5">
           {files.map((file) => (
             <div
               key={file.id}

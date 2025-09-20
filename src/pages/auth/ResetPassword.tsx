@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { authApi } from "@/lib/api"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
-import { showCustomToast } from "@/components/CustomToast"
+import { showCustomToast, showSmallToast } from "@/components/CustomToast"
 
 export function ResetPassword() {
   const { token } = useParams<{ token: string }>();
@@ -56,10 +56,7 @@ export function ResetPassword() {
       if (response.success) {
         setPassword("")
         setConfirmPassword("")
-        toast.success("Password reset successfully! Redirecting to login...", {
-          // Adjust position and duration as needed
-          duration: 3000, // Show the toast for 3 seconds
-        });
+        showSmallToast('Password reset successfully, Redirecting to login...', undefined, 3000)
         
         // Use a setTimeout to allow the user to see the toast before navigation
         setTimeout(() => {

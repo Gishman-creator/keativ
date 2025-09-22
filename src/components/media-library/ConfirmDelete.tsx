@@ -34,7 +34,7 @@ function ConfirmDelete({ onConfirm, onCancel, message }: ConfirmDeleteProps) {
             className="absolute top-full right-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg p-4 z-50 animate-in fade-in-0 slide-in-from-top-1"
         >
             <div className="flex items-start justify-between mb-3">
-                <h3 className="text-sm font-semibold">
+                <h3 className="text-sm text-black font-semibold">
                     Confirm Deletion
                 </h3>
             </div>

@@ -18,6 +18,7 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  avatar?: string;
   is_staff: boolean;
   subscription_tier_id?: string;
   profile?: {
@@ -1219,7 +1220,11 @@ class ApiClient {
   }
 
   async getSubscriptionTiers<T>(): Promise<ApiResponse<T>> {
-    return this.getPublic<T>(API_ENDPOINTS.CORE.SUBSCRIPTION_TIERS); // Use getPublic for subscription tiers
+    return this.getPublic<T>(API_ENDPOINTS.CORE.BILLING.SUBSCRIPTION_TIERS); // Use getPublic for subscription tiers
+  }
+
+  async getUserSubscriptionTier<T>(): Promise<ApiResponse<T>> {
+    return this.get<T>(API_ENDPOINTS.CORE.BILLING.USER_SUBSCRIPTION_TIER); // Use getPublic for subscription tiers
   }
 }
 

@@ -15,6 +15,7 @@ import NotFound from '../pages/public/NotFound';
 // Email verification components
 import { EmailVerification, VerificationPending, ForgotPassword, Register } from '@/pages/auth';
 import Login from '../pages/auth/Login';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 // Import the Enhanced Pricing component
 import EnhancedPricing from '../pages/public/EnhancedPricing';
@@ -66,8 +67,8 @@ export const router = createBrowserRouter([
       { path: 'contact', element: <Contact /> },
       { path: 'privacy', element: <PrivacyPolicy /> },
       { path: 'terms', element: <TermsOfService /> },
-      { path: 'login', element: <Login /> },
-      { path: 'signup', element: <Register /> },
+      { path: 'login', element: <ProtectedRoute isProtected={false} redirectPath="/dashboard"><Login /></ProtectedRoute> },
+      { path: 'signup', element: <ProtectedRoute isProtected={false} redirectPath="/dashboard"><Register /></ProtectedRoute> },
       { path: 'verify-email/:token', element: <EmailVerification /> },
       { path: 'reset-password/:token', element: <ResetPassword /> },
       { path: 'verification-pending', element: <VerificationPending /> },
@@ -76,12 +77,10 @@ export const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: <PrivateLayout />,
-    // element: (
-    //   <ProtectedRoute>
-    //     <PrivateLayout />
-    //   </ProtectedRoute>
-    // ),
+    element:
+      <ProtectedRoute isProtected={true} redirectPath="/login">
+        <PrivateLayout />
+      </ProtectedRoute>,
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'planner', element: <Planner /> },

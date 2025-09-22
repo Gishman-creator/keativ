@@ -83,7 +83,7 @@ const SmallToast: React.FC<SmallToastProps> = ({ t, description, type = 'default
   };
 
   return (
-    <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white shadow-md rounded-lg pointer-events-auto`}>
+    <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto`}>
       <div className="p-4">
         <div className="flex items-center justify-between space-x-2">
           <div className="flex items-center space-x-2 flex-1">

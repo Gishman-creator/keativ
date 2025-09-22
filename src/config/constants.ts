@@ -117,7 +117,10 @@ export const API_ENDPOINTS = {
       WHITELIST: `${API_BASE_URL}/api/core/ip/whitelist/`,
       BLACKLIST: `${API_BASE_URL}/api/core/ip/blacklist/`,
     },
-    SUBSCRIPTION_TIERS: `${API_BASE_URL}/api/core/subscriptions/tiers/`,
+    BILLING: {
+      USER_SUBSCRIPTION_TIER: `${API_BASE_URL}/api/core/subscriptions/user/`,
+      SUBSCRIPTION_TIERS: `${API_BASE_URL}/api/core/subscriptions/tiers/`,
+    },
   },
 
   // Core (Rate limiting & IP management)

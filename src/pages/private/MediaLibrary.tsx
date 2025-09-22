@@ -83,7 +83,7 @@ const MediaLibrary = () => {
     setIsUploading // Pass setIsUploading to manage loading state
   );
 
-    // Effect to handle loading toast based on isUploading state
+  // Effect to handle loading toast based on isUploading state
   useEffect(() => {
     if (isUploading) {
       showSmallToast("Uploading files...", 'loading', 300000000) // Duration 0 means it won't auto-dismiss
@@ -272,7 +272,7 @@ const MediaLibrary = () => {
   const handleUploadFromDevice = () => {
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = 'image/*,video/*' // Accept image and video files
+    input.accept = 'image/jpeg,image/jpg,image/png,image/gif,image/webp,video/mp4,video/mov,video/webm,video/mkv,video/3gpp,audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/ogg,audio/m4a,audio/opus'
     input.multiple = true
     input.onchange = (e) => {
       const files = Array.from((e.target as HTMLInputElement).files || [])

@@ -1,5 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -7,13 +6,9 @@ import {
   BarChart3,
   MessageCircle,
   Image,
-  Users,
   Layers,
   Settings,
-  Plug,
   Workflow,
-  Plus,
-  CreditCard,
   Building2,
   Globe,
 } from 'lucide-react';
@@ -28,7 +23,6 @@ type NavItem = { name: string; href: string; icon: React.ComponentType<{ classNa
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed: propIsCollapsed, className }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(!propIsCollapsed);
   const [isHovered, setIsHovered] = useState(false); // Re-introduce isHovered state
   const sidebarRef = useRef<HTMLDivElement>(null);

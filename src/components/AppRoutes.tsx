@@ -5,12 +5,10 @@ import {
   Register,
   EmailVerification,
   VerificationPending,
-  ResendVerification,
-} from '@/components/auth';
+  ForgotPassword,
+} from '@/pages/auth';
 
-// Placeholder components - you can replace these with your actual components
 const Dashboard = () => <div>Dashboard - Welcome!</div>;
-const ForgotPassword = () => <div>Forgot Password - Coming Soon</div>;
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -74,7 +72,7 @@ export function AppRoutes() {
         path="/resend-verification"
         element={
           <PublicRoute>
-            <ResendVerification />
+            <ResendVerification/>
           </PublicRoute>
         }
       />

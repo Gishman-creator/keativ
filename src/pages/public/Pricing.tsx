@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,11 +48,14 @@ const Pricing = () => {
         } else {
           throw new Error(response.error || 'Failed to fetch subscription tiers');
         }
-      } catch (e: any) {
-        if (e.message === 'Network error' || (e.response && e.response.status === 503)) {
-          setHasNetworkError(true); // Set network error state to true
-        } else {
-          setError(e.message);
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          const errAny = e as any;
+          if (e.message === 'Network error' || (errAny.response && errAny.response.status === 503)) {
+            setHasNetworkError(true); // Set network error state to true
+          } else {
+            setError(e.message);
+          }
         }
       } finally {
         setLoading(false);

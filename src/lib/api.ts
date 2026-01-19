@@ -677,9 +677,14 @@ class ApiClient {
     data?: Record<string, unknown>
   ): Promise<ApiResponse<T>> {
     try {
+      const headers = this.getHeaders();
+      if (data) {
+        (headers as Record<string, string>)["Content-Type"] = "application/json";
+      }
+      
       const response = await fetch(url, {
         method: "DELETE",
-        headers: this.getHeaders(),
+        headers,
         credentials: "include",
         body: data ? JSON.stringify(data) : undefined,
       });
@@ -935,6 +940,15 @@ class ApiClient {
     );
   }
 
+  async disconnectLinkedInAccount(): Promise<
+    ApiResponse<{ success: boolean; message: string }>
+  > {
+    return this.post<{ success: boolean; message: string }>(
+      API_ENDPOINTS.LINKEDIN_DISCONNECT,
+      {}
+    );
+  }
+
   // Facebook Integration Methods
 
   async verifyFacebookCredentials(): Promise<
@@ -1101,7 +1115,25 @@ class ApiClient {
   }
 
   async bulkMediaDelete(ids: string[]): Promise<ApiResponse<unknown>> {
-    return api.deleteWithBody(API_ENDPOINTS.MEDIA.BULK_DELETE, { ids });
+    // Log IDs being sent to delete
+    console.log('Attempting to delete media files with IDs:', ids);
+    console.log('IDs types:', ids.map(id => `${id}: ${typeof id}`));
+
+    // Filter out any null or undefined values
+    const validIds = ids.filter(id => id != null);
+    
+    if (validIds.length === 0) {
+      console.error('No valid IDs provided for deletion');
+      return {
+        success: false,
+        error: 'No valid file IDs provided for deletion'
+      };
+    }
+
+    // Log the filtered IDs
+    console.log('Filtered valid IDs:', validIds);
+    
+    return api.deleteWithBody(API_ENDPOINTS.MEDIA.BULK_DELETE, { ids: validIds });
   }
 
   // Posts API Methods

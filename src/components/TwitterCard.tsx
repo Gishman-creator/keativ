@@ -20,7 +20,10 @@ const TwitterCard = () => {
     if (response.success && response.data) {
       setAccount(response.data.account);
     } else {
-      setError(response.error || 'Failed to verify Twitter credentials.');
+      const errorMessage = typeof response.error === 'string'
+? response.error
+: (response.error && JSON.stringify(response.error)) || 'Failed to verify Twitter credentials.';
+setError(errorMessage);
     }
     setIsLoading(false);
   };
@@ -36,7 +39,10 @@ const TwitterCard = () => {
     if (response.success && response.data) {
       setLastTweet(response.data.tweet);
     } else {
-      setError(response.error || 'Failed to post tweet.');
+      const errorMessage = typeof response.error === 'string'
+? response.error
+: (response.error && JSON.stringify(response.error)) || 'Failed to post tweet.';
+setError(errorMessage);
     }
     setIsLoading(false);
   };
@@ -49,7 +55,10 @@ const TwitterCard = () => {
     if (response.success && response.data) {
       setUserTweets(response.data.tweets);
     } else {
-      setError(response.error || 'Failed to get user tweets.');
+      const errorMessage = typeof response.error === 'string'
+? response.error
+: (response.error && JSON.stringify(response.error)) || 'Failed to get user tweets.';
+setError(errorMessage);
     }
     setIsLoading(false);
   };

@@ -148,6 +148,7 @@ export const API_ENDPOINTS = {
   LINKEDIN_AUTHORIZE: `${API_BASE_URL}/api/integrations/linkedin/authorize/`,
   LINKEDIN_CALLBACK: `${API_BASE_URL}/api/integrations/linkedin/callback/`,
   LINKEDIN_BIND_TOKENS: `${API_BASE_URL}/api/integrations/linkedin/bind-tokens/`,
+  LINKEDIN_DISCONNECT: `${API_BASE_URL}/api/integrations/linkedin/disconnect/`,
 
   // Facebook Integration
   FACEBOOK_VERIFY: `${API_BASE_URL}/api/integrations/facebook/verify/`,

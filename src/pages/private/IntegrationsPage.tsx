@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -218,32 +218,19 @@ const IntegrationsPage = () => {
   const handleDisconnectLinkedIn = async () => {
     try {
       setLinkedInLoading(true);
-      // First get the current user's social accounts to find the LinkedIn account ID
-      const accountsRes = await api.get<SocialAccount[]>('/api/auth/social-accounts/');
-      if (accountsRes.success && accountsRes.data) {
-        const linkedInAccount = accountsRes.data.find(account => 
-          account.platform === 'linkedin' || account.platform === 'LinkedIn'
-        );
-        
-        if (linkedInAccount) {
-          // Call the remove endpoint with the correct URL pattern
-          const removeRes = await api.delete(`/api/auth/social-accounts/${linkedInAccount.id}/remove/`);
-          if (removeRes.success) {
-            setIsLinkedInConnected(false);
-            console.log('LinkedIn account disconnected successfully');
-          } else {
-            console.error('Failed to disconnect LinkedIn account:', removeRes.error);
-          }
-        } else {
-          console.error('LinkedIn account not found');
-        }
+      
+      // Use the proper LinkedIn disconnect endpoint
+      const removeRes = await api.disconnectLinkedInAccount();
+      if (removeRes.success) {
+        setIsLinkedInConnected(false);
+        console.log('LinkedIn account disconnected successfully');
       } else {
-        console.error('Failed to fetch social accounts:', accountsRes.error);
+        console.error('Failed to disconnect LinkedIn account:', removeRes.error);
       }
     } catch (error) {
       console.error('Error disconnecting LinkedIn account:', error);
     } finally {
-  setLinkedInLoading(false);
+      setLinkedInLoading(false);
     }
   };
 
@@ -425,7 +412,7 @@ const IntegrationsPage = () => {
     }
   };
 
-  const integrations = [
+  const integrations = useMemo(() => [
     { key: 'twitter', name: 'Twitter', logo: '/social media/x-logo.png', connected: isTwitterConnected },
     { key: 'facebook', name: 'Facebook', logo: '/social media/facebook-logo.png', connected: isFacebookConnected },
     { key: 'instagram', name: 'Instagram', logo: '/social media/instagram-logo.png', connected: false },
@@ -436,7 +423,17 @@ const IntegrationsPage = () => {
     { key: 'dropbox', name: 'Dropbox', logo: '/integrated apps/dropbox-logo.png', connected: isDropboxConnected },
     { key: 'zapier', name: 'Zapier', logo: '/logo.png', connected: isZapierConnected },
     { key: 'tiktok', name: 'TikTok', logo: '/social media/tiktok-logo.png', connected: isTikTokConnected },
-  ];
+  ], [
+    isTwitterConnected,
+    isFacebookConnected,
+    isLinkedInConnected,
+    isSlackConnected,
+    isCanvaConnected,
+    isGoogleDriveConnected,
+    isDropboxConnected,
+    isZapierConnected,
+    isTikTokConnected
+  ]);
 
   const handleGenericConnect = async (key: string) => {
     setGenericLoading(key);

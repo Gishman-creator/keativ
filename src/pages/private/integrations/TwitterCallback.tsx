@@ -38,11 +38,18 @@ const TwitterCallback = () => {
       const bindRes = await api.bindTwitterTokens(payload);
       if (bindRes.success) {
         setStatus('success');
-        setMessage('Twitter connected! Redirecting...');
-        setTimeout(() => navigate('/dashboard/integrations'), 1200);
+        setMessage('Twitter connected! You can close this window.');
+        if (window.opener) {
+          window.opener.postMessage({ type: 'twitter-integration', status: 'success' }, '*');
+          window.close();
+        }
       } else {
         setStatus('error');
         setMessage(bindRes.error || 'Failed to bind tokens');
+        if (window.opener) {
+          window.opener.postMessage({ type: 'twitter-integration', status: 'error', message: bindRes.error }, '*');
+          window.close();
+        }
       }
     };
 

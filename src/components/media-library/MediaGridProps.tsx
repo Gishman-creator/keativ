@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Check, Play, Download, Trash2, Eye, X } from "lucide-react"
+import { Play, Download, Trash2, Eye, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { MediaPreviewModal } from "./MediaPreviewModal"
 import { api } from "@/lib/api"
@@ -51,7 +51,7 @@ export function MediaGrid({
     }
   }
 
-  const handleCheckboxChange = (fileId: string, checked: boolean) => {
+  const handleCheckboxChange = (fileId: string) => {
     onFileToggle(fileId)
   }
 
@@ -130,33 +130,61 @@ export function MediaGrid({
 
   // Unified function for single and bulk deletion
   const handleDelete = async (file?: MediaFile) => {
-    const idsToDelete = file ? [file.id] : selectedFileIds;
-    if (idsToDelete.length === 0) return;
+    const idsToDelete = file ? [file.id] : selectedFileIds.filter(id => 
+      id != null && 
+      id !== undefined && 
+      id !== '' && 
+      id !== 'null' && 
+      id !== 'undefined' &&
+      typeof id === 'string' &&
+      id.trim() !== ''
+    );
+    
+    if (idsToDelete.length === 0) {
+      showCustomToast('No Selection', 'Please select files to delete.', 'warning');
+      return;
+    }
 
     try {
       const response = await api.bulkMediaDelete(idsToDelete);
       if (response.success) {
-        const message = idsToDelete.length === 1
-          ? "File deleted successfully."
-          : `${idsToDelete.length} files deleted successfully.`;
+        // Handle response with potential failed deletions
+        const responseData = response.data as { deleted_count?: number; failed_count?: number } | undefined;
+        const deletedCount = responseData?.deleted_count || idsToDelete.length;
+        const failedCount = responseData?.failed_count || 0;
+        
+        if (failedCount > 0) {
+          showCustomToast(
+            'Partial Success', 
+            `Successfully deleted ${deletedCount} files, but ${failedCount} files failed to delete. Please try again.`, 
+            'warning'
+          );
+        } else {
+          showSmallToast('File(s) deleted successfully.');
+        }
+        
         // Notify parent to refresh the file list
         onBulkAction('delete', idsToDelete);
-        showSmallToast('File(s) deleted successfully.');
+        
         // Clear selection for bulk delete
         if (!file) {
           handleClearSelection();
         }
       } else {
-        // Handle upload failure
-        const error = response.error || 'Upload failed';
-        console.error('Upload failed:', error);
+        // Handle deletion failure
+        const error = response.error || 'Delete failed';
+        console.error('Delete failed:', error);
         if (error === 'Network error') {
           showCustomToast('No Internet', 'Please check your internet connection and try again.', 'error');
+        } else if (typeof error === 'string' && error.includes('Access denied')) {
+          showCustomToast('Access Denied', 'You do not have permission to delete some of these files.', 'error');
+        } else if (typeof error === 'string' && error.includes('Invalid file IDs')) {
+          showCustomToast('Invalid Selection', 'Some selected files are no longer valid. Please refresh and try again.', 'error');
         } else {
           // Check if error is an object with key-value pairs
           if (typeof error === 'object' && error !== null) {
             const errorMessages = Object.entries(error)
-              .map(([key, value]) => {
+              .map(([, value]) => {
                 let message;
                 if (Array.isArray(value)) {
                   message = value.join(', ');
@@ -170,7 +198,7 @@ export function MediaGrid({
               .join(' ');
             showCustomToast('Failed to delete file(s)', errorMessages || 'An unexpected error occurred deleting your file(s), please try again.', 'error');
           } else {
-            // Generic upload failed message if error is not an object
+            // Generic delete failed message if error is not an object
             showCustomToast('Failed to delete file(s)', 'An unexpected error occurred deleting your file(s), please try again.', 'error');
           }
         }
@@ -316,7 +344,7 @@ export function MediaGrid({
                   )}
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleCheckboxChange(file.id, !file.selected)
+                    handleCheckboxChange(file.id)
                   }}
                 >
                   <Checkbox

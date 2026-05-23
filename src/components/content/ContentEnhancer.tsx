@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Zap, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { API_ENDPOINTS } from '@/config/constants';
+import ApiClient from '@/lib/api';
 
 interface ContentEnhancerProps {
   originalContent: string;
@@ -33,11 +36,24 @@ const ContentEnhancer: React.FC<ContentEnhancerProps> = ({
 
     setLoading(true);
     try {
-      // Mock content suggestions for now - in a real app, this would call an AI service
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
-
-      const mockSuggestions = generateMockSuggestions(originalContent, platform);
-      setSuggestions(mockSuggestions);
+      const apiClient = new ApiClient();
+      const response = await apiClient.post(API_ENDPOINTS.POSTS.AI_CONTENT_SUGGESTIONS, {
+        content: originalContent,
+        platform,
+      });
+      if (response.success && response.data) {
+        // Combine analytics based and general suggestions into a single list
+        const { analytics_based_suggestions = [], general_suggestions = [] } = response.data as any;
+        const combined = [...analytics_based_suggestions, ...general_suggestions];
+        setSuggestions(combined.slice(0, 4)); // limit to 4 suggestions for UI consistency
+      } else {
+        console.error('API error generating suggestions:', response.error);
+        toast({
+          title: 'Error',
+          description: response.error || 'Failed to generate content suggestions',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       console.error('Error generating suggestions:', error);
       toast({
@@ -50,47 +66,47 @@ const ContentEnhancer: React.FC<ContentEnhancerProps> = ({
     }
   };
 
-  const generateMockSuggestions = (content: string, platform: string): string[] => {
-    const suggestions = [];
+  // const generateMockSuggestions = (content: string, platform: string): string[] => {
+  //   const suggestions = [];
     
-    // Add platform-specific suggestions
-    if (platform === 'twitter') {
-      suggestions.push(
-        `🚀 ${content} #Innovation`,
-        `💡 Here's a thought: ${content}`,
-        `${content} \n\nWhat do you think? 🤔`
-      );
-    } else if (platform === 'instagram') {
-      suggestions.push(
-        `✨ ${content} ✨\n\n#InstaGood #Content`,
-        `${content} 📸\n\n#LifeStyle #Inspiration`,
-        `Feeling inspired! ${content} 💫\n\n#Mood #Vibes`
-      );
-    } else if (platform === 'linkedin') {
-      suggestions.push(
-        `Professional insight: ${content}\n\n#Leadership #Growth`,
-        `${content}\n\nThoughts on this approach? I'd love to hear your perspective.`,
-        `Key takeaway: ${content}\n\n#Business #Strategy`
-      );
-    } else {
-      suggestions.push(
-        `Enhanced: ${content}`,
-        `${content} - What are your thoughts?`,
-        `Consider this: ${content}`
-      );
-    }
+  //   // Add platform-specific suggestions
+  //   if (platform === 'twitter') {
+  //     suggestions.push(
+  //       `🚀 ${content} #Innovation`,
+  //       `💡 Here's a thought: ${content}`,
+  //       `${content} \n\nWhat do you think? 🤔`
+  //     );
+  //   } else if (platform === 'instagram') {
+  //     suggestions.push(
+  //       `✨ ${content} ✨\n\n#InstaGood #Content`,
+  //       `${content} 📸\n\n#LifeStyle #Inspiration`,
+  //       `Feeling inspired! ${content} 💫\n\n#Mood #Vibes`
+  //     );
+  //   } else if (platform === 'linkedin') {
+  //     suggestions.push(
+  //       `Professional insight: ${content}\n\n#Leadership #Growth`,
+  //       `${content}\n\nThoughts on this approach? I'd love to hear your perspective.`,
+  //       `Key takeaway: ${content}\n\n#Business #Strategy`
+  //     );
+  //   } else {
+  //     suggestions.push(
+  //       `Enhanced: ${content}`,
+  //       `${content} - What are your thoughts?`,
+  //       `Consider this: ${content}`
+  //     );
+  //   }
 
-    // Add some general improvements
-    if (content.length < 100) {
-      suggestions.push(`${content}\n\nHere's why this matters...`);
-    }
+  //   // Add some general improvements
+  //   if (content.length < 100) {
+  //     suggestions.push(`${content}\n\nHere's why this matters...`);
+  //   }
     
-    if (!content.includes('?')) {
-      suggestions.push(`${content}\n\nWhat's your experience with this?`);
-    }
+  //   if (!content.includes('?')) {
+  //     suggestions.push(`${content}\n\nWhat's your experience with this?`);
+  //   }
 
-    return suggestions.slice(0, 4); // Limit to 4 suggestions
-  };
+  //   return suggestions.slice(0, 4); // Limit to 4 suggestions
+  // };
 
   const copyToClipboard = async (text: string, index: number) => {
     try {

@@ -37,9 +37,12 @@ import LinkedInCallback from '../pages/private/integrations/LinkedInCallback';
 import FacebookAccountManagement from '../components/FacebookAccountManagement';
 import CreatePost from '../pages/private/CreatePost';
 import PostAnalyticsPage from '@/pages/private/PostAnalyticsPage';
-// import Influencers from '@/pages/private/Influencers';
+import Influencers from '@/pages/private/Influencers';
 import InfluencerDashboardPage from '@/pages/private/InfluencerDashboard';
 import Messages from '../pages/private/Messages';
+import Collaborators from '../pages/private/Collaborators';
+import PostTemplates from '../pages/private/PostTemplates';
+import BrandWall from '../pages/private/BrandWall';
 
 // Payment and CRM imports
 import BillingDashboard from '../pages/private/billing/BillingDashboard';
@@ -92,9 +95,13 @@ export const router = createBrowserRouter([
       { path: 'automations', element: <Automations /> },
       { path: 'media', element: <MediaLibrary /> },
       { path: 'influencers', element: <InfluencerDashboardPage /> },
+      { path: 'influencers/applications', element: <Influencers /> },
       { path: 'social-sets', element: <SocialSets /> },
       { path: 'posts', element: <Planner /> },
       { path: 'posts/new', element: <Posts /> },
+      { path: 'templates', element: <PostTemplates /> },
+      { path: 'brand-wall', element: <BrandWall /> },
+      { path: 'collaborators', element: <Collaborators /> },
       { path: 'settings', element: <Settings /> },
       { path: 'integrations', element: <IntegrationsPage /> },
       { path: 'integrations/facebook/manage', element: <FacebookAccountManagement /> },

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,10 +8,13 @@ import { Label } from "@/components/ui/label"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
-import { CalendarIcon, Clock, Hash, Facebook, Instagram, Linkedin, X } from "lucide-react"
+import { CalendarIcon, Clock, Hash, Facebook, Instagram, Linkedin, X, Sparkles, Lightbulb, RefreshCw, Copy, Check, Plus } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { ImageSelectionModal } from "./image-selection-modal"
+import { api } from "@/lib/api"
+import { API_ENDPOINTS } from "@/config/constants"
+import { Badge } from "@/components/ui/badge"
+
 
 const socialPlatforms = [
   {
@@ -58,8 +61,6 @@ interface SchedulePostFormContentProps {
   setShowImageModal: (show: boolean) => void;
   selectedImages: File[];
   setSelectedImages: React.Dispatch<React.SetStateAction<File[]>>;
-  tempSelectedImages: File[];
-  setTempSelectedImages: React.Dispatch<React.SetStateAction<File[]>>;
   isLargeScreen: boolean;
   handleCloseSchedulePostPage: () => void;
 }
@@ -69,8 +70,6 @@ function SchedulePostFormContent({
   setShowImageModal,
   selectedImages,
   setSelectedImages,
-  tempSelectedImages,
-  setTempSelectedImages,
   isLargeScreen,
   handleCloseSchedulePostPage,
 }: SchedulePostFormContentProps) {
@@ -79,6 +78,87 @@ function SchedulePostFormContent({
   const [time, setTime] = useState("12:00")
   const [title, setTitle] = useState("")
   const [caption, setCaption] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // AI States
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false)
+  const [contentSuggestions, setContentSuggestions] = useState<string[]>([])
+  const [isRefreshingHashtags, setIsRefreshingHashtags] = useState(false)
+  const [aiHashtags, setAiHashtags] = useState<string[]>([])
+  const [isLoadingTimes, setIsLoadingTimes] = useState(false)
+  const [optimalTimes, setOptimalTimes] = useState<string[]>([])
+  const [currentHashtags, setCurrentHashtags] = useState<string[]>(["#Keativ", "#Business"])
+
+  const handleGenerateContent = async () => {
+    if (!selectedPlatforms.length) return;
+    setIsGeneratingContent(true);
+    try {
+      const res = await api.post<{ suggestions: string[] }>(API_ENDPOINTS.POSTS.AI_CONTENT_SUGGESTIONS, {
+        platform: selectedPlatforms[0],
+        topic: title || "Social Media Content"
+      });
+      if (res.success && res.data?.suggestions) {
+        setContentSuggestions(res.data.suggestions);
+      }
+    } catch (e) {
+      console.error("Failed to generate content", e);
+    } finally {
+      setIsGeneratingContent(false);
+    }
+  };
+
+  const handleRefreshHashtags = async () => {
+    setIsRefreshingHashtags(true);
+    try {
+      const res = await api.post<{ hashtags: string[] }>(API_ENDPOINTS.INTEGRATIONS.HASHTAG_SUGGEST, {
+        content: caption || title,
+        platform: selectedPlatforms[0] || "instagram"
+      });
+      if (res.success && res.data?.hashtags) {
+        setAiHashtags(res.data.hashtags);
+      }
+    } catch (e) {
+      console.error("Failed to suggest hashtags", e);
+    } finally {
+      setIsRefreshingHashtags(false);
+    }
+  };
+
+  const handleRefreshTimes = async () => {
+    setIsLoadingTimes(true);
+    try {
+      const res = await api.get<{ optimal_times: string[] }>(API_ENDPOINTS.INTEGRATIONS.OPTIMAL_TIMES);
+      if (res.success && res.data?.optimal_times) {
+        setOptimalTimes(res.data.optimal_times);
+      }
+    } catch (e) {
+      console.error("Failed to get optimal times", e);
+    } finally {
+      setIsLoadingTimes(false);
+    }
+  };
+
+  const handleSchedulePost = async () => {
+    if (!title || !date) return;
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        title,
+        content: caption,
+        scheduled_time: `${format(date, 'yyyy-MM-dd')}T${time}:00Z`,
+        platform: selectedPlatforms[0] || "instagram",
+        status: 'scheduled'
+      };
+      const res = await api.post(API_ENDPOINTS.POSTS.CREATE, payload);
+      if (res.success) {
+        handleCloseSchedulePostPage();
+      }
+    } catch (e) {
+      console.error("Failed to schedule post", e);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handlePlatformToggle = (platformId: string) => {
     setSelectedPlatforms((prev) =>
@@ -221,18 +301,161 @@ function SchedulePostFormContent({
                 placeholder="Write your caption here..."
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                className="min-h-[120px] border-[#F3F4F6] focus:border-[#EF4444] text-[#2D3748] resize-none pb-12 rounded-t-md"
+                className="min-h-[120px] border-[#F3F4F6] focus:border-[#EF4444] text-[#2D3748] resize-none rounded-md"
               />
+            </div>
+          </div>
 
-              <div
-                className="w-full bg-white border-l border-r border-b border-[#F3F4F6] rounded-b-md px-3 py-2 cursor-pointer hover:bg-[#F9FAFB] transition-colors"
-                onClick={() => { }}
+          <Separator className="bg-[#F3F4F6]" />
+
+          {/* AI Content Suggestions */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="h-4 w-4 text-[#8B5CF6]" />
+                <Label className="text-[#2D3748] font-medium">Content Suggestions</Label>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-[#8B5CF6] hover:text-[#7C3AED] h-7 px-2"
+                onClick={handleGenerateContent}
+                disabled={isGeneratingContent || !selectedPlatforms.length}
               >
-                <div className="flex items-center text-[#8B5CF6] text-sm">
-                  <Hash className="w-4 h-4 mr-2" />
-                  <span>hashtag suggestions</span>
+                {isGeneratingContent ? <RefreshCw className="h-3 w-3 animate-spin mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                Generate
+              </Button>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 min-h-[100px] flex flex-col justify-center items-center text-center">
+              {contentSuggestions.length > 0 ? (
+                <div className="space-y-3 w-full">
+                  {contentSuggestions.map((suggestion, i) => (
+                    <div key={i} className="bg-white p-3 rounded-md border border-gray-200 text-sm text-gray-700 text-left relative group">
+                      <p>{suggestion}</p>
+                      <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setCaption(suggestion)} title="Use this content">
+                          <Check className="h-3 w-3 text-green-500" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => navigator.clipboard.writeText(suggestion)} title="Copy to clipboard">
+                          <Copy className="h-3 w-3 text-gray-400" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[10px] text-gray-400 flex items-center justify-center">
+                    <Lightbulb className="h-3 w-3 mr-1" /> 
+                    Click "Use" to replace your content, or "Copy" to save suggestions for later
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-500">No suggestions generated yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Click Generate to get AI-powered content ideas</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <Separator className="bg-[#F3F4F6]" />
+
+          {/* AI Hashtag Suggestions */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <Hash className="h-4 w-4 text-[#8B5CF6]" />
+                <Label className="text-[#2D3748] font-medium">Hashtag Suggestions</Label>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-[#8B5CF6] hover:text-[#7C3AED] h-7 px-2"
+                onClick={handleRefreshHashtags}
+                disabled={isRefreshingHashtags}
+              >
+                <RefreshCw className={cn("h-3 w-3 mr-1", isRefreshingHashtags && "animate-spin")} />
+                Refresh
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Current Hashtags:</p>
+                <div className="flex flex-wrap gap-2">
+                  {currentHashtags.map(h => (
+                    <Badge key={h} className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100 cursor-pointer" onClick={() => setCurrentHashtags(prev => prev.filter(x => x !== h))}>
+                      {h} ×
+                    </Badge>
+                  ))}
                 </div>
               </div>
+              
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Suggested Hashtags:</p>
+                <div className="flex flex-wrap gap-2">
+                  {(aiHashtags.length > 0 ? aiHashtags : suggestedHashtags).map(h => (
+                    <Badge 
+                      key={h} 
+                      variant="outline" 
+                      className="cursor-pointer hover:bg-[#8B5CF6]/10 hover:border-[#8B5CF6]/30 transition-colors"
+                      onClick={() => {
+                        if (!currentHashtags.includes(h)) {
+                          setCurrentHashtags(prev => [...prev, h]);
+                          addHashtag(h);
+                        }
+                      }}
+                    >
+                      {h}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-400 flex items-center">
+                <Lightbulb className="h-3 w-3 mr-1" />
+                Click suggested hashtags to add them, or click current hashtags to remove them
+              </p>
+            </div>
+          </div>
+
+          <Separator className="bg-[#F3F4F6]" />
+
+          {/* AI Optimal Posting Times */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-[#8B5CF6]" />
+                <Label className="text-[#2D3748] font-medium">Optimal Posting Times</Label>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-[#8B5CF6] hover:text-[#7C3AED] h-7 px-2"
+                onClick={handleRefreshTimes}
+                disabled={isLoadingTimes}
+              >
+                <RefreshCw className={cn("h-3 w-3 mr-1", isLoadingTimes && "animate-spin")} />
+                Refresh
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {(optimalTimes.length > 0 ? optimalTimes : ["Tomorrow, 2:00 PM", "Monday, 9:00 AM"]).map((t, i) => (
+                <Button 
+                  key={i} 
+                  variant="outline" 
+                  className={cn("text-xs h-9 justify-start font-normal border-gray-200", i === 0 && "border-[#8B5CF6] bg-indigo-50/50")}
+                  onClick={() => {
+                     // Set time if format allows, else just a hint
+                     if (t.includes(':')) {
+                        const timeMatch = t.match(/(\d{1,2}:\d{2})\s*(AM|PM)?/i);
+                        if (timeMatch) setTime(timeMatch[1]);
+                     }
+                  }}
+                >
+                  <Sparkles className="h-3 w-3 mr-2 text-amber-400" />
+                  {t}
+                </Button>
+              ))}
             </div>
           </div>
 
@@ -295,7 +518,10 @@ function SchedulePostFormContent({
             <Button variant="outline" className="border-[#F3F4F6] text-[#2D3748] bg-transparent">
               Save as Draft
             </Button>
-            <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white">Schedule Post</Button>
+            <Button className="bg-[#EF4444] hover:bg-[#DC2626] text-white" onClick={handleSchedulePost} disabled={isSubmitting}>
+              {isSubmitting ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : null}
+              Schedule Post
+            </Button>
           </div>
         </div>
       </div>

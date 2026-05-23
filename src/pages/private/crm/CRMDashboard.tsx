@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import { API_ENDPOINTS } from '@/config/constants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +46,11 @@ interface GoHighLevelIntegration {
 
 const CRMDashboard: React.FC = () => {
   const [contacts, setContacts] = useState<CRMContact[]>([]);
+  const [stats, setStats] = useState<{ total_contacts: number, total_deals: number, total_value: number }>({
+    total_contacts: 0,
+    total_deals: 0,
+    total_value: 0
+  });
   const [integration, setIntegration] = useState<GoHighLevelIntegration | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,47 +75,29 @@ const CRMDashboard: React.FC = () => {
 
   useEffect(() => {
     loadContacts();
+    loadDashboardStats();
     loadIntegration();
   }, []);
+
+  const loadDashboardStats = async () => {
+    try {
+      const res = await api.get<{ total_contacts: number, total_deals: number, total_value: number }>(API_ENDPOINTS.CRM.DASHBOARD);
+      if (res.success && res.data) {
+        setStats(res.data);
+      }
+    } catch (error) {
+      console.error('Error loading CRM stats:', error);
+    }
+  };
 
   const loadContacts = async () => {
     setIsLoading(true);
     try {
-      // Mock data for now - replace with actual API call
-      const mockContacts: CRMContact[] = [
-        {
-          id: '1',
-          first_name: 'John',
-          last_name: 'Doe',
-          email: 'john@example.com',
-          phone: '+1-555-0123',
-          company: 'Tech Solutions Inc',
-          status: 'customer',
-          tags: ['VIP', 'Enterprise'],
-          last_contacted: '2024-08-10',
-          created_at: '2024-07-15',
-          social_media_profiles: {
-            linkedin: 'john-doe-123',
-            twitter: '@johndoe'
-          }
-        },
-        {
-          id: '2',
-          first_name: 'Jane',
-          last_name: 'Smith',
-          email: 'jane@example.com',
-          phone: '+1-555-0456',
-          company: 'Digital Marketing Co',
-          status: 'prospect',
-          tags: ['Marketing', 'SMB'],
-          last_contacted: '2024-08-12',
-          created_at: '2024-08-01',
-          social_media_profiles: {
-            linkedin: 'jane-smith-456'
-          }
-        }
-      ];
-      setContacts(mockContacts);
+      const res = await api.get<{ results: CRMContact[] } | CRMContact[]>(API_ENDPOINTS.CRM.CONTACTS);
+      if (res.success && res.data) {
+        if (Array.isArray(res.data)) setContacts(res.data);
+        else if (res.data.results) setContacts(res.data.results);
+      }
     } catch (error) {
       console.error('Error loading contacts:', error);
     } finally {
@@ -141,25 +130,21 @@ const CRMDashboard: React.FC = () => {
     }
 
     try {
-      // Mock add contact - replace with actual API call
-      const contact: CRMContact = {
-        id: Date.now().toString(),
-        ...newContact,
-        status: 'prospect',
-        created_at: new Date().toISOString(),
-        social_media_profiles: {}
-      };
+      const payload = { ...newContact, status: 'prospect' };
+      const res = await api.post<CRMContact>(API_ENDPOINTS.CRM.CONTACTS, payload);
       
-      setContacts([...contacts, contact]);
-      setNewContact({
-        first_name: '',
-        last_name: '',
-        email: '',
-        phone: '',
-        company: '',
-        tags: [],
-      });
-      setShowAddContact(false);
+      if (res.success && res.data) {
+        setContacts([res.data, ...contacts]);
+        setNewContact({
+          first_name: '',
+          last_name: '',
+          email: '',
+          phone: '',
+          company: '',
+          tags: [],
+        });
+        setShowAddContact(false);
+      }
     } catch (error) {
       console.error('Error adding contact:', error);
     }
@@ -305,12 +290,12 @@ const CRMDashboard: React.FC = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Prospects
+                  Total Deals
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {contacts.filter(c => c.status === 'prospect').length}
+                  {stats.total_deals}
                 </div>
               </CardContent>
             </Card>

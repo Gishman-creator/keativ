@@ -318,8 +318,202 @@ const Analytics = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Location Heatmap */}
+      <LocationHeatmapSection />
+
+      {/* Reels Analytics */}
+      <ReelsAnalyticsSection />
+
+      {/* AI Competitor Analysis */}
+      <CompetitorAnalysisSection />
+
+      {/* AI Performance Prediction */}
+      <PerformancePredictionSection />
     </div>
   );
 };
 
+// ─── Sub-sections ────────────────────────────────────────────────────────────
+
+function LocationHeatmapSection() {
+  const [data, setData] = useState<{ country: string; city?: string; percentage: number }[]>([]);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    api.get<{ locations?: { country: string; city?: string; percentage: number }[] }>(API_ENDPOINTS.ANALYTICS.LOCATION_HEATMAP)
+      .then(res => { if (res.success && res.data?.locations) setData(res.data.locations); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader><CardTitle className="text-lg font-semibold">Audience Location Heatmap</CardTitle></CardHeader>
+      <CardContent>
+        {loading && <p className="text-sm text-gray-400">Loading…</p>}
+        {!loading && data.length === 0 && (
+          <p className="text-sm text-gray-500 py-4 text-center">No location data available yet</p>
+        )}
+        <div className="space-y-2">
+          {data.slice(0, 10).map((loc, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <span className="text-sm text-gray-700 w-40 truncate">{loc.city ? `${loc.city}, ` : ''}{loc.country}</span>
+              <div className="flex-1 bg-gray-100 rounded-full h-2">
+                <div className="bg-red-400 h-2 rounded-full" style={{ width: `${loc.percentage}%` }} />
+              </div>
+              <span className="text-xs text-gray-500 w-10 text-right">{loc.percentage.toFixed(1)}%</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReelsAnalyticsSection() {
+  const [data, setData] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    api.get<Record<string, number>>(API_ENDPOINTS.ANALYTICS.REELS)
+      .then(res => { if (res.success && res.data) setData(res.data); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const metrics = [
+    { label: 'Total Plays', key: 'total_plays' },
+    { label: 'Average Watch Time', key: 'avg_watch_time' },
+    { label: 'Completion Rate', key: 'completion_rate' },
+    { label: 'Shares', key: 'shares' },
+  ];
+
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader><CardTitle className="text-lg font-semibold">Reels Analytics</CardTitle></CardHeader>
+      <CardContent>
+        {loading && <p className="text-sm text-gray-400">Loading…</p>}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {metrics.map(m => (
+            <div key={m.key} className="bg-gray-50 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-gray-900">{data[m.key] ?? '—'}</p>
+              <p className="text-xs text-gray-500 mt-1">{m.label}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CompetitorAnalysisSection() {
+  const [handle, setHandle] = useState('');
+  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const analyze = async () => {
+    if (!handle.trim()) return;
+    setLoading(true);
+    const res = await api.post<Record<string, unknown>>(API_ENDPOINTS.ANALYTICS.AI_COMPETITOR, { competitor_handle: handle });
+    if (res.success && res.data) setResult(res.data);
+    setLoading(false);
+  };
+
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader><CardTitle className="text-lg font-semibold">AI Competitor Analysis</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <input
+            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+            placeholder="@competitor_handle or brand name"
+            value={handle}
+            onChange={e => setHandle(e.target.value)}
+          />
+          <Button onClick={analyze} disabled={loading} className="bg-red-500 hover:bg-red-600 text-white text-sm px-4">
+            {loading ? 'Analyzing…' : 'Analyze'}
+          </Button>
+        </div>
+        {result && (
+          <div className="bg-gray-50 rounded-xl p-4">
+            <pre className="text-xs text-gray-700 whitespace-pre-wrap overflow-auto">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PerformancePredictionSection() {
+  const [content, setContent] = useState('');
+  const [platform, setPlatform] = useState('instagram');
+  const [result, setResult] = useState<{ predicted_score?: number; tips?: string[] } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const predict = async () => {
+    if (!content.trim()) return;
+    setLoading(true);
+    const res = await api.post<{ predicted_score?: number; tips?: string[] }>(
+      API_ENDPOINTS.ANALYTICS.AI_PREDICT,
+      { content, platform }
+    );
+    if (res.success && res.data) setResult(res.data);
+    setLoading(false);
+  };
+
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader><CardTitle className="text-lg font-semibold">AI Performance Prediction</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <select
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+            value={platform}
+            onChange={e => setPlatform(e.target.value)}
+          >
+            {['instagram','twitter','facebook','linkedin','tiktok'].map(p => (
+              <option key={p} value={p} className="capitalize">{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+            ))}
+          </select>
+          <textarea
+            className="md:col-span-3 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+            placeholder="Paste your post content here…"
+            rows={3}
+            value={content}
+            onChange={e => setContent(e.target.value)}
+          />
+        </div>
+        <Button onClick={predict} disabled={loading} className="bg-red-500 hover:bg-red-600 text-white text-sm">
+          {loading ? 'Predicting…' : 'Predict Performance'}
+        </Button>
+
+        {result && (
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-2">
+            {result.predicted_score !== undefined && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-purple-800">Predicted Score:</span>
+                <span className="text-2xl font-bold text-purple-600">{result.predicted_score}/100</span>
+              </div>
+            )}
+            {result.tips && result.tips.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-purple-800 mb-1">AI Tips:</p>
+                <ul className="space-y-1">
+                  {result.tips.map((tip, i) => (
+                    <li key={i} className="text-sm text-purple-700 flex items-start gap-2">
+                      <span className="text-purple-400 mt-0.5">•</span> {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default Analytics;
+

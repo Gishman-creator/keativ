@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
     // Added: scheduled posts endpoints
     SCHEDULED_LIST: `${API_BASE_URL}/api/posts/scheduled/`,
     SCHEDULED_DETAIL: (id: string) => `${API_BASE_URL}/api/posts/scheduled/${id}/`,
+    AI_CONTENT_SUGGESTIONS: `${API_BASE_URL}/api/posts/ai/content-suggestions/`,
   },
   
   // Analytics
@@ -42,6 +43,11 @@ export const API_ENDPOINTS = {
     REPORTS: `${API_BASE_URL}/api/analytics/reports/`,
     BEST_POSTS: `${API_BASE_URL}/api/analytics/best-posts/`,
     PLATFORM_AVERAGES: `${API_BASE_URL}/api/analytics/platform-averages/`,
+    LOCATION_HEATMAP: `${API_BASE_URL}/api/analytics/location-heatmap/`,
+    REELS: `${API_BASE_URL}/api/analytics/reels/`,
+    AI_COMPETITOR: `${API_BASE_URL}/api/analytics/ai/competitor-analysis/`,
+    AI_PREDICT: `${API_BASE_URL}/api/analytics/ai/predict-performance/`,
+    PLATFORM_INSIGHTS: `${API_BASE_URL}/api/analytics/platform-insights/`,
   },
   
   // Social Media Accounts
@@ -129,6 +135,11 @@ export const API_ENDPOINTS = {
     UPLOAD: `${API_BASE_URL}/api/media/upload/`,
     BULK_UPLOAD: `${API_BASE_URL}/api/media/upload/bulk/`,
     BULK_DELETE: `${API_BASE_URL}/api/media/bulk-delete/`,
+    FOLDERS: `${API_BASE_URL}/api/media/folders/`,
+    FOLDER_DETAIL: (id: string) => `${API_BASE_URL}/api/media/folders/${id}/`,
+    TAGS: (fileId: string) => `${API_BASE_URL}/api/media/${fileId}/tags/`,
+    STATS: `${API_BASE_URL}/api/media/stats/`,
+    STORAGE: `${API_BASE_URL}/api/media/storage/`,
   },
 
   // Twitter Integration
@@ -198,12 +209,27 @@ export const API_ENDPOINTS = {
   INTEGRATIONS: {
     SLACK_HISTORY: (channel: string) => `${API_BASE_URL}/api/integrations/slack/history/?channel=${encodeURIComponent(channel)}`,
     SLACK_AUTH_STATUS: `${API_BASE_URL}/api/integrations/slack/auth-status/`,
+    SLACK_CONVERSATIONS: `${API_BASE_URL}/api/integrations/slack/conversations/`,
+    SLACK_SEND: `${API_BASE_URL}/api/integrations/slack/send/`,
     GOOGLE_DRIVE_FILES: `${API_BASE_URL}/api/integrations/google-drive/files/`,
     GOOGLE_DRIVE_IMPORT: `${API_BASE_URL}/api/integrations/google-drive/import/`,
     DROPBOX_FILES: `${API_BASE_URL}/api/integrations/dropbox/files/`,
     DROPBOX_IMPORT: `${API_BASE_URL}/api/integrations/dropbox/import/`,
     HASHTAG_SUGGEST: `${API_BASE_URL}/api/integrations/hashtags/suggest/`,
     OPTIMAL_TIMES: `${API_BASE_URL}/api/integrations/posting/optimal-times/`,
+  },
+
+  // CRM
+  CRM: {
+    DASHBOARD: `${API_BASE_URL}/api/crm/dashboard/`,
+    CONTACTS: `${API_BASE_URL}/api/crm/contacts/`,
+    CONTACT_DETAIL: (id: string) => `${API_BASE_URL}/api/crm/contacts/${id}/`,
+    PIPELINES: `${API_BASE_URL}/api/crm/pipelines/`,
+    PIPELINE_DETAIL: (id: string) => `${API_BASE_URL}/api/crm/pipelines/${id}/`,
+    DEALS: `${API_BASE_URL}/api/crm/deals/`,
+    DEAL_DETAIL: (id: string) => `${API_BASE_URL}/api/crm/deals/${id}/`,
+    ACTIVITIES: `${API_BASE_URL}/api/crm/activities/`,
+    ACTIVITY_DETAIL: (id: string) => `${API_BASE_URL}/api/crm/activities/${id}/`,
   },
 
 };

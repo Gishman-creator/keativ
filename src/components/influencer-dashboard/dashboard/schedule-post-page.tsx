@@ -1,58 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
-
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Separator } from "@/components/ui/separator"
-import { CalendarIcon, Clock, Hash, Facebook, Instagram, Linkedin } from "lucide-react"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
 import { ImageSelectionModal } from "./image-selection-modal"
-import SchedulePostFormContent from "./schedule-post-form-content" // Import the new component
-
-const socialPlatforms = [
-  {
-    id: "instagram",
-    name: "Instagram",
-    icon: Instagram,
-    color: "#E4405F",
-    bgColor: "#8B5CF6",
-    profile: "/placeholder.svg?height=24&width=24",
-  },
-  {
-    id: "facebook",
-    name: "Facebook",
-    icon: Facebook,
-    color: "#1877F2",
-    bgColor: "#1877F2",
-    profile: "/placeholder.svg?height=24&width=24",
-  },
-  {
-    id: "linkedin",
-    name: "LinkedIn",
-    icon: Linkedin,
-    color: "#0A66C2",
-    bgColor: "#0A66C2",
-    profile: "/placeholder.svg?height=24&width=24",
-  },
-]
-
-const suggestedHashtags = [
-  "#socialmedia",
-  "#marketing",
-  "#business",
-  "#entrepreneur",
-  "#success",
-  "#motivation",
-  "#inspiration",
-  "#growth",
-  "#innovation",
-  "#digital",
-]
+import SchedulePostFormContent from "./schedule-post-form-content"
 
 interface SchedulePostPageProps {
   onClose: () => void
@@ -125,8 +74,6 @@ function SchedulePostPage({ onClose }: SchedulePostPageProps) {
             setShowImageModal={setShowImageModal}
             selectedImages={selectedImages}
             setSelectedImages={setSelectedImages}
-            tempSelectedImages={tempSelectedImages}
-            setTempSelectedImages={setTempSelectedImages}
             isLargeScreen={isLargeScreen}
             handleCloseSchedulePostPage={onClose}
           />

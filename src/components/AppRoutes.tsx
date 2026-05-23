@@ -8,6 +8,9 @@ import {
   ForgotPassword,
 } from '@/pages/auth';
 
+// VerificationPending doubles as the resend-verification page in this legacy router
+const ResendVerification = VerificationPending;
+
 const Dashboard = () => <div>Dashboard - Welcome!</div>;
 
 // Protected Route wrapper

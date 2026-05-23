@@ -2,9 +2,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Share2, X } from 'lucide-react';
 import { SheetClose } from '@/components/ui/sheet';
+import { useSelector } from 'react-redux'; // Import useSelector
+import { RootState } from '@/redux/store'; // Import RootState
 
 const PublicMobileSidebar = () => {
   const location = useLocation();
+  const isLoggedIn = useSelector((state: RootState) => state.auth.user?.isLoggedIn); // Get isLoggedIn from authSlice
 
   const navItems = [
     { name: 'Home', href: '/' },
@@ -48,20 +51,32 @@ const PublicMobileSidebar = () => {
       </nav>
 
       <div className="flex flex-col space-y-4 mt-auto">
-        <SheetClose asChild>
-          <Link to="/login">
-            <Button variant="ghost" className="w-full text-gray-700 hover:text-red-500">
-              Login
-            </Button>
-          </Link>
-        </SheetClose>
-        <SheetClose asChild>
-          <Link to="/signup">
-            <Button className="w-full bg-red-500 hover:bg-red-600 text-white">
-              Start Free Trial
-            </Button>
-          </Link>
-        </SheetClose>
+        {!isLoggedIn ? ( // Conditionally render based on isLoggedIn
+          <>
+            <SheetClose asChild>
+              <Link to="/login">
+                <Button variant="ghost" className="w-full text-gray-700 hover:text-red-500">
+                  Login
+                </Button>
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
+              <Link to="/signup">
+                <Button className="w-full bg-red-500 hover:bg-red-600 text-white">
+                  Start Free Trial
+                </Button>
+              </Link>
+            </SheetClose>
+          </>
+        ) : (
+          <SheetClose asChild>
+            <Link to="/dashboard"> {/* Assuming dashboard route */}
+              <Button className="w-full bg-red-500 hover:bg-red-600 text-white">
+                Go to Dashboard
+              </Button>
+            </Link>
+          </SheetClose>
+        )}
       </div>
     </div>
   );

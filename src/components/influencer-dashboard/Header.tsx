@@ -23,7 +23,8 @@ import {
   Search,
   Calendar,
   Activity,
-  User
+  User,
+  House
 } from 'lucide-react';
 import { RootState } from '../../redux/store';
 import { logout } from '../../redux/slices/authSlice';
@@ -58,7 +59,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 fixed top-0 right-0 left-0 z-50">
+    <header className="bg-white border-b border-gray-200 fixed top-0 right-0 left-0 z-30">
       <div className="px-6 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div className="md:hidden">
@@ -117,7 +118,7 @@ const Header = () => {
             </Button>
             {showSocialSetShowcase && (
               <div
-                className="absolute top-full mt-2 z-50 right-0"
+                className="absolute top-full mt-2 z-30 right-0"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
@@ -185,12 +186,12 @@ const Header = () => {
                 <CreditCard className="mr-2 h-4 w-4" />
                 Billing & Plans
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator />
               
-              <DropdownMenuItem onClick={() => window.open('/help', '_blank')}>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                Help & Support
+              <DropdownMenuItem onClick={() => navigate('/')}>
+                <House className="mr-2 h-4 w-4" />
+                Go to Homepage
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />

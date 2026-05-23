@@ -7,17 +7,8 @@ interface AuthState {
   error: string | null;
 }
 
-const getCachedUser = (): User | null => {
-  try {
-    const cached = localStorage.getItem('auth_user');
-    return cached ? (JSON.parse(cached) as User) : null;
-  } catch {
-    return null;
-  }
-};
-
 const initialState: AuthState = {
-  user: getCachedUser(),
+  user: null,
   isLoading: false,
   error: null,
 };
@@ -34,11 +25,6 @@ const authSlice = createSlice({
       state.user = { ...action.payload, isLoggedIn: true } as User;
       state.isLoading = false;
       state.error = null;
-      try {
-        localStorage.setItem('auth_user', JSON.stringify(state.user));
-      } catch {
-        // ignore
-      }
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -60,11 +46,6 @@ const authSlice = createSlice({
       state.user = null;
       state.isLoading = false;
       state.error = null;
-      try {
-        localStorage.removeItem('auth_user');
-      } catch {
-        // ignore
-      }
     },
     clearError: (state) => {
       state.error = null;

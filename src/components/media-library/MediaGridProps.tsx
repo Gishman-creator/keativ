@@ -130,7 +130,7 @@ export function MediaGrid({
 
   // Unified function for single and bulk deletion
   const handleDelete = async (file?: MediaFile) => {
-    const idsToDelete = file ? [file.id] : selectedFileIds.filter(id => 
+    const idsToDelete = file && file.id ? [file.id] : selectedFileIds.filter(id => 
       id != null && 
       id !== undefined && 
       id !== '' && 
@@ -146,6 +146,8 @@ export function MediaGrid({
     }
 
     try {
+      console.log('idsToDelete', idsToDelete)
+      console.log('selectedFileIds', selectedFileIds)
       const response = await api.bulkMediaDelete(idsToDelete);
       if (response.success) {
         // Handle response with potential failed deletions

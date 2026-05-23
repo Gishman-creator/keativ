@@ -7,63 +7,115 @@ import { Card, CardContent } from "@/components/ui/card"
 import { CircularProgress } from "@/components/ui/circular-progress"
 import { api } from "@/lib/api"
 import { SubscriptionTier } from "@/types"
+import { SelectSeparator } from "@/components/ui/select"
 
-interface BillingData {
-  currentPlanName: string; // Changed to string as it will come from API
-  currentPlanPeriod: "monthly" | "yearly";
-  nextBilling: string;
-  billingHistory: {
-    id: string;
-    date: string;
-    amount: string;
-    plan: string;
-    status: string;
-  }[];
+interface UserSubscriptionTier {
+  tier: string;
+  display_name: string;
+  status: string;
+  billing_period: "monthly" | "yearly";
+  start_date: string;
+  end_date: string | null;
+  trial_end_date: string | null;
+  next_payment_date: string | null;
+  is_active: boolean;
+  is_trial: boolean;
+  days_until_renewal: number | null;
+}
+
+// Function to format ISO date to "Month Day, Year"
+const formatToWords = (isoDate: string | null) => {
+  if (!isoDate) return "N/A"
+  try {
+    const date = new Date(isoDate)
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }
+    return date.toLocaleDateString("en-US", options)
+  } catch (e) {
+    console.error("Failed to parse date:", e)
+    return "Invalid Date"
+  }
 }
 
 const Billing: React.FC = () => {
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [activeTab, setActiveTab] = useState<"billingHistory" | "usageAndLimits">("billingHistory");
-  const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [activeTab, setActiveTab] = useState<"billingHistory" | "usageAndLimits">("billingHistory")
+  const [tiers, setTiers] = useState<SubscriptionTier[]>([])
+  const [userSubscription, setUserSubscription] = useState<UserSubscriptionTier | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchSubscriptionTiers = async () => {
-      setIsLoading(true);
-      setError(null);
-      const response = await api.getSubscriptionTiers<{ tiers: SubscriptionTier[] }>();
-      if (response.success && response.data && Array.isArray(response.data.tiers)) {
-        setTiers(response.data.tiers);
-      } else {
-        setError(response.error || "Failed to fetch subscription tiers or invalid data format.");
-        setTiers([]); // Ensure tiers is an empty array on error
+    const fetchBillingData = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const [tiersResponse, subscriptionResponse] = await Promise.all([
+          api.getSubscriptionTiers<{ tiers: SubscriptionTier[] }>(),
+          api.getUserSubscriptionTier<{ subscription: UserSubscriptionTier }>(),
+        ])
+
+        // Handle tiers response
+        if (tiersResponse.success && tiersResponse.data && Array.isArray(tiersResponse.data.tiers)) {
+          setTiers(tiersResponse.data.tiers)
+        } else {
+          setError(tiersResponse.error || "Failed to fetch subscription tiers.")
+        }
+
+        // Handle user subscription response
+        if (subscriptionResponse.success && subscriptionResponse.data) {
+          setUserSubscription(subscriptionResponse.data.subscription)
+        } else {
+          // If no subscription is found, it's not an error, just an empty state.
+          console.warn("No active subscription found.")
+          setUserSubscription(null)
+        }
+      } catch (e) {
+        console.error("An error occurred:", e)
+        setError("An unexpected error occurred while fetching billing data.")
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false);
-    };
+    }
 
-    fetchSubscriptionTiers();
-  }, []);
+    fetchBillingData()
+  }, [])
 
-  // Hardcoded initial billing data for now, could be fetched from an API
-  const initialBillingInfo: BillingData = {
-    currentPlanName: 'professional', // Use key directly
-    currentPlanPeriod: 'monthly', // Assuming the active plan is monthly
-    nextBilling: '25 Dec 2023',
-    billingHistory: [
-      { id: 'FLZ9810', date: '25 Dec 2023', amount: '$149.99', plan: 'Professional Plan', status: 'Success' },
-      { id: 'FLZ9810', date: '05 Jul 2023', amount: '$149.99', plan: 'Professional Plan', status: 'Success' },
-    ],
-  };
+  // Hardcoded billing history data
+  const billingHistory = [
+    { id: "FLZ9810", date: "25 Dec 2023", amount: "$149.99", plan: "Professional Plan", status: "Success" },
+    { id: "FLZ9810", date: "05 Jul 2023", amount: "$149.99", plan: "Professional Plan", status: "Success" },
+  ]
 
   const formatPrice = (monthly: number) => {
     return { price: monthly, period: "monthly" }
   }
 
-  // Find the current plan details from the fetched tiers, only when tiers is available
-  const currentPlanDetails = tiers.length > 0
-    ? tiers.find(tier => tier.name.toLowerCase().includes(initialBillingInfo.currentPlanName))
-    : null;
+  const currentPlanDetails = tiers.find(tier => tier.name === userSubscription?.tier)
+
+  const nextBillingDateText = userSubscription?.is_trial && userSubscription.trial_end_date
+    ? `Trial ends: ${formatToWords(userSubscription.trial_end_date)}`
+    : userSubscription?.next_payment_date
+      ? `Next payment: ${formatToWords(userSubscription.next_payment_date)}`
+      : userSubscription?.end_date
+        ? `Plan ends: ${formatToWords(userSubscription.end_date)}`
+        : "N/A"
+
+  const getButtonText = (planName: string) => {
+    if (userSubscription?.tier === planName) {
+      return "Active plan"
+    } else if (userSubscription?.is_active) {
+      return "Change plan"
+    } else if (userSubscription?.end_date) {
+      return "Renew plan"
+    } else {
+      return "Subscribe now"
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -78,8 +130,16 @@ const Billing: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-1">Current Subscription</h3>
             {isLoading ? (
               <div className="h-4 bg-gray-200 rounded w-48 animate-pulse"></div>
+            ) : userSubscription?.is_trial ? (
+              <p className="text-gray-600">
+                You are currently on trial for the{" "}
+                <span>{userSubscription.display_name}</span> Plan.
+              </p>
             ) : (
-              <p className="text-gray-600">You are currently on the {currentPlanDetails?.display_name || 'N/A'}</p>
+              <p className="text-gray-600">
+                You are currently on the{" "}
+                <span>{userSubscription?.display_name || "Free"}</span> tier.
+              </p>
             )}
           </div>
         </div>
@@ -87,37 +147,37 @@ const Billing: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-500" />
-            <span className="text-sm text-gray-600">Next payment: {initialBillingInfo.nextBilling}</span>
+            <span className="text-sm text-gray-600">{nextBillingDateText}</span>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setShowCancelDialog(true)}
-            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 w-fit"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Cancel Subscription
-          </Button>
+          {userSubscription?.is_active && (
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelDialog(true)}
+              className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 w-fit"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel Subscription
+            </Button>
+          )}
         </div>
       </div>
 
-      {error && (
-        <div className="text-red-500 text-center">{error}</div>
-      )}
+      {error && <div className="text-red-500 text-center">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           // Skeleton Loader
           Array.from({ length: 3 }).map((_, index) => (
             <div key={index} className="rounded-lg p-6 flex flex-col bg-white border border-gray-200 animate-pulse">
-              {/* Title */}
               <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-              {/* Description */}
               <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
-              {/* Price */}
               <div className="mb-6">
                 <div className="h-10 bg-gray-200 rounded w-1/2"></div>
               </div>
-              {/* Features list */}
+              <div>
+                <div className="h-10 bg-gray-200 rounded w-full"></div>
+              </div>
+              <SelectSeparator className="my-6 bg-gray-200" />
               <div className="flex-grow">
                 <ul className="space-y-3 mt-6">
                   {Array.from({ length: 6 }).map((_, featureIndex) => (
@@ -128,33 +188,27 @@ const Billing: React.FC = () => {
                   ))}
                 </ul>
               </div>
-              {/* Button */}
-              <div className="mt-10">
-                <div className="h-10 bg-gray-200 rounded w-full"></div>
-              </div>
             </div>
           ))
         ) : (
           tiers.map((plan) => {
-            const isActivePlan = currentPlanDetails?.name === plan.name;
+            const isActivePlan = userSubscription?.tier === plan.name
             const featuresList = [
-              `${plan.features.max_social_accounts === -1 ? 'Unlimited' : plan.features.max_social_accounts} Social Accounts`,
-              `${plan.features.max_scheduled_posts === -1 ? 'Unlimited' : plan.features.max_scheduled_posts} Scheduled Posts`,
-              `${plan.features.max_team_members === -1 ? 'Unlimited' : plan.features.max_team_members} Team Members`,
-              `${plan.features.analytics_retention_days === -1 ? 'Unlimited' : `${plan.features.analytics_retention_days}`} Analytics Retention Days`,
+              `${plan.features.max_social_accounts === -1 ? "Unlimited" : plan.features.max_social_accounts} Social Accounts`,
+              `${plan.features.max_scheduled_posts === -1 ? "Unlimited" : plan.features.max_scheduled_posts} Scheduled Posts`,
+              `${plan.features.max_team_members === -1 ? "Unlimited" : plan.features.max_team_members} Team Members`,
+              `${plan.features.analytics_retention_days === -1 ? "Unlimited" : `${plan.features.analytics_retention_days}`} Analytics Retention Days`,
               `${plan.features.api_rate_limit} Api Rate Limit`,
               plan.features.gohighlevel_integration && "GoHighLevel Integration",
               plan.features.advanced_analytics && "Advanced Analytics",
               plan.features.priority_support && "Priority Support",
               plan.features.white_label && "White Label",
-            ].filter(Boolean) as string[]; // Filter out false values and assert type
+            ].filter(Boolean) as string[]
 
             return (
               <div
                 key={plan.id}
-                className={`rounded-lg p-6 flex flex-col ${isActivePlan
-                  ? "bg-secondary text-white"
-                  : "bg-white border border-gray-200"
+                className={`rounded-lg p-6 flex flex-col ${isActivePlan ? "bg-secondary text-white" : "bg-white border border-gray-200"
                   }`}
               >
                 <h3
@@ -183,6 +237,17 @@ const Billing: React.FC = () => {
                     /{formatPrice(plan.price_monthly).period}
                   </span>
                 </div>
+                <div className="mt-auto">
+                  <Button
+                    variant={isActivePlan ? "default" : "outline"}
+                    disabled={getButtonText(plan.name) === "Active plan"}
+                    className={`w-full ${isActivePlan ? "bg-white text-secondary hover:bg-gray-100" : "bg-transparent"
+                      }`}
+                  >
+                    {getButtonText(plan.name)}
+                  </Button>
+                </div>
+                <SelectSeparator className={`my-6 ${isActivePlan && "bg-[#9d72ff]"}`} />
                 <div className="flex-grow">
                   <ul className="space-y-3 mb-6">
                     {featuresList.map((feature, index) => (
@@ -200,17 +265,8 @@ const Billing: React.FC = () => {
                     ))}
                   </ul>
                 </div>
-                <div className="mt-auto">
-                  {isActivePlan ? (
-                    <Button className="w-full bg-white text-secondary hover:bg-gray-100">Active plan</Button>
-                  ) : (
-                    <Button variant="outline" className="w-full bg-transparent">
-                      Choose Plan
-                    </Button>
-                  )}
-                </div>
               </div>
-            );
+            )
           })
         )}
       </div>
@@ -223,8 +279,7 @@ const Billing: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900">Cancel Subscription</h3>
             </div>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to cancel your subscription? You'll lose access to all premium features at the end
-              of your current billing period.
+              Are you sure you want to cancel your subscription? You'll lose access to all premium features at the end of your current billing period.
             </p>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setShowCancelDialog(false)} className="flex-1">
@@ -245,13 +300,12 @@ const Billing: React.FC = () => {
         </div>
       )}
 
-      {/* Tabs for Billing History and Usage & Limits */}
       <div className="flex border-b border-gray-200 mb-6">
         <button
           onClick={() => setActiveTab("billingHistory")}
           className={`py-3 px-6 text-sm font-medium ${activeTab === "billingHistory"
-            ? "border-b-2 border-primary text-primary"
-            : "text-gray-600 hover:text-gray-900"
+              ? "border-b-2 border-primary text-primary"
+              : "text-gray-600 hover:text-gray-900"
             }`}
         >
           Billing History
@@ -259,8 +313,8 @@ const Billing: React.FC = () => {
         <button
           onClick={() => setActiveTab("usageAndLimits")}
           className={`py-3 px-6 text-sm font-medium ${activeTab === "usageAndLimits"
-            ? "border-b-2 border-primary text-primary"
-            : "text-gray-600 hover:text-gray-900"
+              ? "border-b-2 border-primary text-primary"
+              : "text-gray-600 hover:text-gray-900"
             }`}
         >
           Usage & Limits
@@ -282,7 +336,7 @@ const Billing: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {initialBillingInfo.billingHistory.map((item, index) => (
+                {billingHistory.map((item, index) => (
                   <tr key={item.id} className="border-b border-gray-100">
                     <td className="py-4 px-4">0{index + 1}</td>
                     <td className="py-4 px-4 font-medium">Invoice#{item.id}</td>

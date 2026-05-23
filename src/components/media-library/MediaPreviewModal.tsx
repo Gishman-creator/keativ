@@ -55,7 +55,7 @@ export function MediaPreviewModal({ file, isOpen, onClose, onDelete, onDownload 
       <DialogContent className="min-h-[100vh] min-w-[100vw] flex flex-col p-0 bg-transparent shadow-lg border-none [&>button]:hidden">
         {/* Header */}
         <div
-          className="flex items-center justify-between p-4 bg-black/30 backdrop-blur-sm text-white"
+          className="flex items-center justify-between p-4 bg-black/30 backdrop-blur-sm text-white z-50"
           onClick={handleHeaderClick}
         >
           <h3 className="text-lg font-semibold truncate flex-1 mr-4">

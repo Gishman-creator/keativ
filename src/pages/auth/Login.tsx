@@ -78,6 +78,7 @@ const Login = () => {
           businessName: response.data.user.profile?.company_name || '',
           isLoggedIn: true
         }));
+        localStorage.setItem('auth_token', response.data.token);
 
         navigate('/dashboard');
 

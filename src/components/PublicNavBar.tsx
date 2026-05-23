@@ -3,9 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Share2, Menu } from 'lucide-react';
 import PublicMobileSidebar from '@/components/PublicMobileSidebar';
+import { useSelector } from 'react-redux'; // Import useSelector
+import { RootState } from '@/redux/store'; // Import RootState
 
 const PublicNavBar= () => {
   const location = useLocation();
+  const isLoggedIn = useSelector((state: RootState) => state.auth.user?.isLoggedIn); // Get isLoggedIn from authSlice
 
   const navItems = [
     { name: 'Home', href: '/' },
@@ -47,16 +50,26 @@ const PublicNavBar= () => {
           </div>
 
           <div className="hidden lg:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="ghost" className="text-gray-700 hover:text-red-500">
-                Login
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button className="bg-red-500 hover:bg-red-600 text-white">
-                Start Free Trial
-              </Button>
-            </Link>
+            {!isLoggedIn ? ( // Conditionally render based on isLoggedIn
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" className="text-gray-700 hover:text-red-500">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button className="bg-red-500 hover:bg-red-600 text-white">
+                    Start Free Trial
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <Link to="/dashboard"> {/* Assuming dashboard route */}
+                <Button className="bg-red-500 hover:bg-red-600 text-white">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            )}
           </div>
           <Sheet>
             <SheetTrigger asChild className="lg:hidden">

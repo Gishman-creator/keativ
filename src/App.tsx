@@ -5,6 +5,8 @@ import { store } from './redux/store';
 import { router } from './routes';
 import toast, { Toaster } from 'react-hot-toast';
 import './styles/globals.css';
+import AppInitializer from './AppInitializer'; // Import the new initializer component
+import { useState } from 'react';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -17,6 +19,21 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const [isAppInitialized, setIsAppInitialized] = useState(false);
+
+  const handleInitializationComplete = () => {
+    setIsAppInitialized(true);
+  };
+
+  // If app is not initialized yet, show initializer
+  if (!isAppInitialized) {
+    return (
+      <Provider store={store}>
+        <AppInitializer onComplete={handleInitializationComplete} />
+      </Provider>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <Provider store={store}>

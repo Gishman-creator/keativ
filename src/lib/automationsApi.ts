@@ -98,4 +98,40 @@ export const automationsApi = {
       throw error;
     }
   },
+
+  // Sync LinkedIn comments and post automated replies
+  async syncLinkedInAutomation(): Promise<{
+    success: boolean;
+    summary: {
+      accounts_checked: number;
+      posts_scanned: number;
+      comments_found: number;
+      replies_sent: number;
+      errors: string[];
+    };
+    message: string;
+  }> {
+    try {
+      const response = await api.post<{
+        success: boolean;
+        summary: {
+          accounts_checked: number;
+          posts_scanned: number;
+          comments_found: number;
+          replies_sent: number;
+          errors: string[];
+        };
+        message: string;
+      }>(getApiUrl('/api/messaging/automated/linkedin/sync/'));
+
+      if (response.success && response.data) {
+        return response.data;
+      } else {
+        throw new Error(response.error || 'Failed to sync LinkedIn automation');
+      }
+    } catch (error) {
+      console.error('syncLinkedInAutomation error:', error);
+      throw error;
+    }
+  },
 };

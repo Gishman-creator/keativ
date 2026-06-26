@@ -40,6 +40,8 @@ export interface Post {
   status: "draft" | "scheduled" | "published" | "failed";
   platform: string;
   post_type: "post" | "story" | "reel" | "video";
+  social_account?: string;
+  social_set?: string;
   created_at: string;
   updated_at: string;
 }
@@ -508,7 +510,7 @@ class ApiClient {
   async getTikTokAnalytics(): Promise<ApiResponse<TikTokAnalytics>> {
     return this.get(API_ENDPOINTS.TIKTOK_ANALYTICS);
   }
-  private baseURL: string;
+  public baseURL: string;
   private token: string | null = null;
 
   constructor() {

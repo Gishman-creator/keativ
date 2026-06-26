@@ -58,6 +58,7 @@ const Posts = () => {
   const [selectedSocialSet, setSelectedSocialSet] = useState<SocialSet | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingSocialSets, setLoadingSocialSets] = useState(true);
+  const [accounts, setAccounts] = useState<any[]>([]);
   
   const [postData, setPostData] = useState<PostData>({
     content: '',
@@ -75,11 +76,43 @@ const Posts = () => {
   const loadSocialSets = React.useCallback(async () => {
     try {
       setLoadingSocialSets(true);
-      const sets = await socialSetsApi.getSocialSets();
-      setSocialSets(sets);
       
-      // Set the first active social set as default
-      const activeSet = sets.find(set => set.isActive) || sets[0];
+      // Load accounts
+      const accountsData = await socialSetsApi.getAvailableAccounts();
+      setAccounts(accountsData);
+      
+      // Load social sets
+      const sets = await socialSetsApi.getSocialSets();
+      
+      // Calculate unassigned accounts (accounts not assigned to any brand/social set)
+      const assignedAccountIds = new Set(
+        sets.flatMap(set => set.platforms.map(p => p.id))
+      );
+      const unassignedAccounts = accountsData.filter(acc => !assignedAccountIds.has(acc.id));
+      
+      // Construct virtual Main Brand (Default) set
+      const mainBrandSet: SocialSet = {
+        id: 'main_brand',
+        name: 'Main Brand (Default)',
+        description: 'Accounts not assigned to any brand',
+        platforms: unassignedAccounts.map(acc => ({
+          id: acc.id,
+          name: acc.username || acc.platform,
+          type: (acc.platform?.toLowerCase() || 'other') as any,
+          isConnected: acc.is_active ?? true,
+          accountName: acc.username,
+          followers: acc.follower_count
+        })),
+        userId: '',
+        isActive: false
+      };
+      
+      // Merge virtual set and fetched sets
+      const allSets = [mainBrandSet, ...sets];
+      setSocialSets(allSets);
+      
+      // Set default selected social set (active custom brand, or Main Brand)
+      const activeSet = sets.find(set => set.isActive) || mainBrandSet;
       if (activeSet) {
         setSelectedSocialSet(activeSet);
         setPostData(prev => ({
@@ -98,7 +131,7 @@ const Posts = () => {
     } finally {
       setLoadingSocialSets(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     loadSocialSets();
@@ -259,7 +292,7 @@ const Posts = () => {
       const postPayload = {
         content: postData.content,
         scheduled_time: postData.scheduledTime || undefined,
-        social_set_id: postData.socialSetId,
+        social_set_id: postData.socialSetId === 'main_brand' ? undefined : postData.socialSetId,
         platform_settings: postData.platformSettings,
         hashtags: postData.tags,
         mentions: postData.mentions,
@@ -323,7 +356,7 @@ const Posts = () => {
       
       const draftPayload = {
         content: postData.content,
-        social_set_id: postData.socialSetId,
+        social_set_id: postData.socialSetId === 'main_brand' ? undefined : postData.socialSetId,
         platform_settings: postData.platformSettings,
         hashtags: postData.tags,
         mentions: postData.mentions,
@@ -361,7 +394,10 @@ const Posts = () => {
     );
   }
 
-  if (socialSets.length === 0) {
+  const hasNoContent = socialSets.length === 0 || 
+    (socialSets.length === 1 && socialSets[0].id === 'main_brand' && socialSets[0].platforms.length === 0);
+
+  if (hasNoContent) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">

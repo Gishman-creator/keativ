@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -16,11 +15,9 @@ import {
   Youtube,
   Link as LinkIcon,
   Users,
-  Loader2,
-  Plus
+  Loader2
 } from 'lucide-react';
-import { api, ApiResponse } from '@/lib/api';
-import { API_ENDPOINTS } from '@/config/constants';
+import { socialSetsApi } from '@/lib/socialSetsApi';
 import type { SocialSet } from '@/types';
 
 interface SocialMediaAccount {
@@ -58,32 +55,20 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
   const [loadingAccounts, setLoadingAccounts] = useState(false);
 
   const isEditing = !!editingSocialSet;
+  const editingSocialSetId = editingSocialSet?.id;
 
   const fetchAccounts = useCallback(async () => {
     setLoadingAccounts(true);
     try {
-      const res: ApiResponse<SocialMediaAccount[]> = await api.get(API_ENDPOINTS.SOCIAL_ACCOUNTS);
-      
-      // Ensure we always have an array
-      if (res.success && res.data) {
-        if (Array.isArray(res.data)) {
-          setAvailableAccounts(res.data);
-        } else if (typeof res.data === 'object' && 'results' in res.data && Array.isArray((res.data as { results: SocialMediaAccount[] }).results)) {
-          // Handle paginated response
-          setAvailableAccounts((res.data as { results: SocialMediaAccount[] }).results);
-        } else {
-          console.warn('Unexpected social accounts response format:', res.data);
-          setAvailableAccounts([]);
-        }
-      } else {
-        setAvailableAccounts([]);
-      }
+      // Use socialSetsApi which points to the correct /api/posts/social-sets/ backend path
+      const accounts = await socialSetsApi.getAvailableAccounts();
+      setAvailableAccounts(accounts);
     } catch (error) {
       console.error('Error fetching accounts:', error);
       setAvailableAccounts([]);
       toast({
         title: 'Error',
-        description: 'Failed to load social media accounts',
+        description: 'Failed to load social media accounts. Make sure the backend is running.',
         variant: 'destructive',
       });
     } finally {
@@ -95,11 +80,11 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
     if (open) {
       fetchAccounts();
       
-      if (isEditing && editingSocialSet) {
+      if (editingSocialSet) {
         setFormData({
           name: editingSocialSet.name,
           description: editingSocialSet.description || '',
-          selectedAccounts: editingSocialSet.platforms.map(p => p.id)
+          selectedAccounts: editingSocialSet.platforms?.map(p => p.id) || []
         });
       } else {
         setFormData({
@@ -109,39 +94,28 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
         });
       }
     }
-  }, [open, editingSocialSet, isEditing, fetchAccounts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editingSocialSetId, fetchAccounts]); 
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
-      case 'instagram':
-        return <Instagram className="h-5 w-5" />;
-      case 'twitter':
-        return <Twitter className="h-5 w-5" />;
-      case 'facebook':
-        return <Facebook className="h-5 w-5" />;
-      case 'linkedin':
-        return <Linkedin className="h-5 w-5" />;
-      case 'youtube':
-        return <Youtube className="h-5 w-5" />;
-      default:
-        return <LinkIcon className="h-5 w-5" />;
+      case 'instagram': return <Instagram className="h-5 w-5" />;
+      case 'twitter': return <Twitter className="h-5 w-5" />;
+      case 'facebook': return <Facebook className="h-5 w-5" />;
+      case 'linkedin': return <Linkedin className="h-5 w-5" />;
+      case 'youtube': return <Youtube className="h-5 w-5" />;
+      default: return <LinkIcon className="h-5 w-5" />;
     }
   };
 
   const getPlatformColor = (platform: string) => {
     switch (platform.toLowerCase()) {
-      case 'instagram':
-        return 'text-pink-600 bg-pink-100';
-      case 'twitter':
-        return 'text-blue-600 bg-blue-100';
-      case 'facebook':
-        return 'text-blue-700 bg-blue-100';
-      case 'linkedin':
-        return 'text-blue-800 bg-blue-100';
-      case 'youtube':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
+      case 'instagram': return 'text-pink-600 bg-pink-100';
+      case 'twitter': return 'text-blue-600 bg-blue-100';
+      case 'facebook': return 'text-blue-700 bg-blue-100';
+      case 'linkedin': return 'text-blue-800 bg-blue-100';
+      case 'youtube': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
     }
   };
 
@@ -177,35 +151,33 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
 
     setLoading(true);
     try {
-      const res = await api.post(API_ENDPOINTS.SOCIAL_SETS.CREATE, {
-        name: formData.name,
-        description: formData.description,
-        accounts: formData.selectedAccounts,
-      });
-
-      if (res.success) {
-        toast({
-          title: "Success",
-          description: "Social set created successfully",
+      // Route through socialSetsApi which uses correct /api/posts/social-sets/ URLs
+      if (isEditing && editingSocialSetId) {
+        await socialSetsApi.updateSocialSet(editingSocialSetId, {
+          name: formData.name,
+          description: formData.description,
+          accounts: formData.selectedAccounts,
         });
-        
-        // Reset form
-        setFormData({
-          name: '',
-          description: '',
-          selectedAccounts: []
-        });
-        onOpenChange(false);
-        
-        onSocialSetCreated();
       } else {
-        throw new Error(res.error || 'Failed to create social set');
+        await socialSetsApi.createSocialSet({
+          name: formData.name,
+          description: formData.description,
+          accounts: formData.selectedAccounts,
+        });
       }
+
+      toast({
+        title: "Success",
+        description: `Social set ${isEditing ? 'updated' : 'created'} successfully`,
+      });
+      setFormData({ name: '', description: '', selectedAccounts: [] });
+      onOpenChange(false);
+      onSocialSetCreated();
     } catch (error) {
-      console.error('Error creating social set:', error);
+      console.error('Error submitting social set:', error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : 'Failed to create social set',
+        description: error instanceof Error ? error.message : 'Something went wrong',
         variant: "destructive",
       });
     } finally {
@@ -267,47 +239,45 @@ const CreateSocialSetDialog: React.FC<CreateSocialSetDialogProps> = ({
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto">
-                {availableAccounts.map((account) => (
-                  <Card 
-                    key={account.id} 
-                    className={`cursor-pointer transition-colors ${
-                      formData.selectedAccounts.includes(account.id) 
-                        ? 'ring-2 ring-red-500 bg-red-50' 
-                        : 'hover:bg-gray-50'
-                    } ${!account.is_active ? 'opacity-50' : ''}`}
-                    onClick={() => account.is_active && handleAccountToggle(account.id)}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          checked={formData.selectedAccounts.includes(account.id)}
-                          onChange={() => handleAccountToggle(account.id)}
-                          disabled={!account.is_active}
-                        />
-                        
-                        <div className={`p-2 rounded-lg ${getPlatformColor(account.platform)}`}>
-                          {getPlatformIcon(account.platform)}
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <h4 className="font-medium">{account.username}</h4>
-                            <Badge variant={account.is_active ? 'default' : 'secondary'}>
-                              {account.is_active ? 'Connected' : 'Not Connected'}
-                            </Badge>
+                {availableAccounts.map((account) => {
+                  const isSelected = formData.selectedAccounts.includes(account.id);
+                  return (
+                    <Card 
+                      key={account.id} 
+                      className={`cursor-pointer transition-all duration-200 select-none ${
+                        isSelected 
+                          ? 'ring-2 ring-red-500 bg-red-50/50 border-red-200' 
+                          : 'hover:bg-gray-50 border-gray-200'
+                      } ${!account.is_active ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => account.is_active && handleAccountToggle(account.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-4">
+                          
+                          <div className={`p-2 rounded-lg ${getPlatformColor(account.platform)}`}>
+                            {getPlatformIcon(account.platform)}
                           </div>
-                          <p className="text-sm text-gray-600">@{account.username}</p>
-                          {account.is_active && account.follower_count > 0 && (
-                            <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
-                              <Users className="h-3 w-3" />
-                              <span>{account.follower_count.toLocaleString()} followers</span>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h4 className="font-medium text-gray-900">{account.username}</h4>
+                              <Badge variant={account.is_active ? 'default' : 'secondary'}>
+                                {account.is_active ? 'Connected' : 'Not Connected'}
+                              </Badge>
                             </div>
-                          )}
+                            <p className="text-sm text-gray-500">@{account.username}</p>
+                            {account.is_active && account.follower_count > 0 && (
+                              <div className="flex items-center space-x-1 text-xs text-gray-500 mt-1">
+                                <Users className="h-3 w-3" />
+                                <span>{account.follower_count.toLocaleString()} followers</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
             

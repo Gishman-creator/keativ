@@ -53,7 +53,7 @@ const PostSuggestions: React.FC<PostSuggestionsProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     fetchOptimalTimes();

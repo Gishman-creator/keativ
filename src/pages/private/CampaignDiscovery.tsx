@@ -64,7 +64,7 @@ export default function CampaignDiscoveryPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedStatus, selectedType, toast]);
+  }, [selectedStatus, selectedType]);
 
   useEffect(() => {
     fetchCampaigns();

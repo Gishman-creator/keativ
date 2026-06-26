@@ -11,6 +11,7 @@ import {
   Workflow,
   Building2,
   Globe,
+  Sparkles,
 } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -56,6 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed: propIsCollapsed, classNa
     { name: 'Media Library', href: '/dashboard/media', icon: Image },
     { name: 'Social Sets', href: '/dashboard/social-sets', icon: Layers },
     { name: 'Integrations', href: '/dashboard/integrations', icon: Globe },
+    { name: 'AI Agents', href: '/dashboard/agents', icon: Sparkles },
     { name: 'Automations', href: '/dashboard/automations', icon: Workflow },
     { name: 'CRM', href: '/dashboard/crm', icon: Building2 },
   ];

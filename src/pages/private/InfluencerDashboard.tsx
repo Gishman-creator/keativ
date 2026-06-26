@@ -66,7 +66,7 @@ function InfluencerDashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   const handleSyncFollowers = async () => {
     try {

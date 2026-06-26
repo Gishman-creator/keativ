@@ -68,7 +68,7 @@ const SocialSets = () => {
     } finally {
       dispatch(setLoading(false));
     }
-  }, [dispatch, toast]);
+  }, [dispatch]);
 
   // Load social sets when component mounts
   useEffect(() => {

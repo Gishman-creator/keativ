@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { postsApi, type PostCreateWithMedia, type Post } from '@/lib/api';
+import { postsApi, socialAccountsApi, type PostCreateWithMedia, type Post, type SocialAccount } from '@/lib/api';
+import { socialSetsApi } from '@/lib/socialSetsApi';
+import { type SocialSet } from '@/types';
 import { toast } from 'sonner';
 
 interface CreatePostDialogProps {
@@ -31,6 +33,61 @@ export function CreatePostDialog({ open, onClose, onCreated, defaultDate }: Crea
   const [mediaUrl, setMediaUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+
+  const [accounts, setAccounts] = useState<SocialAccount[]>([]);
+  const [socialSets, setSocialSets] = useState<SocialSet[]>([]);
+  const [selectedBrandId, setSelectedBrandId] = useState<string>('main_brand');
+  const [socialAccountId, setSocialAccountId] = useState<string>('');
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [loadingBrands, setLoadingBrands] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      const loadData = async () => {
+        setLoadingAccounts(true);
+        setLoadingBrands(true);
+        try {
+          const accRes = await socialAccountsApi.getAccounts();
+          if (accRes.success && Array.isArray(accRes.data)) {
+            setAccounts(accRes.data);
+          }
+          const sets = await socialSetsApi.getSocialSets();
+          setSocialSets(sets);
+        } catch (err) {
+          console.error("Failed to load accounts or brands in dialog:", err);
+        }
+        setLoadingAccounts(false);
+        setLoadingBrands(false);
+      };
+      loadData();
+    }
+  }, [open]);
+
+  // Filter accounts based on platform and the selected Brand (Social Set)
+  const filteredAccounts = useMemo(() => {
+    const platformActiveAccounts = accounts.filter(
+      (a) => a.is_active && a.platform === platform
+    );
+
+    if (selectedBrandId === 'main_brand') {
+      const assignedAccountIds = new Set(
+        socialSets.flatMap((set) => set.platforms.map((p) => p.id))
+      );
+      return platformActiveAccounts.filter((a) => !assignedAccountIds.has(a.id));
+    } else {
+      const selectedSet = socialSets.find((set) => set.id === selectedBrandId);
+      if (!selectedSet) return [];
+      const setAccountIds = new Set(selectedSet.platforms.map((p) => p.id));
+      return platformActiveAccounts.filter((a) => setAccountIds.has(a.id));
+    }
+  }, [accounts, platform, selectedBrandId, socialSets]);
+
+  // Reset socialAccountId if it is not in the newly filtered list
+  useEffect(() => {
+    if (socialAccountId && !filteredAccounts.some((a) => a.id === socialAccountId)) {
+      setSocialAccountId('');
+    }
+  }, [filteredAccounts, socialAccountId]);
 
   const handleSubmit = async () => {
     if (!scheduledDate) {
@@ -53,6 +110,10 @@ export function CreatePostDialog({ open, onClose, onCreated, defaultDate }: Crea
       scheduled_time: when,
       status: 'scheduled',
     };
+    if (socialAccountId) baseForMedia['social_account'] = socialAccountId;
+    if (selectedBrandId && selectedBrandId !== 'main_brand') {
+      baseForMedia['social_set'] = selectedBrandId;
+    }
 
     let res;
     if (imageFile || videoFile) {
@@ -71,6 +132,8 @@ export function CreatePostDialog({ open, onClose, onCreated, defaultDate }: Crea
         post_type: 'post',
         scheduled_time: when,
         status: 'scheduled',
+        social_account: socialAccountId || undefined,
+        social_set: (selectedBrandId && selectedBrandId !== 'main_brand') ? selectedBrandId : undefined,
       };
       res = await postsApi.createPost(jsonPayload);
     }
@@ -86,6 +149,8 @@ export function CreatePostDialog({ open, onClose, onCreated, defaultDate }: Crea
       setMediaUrl('');
       setImageFile(null);
       setVideoFile(null);
+      setSocialAccountId('');
+      setSelectedBrandId('main_brand');
     } else {
       toast.error((res.error as string) || 'Failed to create post');
     }
@@ -137,6 +202,39 @@ export function CreatePostDialog({ open, onClose, onCreated, defaultDate }: Crea
             <div className="space-y-2">
               <Label htmlFor="time">Time</Label>
               <Input id="time" type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Brand</Label>
+              <Select value={selectedBrandId} onValueChange={setSelectedBrandId} disabled={loadingBrands}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingBrands ? 'Loading...' : 'Select Brand'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="main_brand">Main Brand (Default)</SelectItem>
+                  {socialSets.map((set) => (
+                    <SelectItem key={set.id} value={set.id}>
+                      {set.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Account (optional)</Label>
+              <Select value={socialAccountId} onValueChange={setSocialAccountId} disabled={loadingAccounts}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingAccounts ? 'Loading...' : 'Select account'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredAccounts.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.username}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {/* New: media URL and file inputs */}

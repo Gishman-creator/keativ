@@ -61,7 +61,7 @@ const HashtagSuggestions: React.FC<HashtagSuggestionsProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [content, platform, currentHashtags, toast]);
+  }, [content, platform, currentHashtags]);
 
   // Auto-fetch when content changes (debounced)
   useEffect(() => {

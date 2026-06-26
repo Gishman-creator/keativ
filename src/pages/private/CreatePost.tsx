@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Plus, Loader2 } from 'lucide-react';
 import { postsApi, socialAccountsApi, type SocialAccount, type PostCreateWithMedia } from '@/lib/api';
+import { socialSetsApi } from '@/lib/socialSetsApi';
+import { type SocialSet } from '@/types';
 import { SOCIAL_PLATFORMS } from '@/config/constants';
 import { toast } from 'sonner';
 import HashtagSuggestions from '@/components/hashtag/HashtagSuggestions';
@@ -35,20 +37,61 @@ const CreatePost = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
+  const [socialSets, setSocialSets] = useState<SocialSet[]>([]);
+  const [selectedBrandId, setSelectedBrandId] = useState<string>('main_brand');
   const [loading, setLoading] = useState(false);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [loadingBrands, setLoadingBrands] = useState(false);
 
   useEffect(() => {
-    const loadAccounts = async () => {
+    const loadAccountsAndBrands = async () => {
       setLoadingAccounts(true);
-      const res = await socialAccountsApi.getAccounts();
-      if (res.success && Array.isArray(res.data)) {
-        setAccounts(res.data);
+      setLoadingBrands(true);
+      try {
+        const accRes = await socialAccountsApi.getAccounts();
+        if (accRes.success && Array.isArray(accRes.data)) {
+          setAccounts(accRes.data);
+        }
+        const sets = await socialSetsApi.getSocialSets();
+        setSocialSets(sets);
+      } catch (err) {
+        console.error("Failed to load accounts or social sets:", err);
       }
       setLoadingAccounts(false);
+      setLoadingBrands(false);
     };
-    loadAccounts();
+    loadAccountsAndBrands();
   }, []);
+
+  // Filter accounts based on platform and the selected Brand (Social Set)
+  const filteredAccounts = useMemo(() => {
+    const platformActiveAccounts = accounts.filter(
+      (a) => a.is_active && a.platform === platform
+    );
+
+    if (selectedBrandId === 'main_brand') {
+      // Find all account IDs assigned to any brand (social set)
+      const assignedAccountIds = new Set(
+        socialSets.flatMap((set) => set.platforms.map((p) => p.id))
+      );
+      // Filter platform accounts that are NOT assigned to any brand (default)
+      return platformActiveAccounts.filter((a) => !assignedAccountIds.has(a.id));
+    } else {
+      // Find the selected social set
+      const selectedSet = socialSets.find((set) => set.id === selectedBrandId);
+      if (!selectedSet) return [];
+      // Filter platform accounts that ARE assigned to this brand
+      const setAccountIds = new Set(selectedSet.platforms.map((p) => p.id));
+      return platformActiveAccounts.filter((a) => setAccountIds.has(a.id));
+    }
+  }, [accounts, platform, selectedBrandId, socialSets]);
+
+  // Reset socialAccountId if it is not in the newly filtered list
+  useEffect(() => {
+    if (socialAccountId && !filteredAccounts.some((a) => a.id === socialAccountId)) {
+      setSocialAccountId('');
+    }
+  }, [filteredAccounts, socialAccountId]);
 
   const scheduledISO = useMemo(() => {
     if (!scheduledDate) return '';
@@ -81,6 +124,9 @@ const CreatePost = () => {
       status: 'scheduled',
     };
     if (socialAccountId) basePayload['social_account'] = socialAccountId;
+    if (selectedBrandId && selectedBrandId !== 'main_brand') {
+      basePayload['social_set'] = selectedBrandId;
+    }
 
     let res;
     if (imageFile || videoFile) {
@@ -221,7 +267,7 @@ const CreatePost = () => {
             <p className="md:col-span-2 text-xs text-muted-foreground">Choose either an image or a video file. Media URL is disabled when a file is selected.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label>Date</Label>
               <Popover>
@@ -244,19 +290,33 @@ const CreatePost = () => {
               <Input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} />
             </div>
             <div className="space-y-2">
+              <Label>Brand</Label>
+              <Select value={selectedBrandId} onValueChange={setSelectedBrandId} disabled={loadingBrands}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingBrands ? 'Loading...' : 'Select Brand'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="main_brand">Main Brand (Default)</SelectItem>
+                  {socialSets.map((set) => (
+                    <SelectItem key={set.id} value={set.id}>
+                      {set.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label>Account (optional)</Label>
               <Select value={socialAccountId} onValueChange={setSocialAccountId} disabled={loadingAccounts}>
                 <SelectTrigger>
                   <SelectValue placeholder={loadingAccounts ? 'Loading...' : 'Select account'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts
-                    .filter((a) => a.is_active && a.platform === platform)
-                    .map((a) => (
-                      <SelectItem key={a.id} value={a.id}>
-                        {a.username}
-                      </SelectItem>
-                    ))}
+                  {filteredAccounts.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.username}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

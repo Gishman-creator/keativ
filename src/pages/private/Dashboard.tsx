@@ -14,15 +14,13 @@ import {
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
+import { useNavigate } from 'react-router-dom';
 
 import EngagementChart from '@/components/influencer-dashboard/EngagementChart';
 import TwitterCard from '../../components/TwitterCard';
 import { useEffect, useMemo, useState } from 'react';
 import { API_ENDPOINTS } from '@/config/constants';
 import { api, ApiResponse } from '@/lib/api';
-import SchedulePostPage from '@/components/influencer-dashboard/dashboard/schedule-post-page';
-// Import X icon for close button
-import { cn } from '@/lib/utils'; // Import cn for conditional class names
 
 // Types for backend responses
 interface AnalyticsDashboard {
@@ -52,6 +50,7 @@ interface CalendarPostItem {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const activeSocialSet = useSelector((state: RootState) => state.socialSets.activeSocialSet);
   const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
   const [postStats, setPostStats] = useState<PostsDashboard | null>(null);
@@ -145,14 +144,8 @@ const Dashboard = () => {
     }
   ];
 
-    const [showSchedulePostPage, setShowSchedulePostPage] = useState(false);
-
   const handleCreatePostClick = () => {
-    setShowSchedulePostPage(true);
-  };
-
-  const handleCloseSchedulePostPage = () => {
-    setShowSchedulePostPage(false);
+    navigate('/dashboard/createpost');
   };
 
   const upcomingPosts = useMemo(() => {
@@ -266,7 +259,7 @@ const Dashboard = () => {
               <div className="text-center text-gray-500 py-8">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>No upcoming posts</p>
-                <Button className="mt-2" size="sm">Create Your First Post</Button>
+                <Button className="mt-2" size="sm" onClick={handleCreatePostClick}>Create Your First Post</Button>
               </div>
             )}
           </CardContent>
@@ -276,18 +269,6 @@ const Dashboard = () => {
       {/* Twitter Test Card - can be removed later */}
       <div className="mt-6">
         <TwitterCard />
-      </div>
-
-      {/* Schedule Post Modal Overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-50 flex items-center h-screen justify-center transition-opacity duration-300",
-          showSchedulePostPage ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="relative rounded-lg shadow-xl w-fit max-w-6xl max-h-[90vh] overflow-hidden">
-          <SchedulePostPage onClose={handleCloseSchedulePostPage} />
-        </div>
       </div>
     </div>
   );

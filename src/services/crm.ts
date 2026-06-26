@@ -87,31 +87,31 @@ export interface SendMessageRequest {
 export const crmService = {
   // Setup GoHighLevel integration
   setupIntegration: async (data: SetupIntegrationRequest): Promise<GoHighLevelIntegration> => {
-    const response = await api.post('/core/crm/gohighlevel/setup/', data);
-    return response.data;
+    const response = await api.post('/core/ghl/setup/', data);
+    return response.data.integration || response.data;
   },
 
   // Get GoHighLevel integration details
   getIntegration: async (): Promise<GoHighLevelIntegration | null> => {
-    const response = await api.get('/core/crm/gohighlevel/integration/');
-    return response.data;
+    const response = await api.get('/core/ghl/integration/');
+    return response.data.success ? response.data.integration : null;
   },
 
   // Update GoHighLevel integration
   updateIntegration: async (data: UpdateIntegrationRequest): Promise<GoHighLevelIntegration> => {
-    const response = await api.put('/core/crm/gohighlevel/integration/', data);
-    return response.data;
+    const response = await api.post('/core/ghl/setup/', data);
+    return response.data.integration || response.data;
   },
 
   // Delete GoHighLevel integration
   deleteIntegration: async (): Promise<{ message: string }> => {
-    const response = await api.delete('/core/crm/gohighlevel/integration/');
+    const response = await api.delete('/core/ghl/integration/delete/');
     return response.data;
   },
 
   // Sync contacts from GoHighLevel
   syncContacts: async (): Promise<{ message: string; synced_count: number }> => {
-    const response = await api.post('/core/crm/gohighlevel/sync-contacts/');
+    const response = await api.post('/core/ghl/sync-contacts/');
     return response.data;
   },
 
@@ -122,33 +122,38 @@ export const crmService = {
     previous: string | null;
     results: CRMContact[];
   }> => {
-    const response = await api.get('/core/crm/contacts/', {
+    const response = await api.get('/core/contacts/', {
       params: { page, page_size }
     });
-    return response.data;
+    return {
+      count: response.data.total_count || response.data.count || 0,
+      results: response.data.contacts || response.data.results || [],
+      next: response.data.next || null,
+      previous: response.data.previous || null,
+    };
   },
 
   // Get single CRM contact
   getContact: async (contactId: string): Promise<CRMContact> => {
-    const response = await api.get(`/core/crm/contacts/${contactId}/`);
-    return response.data;
+    const response = await api.get(`/core/contacts/${contactId}/`);
+    return response.data.contact || response.data;
   },
 
   // Create new contact in GoHighLevel
   createContact: async (data: CreateContactRequest): Promise<CRMContact> => {
-    const response = await api.post('/core/crm/contacts/', data);
-    return response.data;
+    const response = await api.post('/core/contacts/create/', data);
+    return response.data.contact || response.data;
   },
 
   // Update contact
   updateContact: async (contactId: string, data: UpdateContactRequest): Promise<CRMContact> => {
-    const response = await api.put(`/core/crm/contacts/${contactId}/`, data);
-    return response.data;
+    const response = await api.put(`/core/contacts/${contactId}/update/`, data);
+    return response.data.contact || response.data;
   },
 
   // Delete contact
   deleteContact: async (contactId: string): Promise<{ message: string }> => {
-    const response = await api.delete(`/core/crm/contacts/${contactId}/`);
+    const response = await api.delete(`/core/contacts/${contactId}/delete/`);
     return response.data;
   },
 
@@ -158,7 +163,7 @@ export const crmService = {
     message: string;
     location_name?: string;
   }> => {
-    const response = await api.post('/core/crm/gohighlevel/test-connection/', { 
+    const response = await api.post('/core/ghl/test-connection/', { 
       api_key, 
       location_id 
     });
@@ -170,7 +175,7 @@ export const crmService = {
     success: boolean; 
     message: string 
   }> => {
-    const response = await api.post('/core/crm/contacts/message/', data);
+    const response = await api.post('/core/contacts/message/', data);
     return response.data;
   },
 };

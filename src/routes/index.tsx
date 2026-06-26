@@ -43,6 +43,7 @@ import Messages from '../pages/private/Messages';
 import Collaborators from '../pages/private/Collaborators';
 import PostTemplates from '../pages/private/PostTemplates';
 import BrandWall from '../pages/private/BrandWall';
+import AIAgents from '../pages/private/AIAgents';
 
 // Payment and CRM imports
 import BillingDashboard from '../pages/private/billing/BillingDashboard';
@@ -56,11 +57,13 @@ import CRMContactsList from '../components/crm/CRMContactsList';
 import DialogsDemoPage from '../pages/private/demo/DialogsDemoPage';
 import Settings from '@/pages/private/Settings';
 import { ResetPassword } from '@/pages/auth/ResetPassword';
+import RouteErrorBoundary from '../components/RouteErrorBoundary';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <PublicLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <Landing /> },
       { path: 'features', element: <Features /> },
@@ -84,6 +87,7 @@ export const router = createBrowserRouter([
       <ProtectedRoute isProtected={true} redirectPath="/login">
         <PrivateLayout />
       </ProtectedRoute>,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: <Dashboard /> },
       { path: 'planner', element: <Planner /> },
@@ -104,6 +108,7 @@ export const router = createBrowserRouter([
       { path: 'collaborators', element: <Collaborators /> },
       { path: 'settings', element: <Settings /> },
       { path: 'integrations', element: <IntegrationsPage /> },
+      { path: 'agents', element: <AIAgents /> },
       { path: 'integrations/facebook/manage', element: <FacebookAccountManagement /> },
       { path: 'integrations/twitter/callback', element: <TwitterCallback /> },
       { path: 'integrations/linkedin/callback', element: <LinkedInCallback /> },
@@ -131,5 +136,6 @@ export const router = createBrowserRouter([
   {
     path: '*',
     element: <NotFound />,
+    errorElement: <RouteErrorBoundary />,
   },
 ]);

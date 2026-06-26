@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 import { RootState } from '../../redux/store';
 import { logout } from '../../redux/slices/authSlice';
+import { setSocialSets, setActiveSocialSet } from '../../redux/slices/socialSetsSlice';
+import { socialSetsApi } from '@/lib/socialSetsApi';
 import MobileSidebar from './MobileSidebar';
 import { Input } from '@/components/ui/input';
 import { api, SocialAccount } from '@/lib/api';
@@ -35,6 +37,7 @@ import { API_ENDPOINTS } from '@/config/constants';
 
 const Header = () => {
   const user = useSelector((state: RootState) => state.auth.user);
+  const activeSocialSet = useSelector((state: RootState) => state.socialSets.activeSocialSet);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showSocialSetShowcase, setShowSocialSetShowcase] = useState(false);
@@ -62,15 +65,32 @@ const Header = () => {
       }
 
       // Fetch social accounts
-      const accountsRes = await api.get<SocialAccount[]>(API_ENDPOINTS.SOCIAL_ACCOUNTS);
+      const accountsRes = await api.get<any>(API_ENDPOINTS.SOCIAL_ACCOUNTS);
       if (accountsRes.success && accountsRes.data) {
-        setActiveAccounts(accountsRes.data.filter(a => a.is_active));
+        const accountsList = Array.isArray(accountsRes.data)
+          ? accountsRes.data
+          : (accountsRes.data.results || []);
+        setActiveAccounts(accountsList.filter((a: any) => a.is_active));
       }
 
       // Fetch scheduled posts count
       const postsRes = await api.get<{ count?: number, results?: unknown[] }>(API_ENDPOINTS.POSTS.SCHEDULED_LIST);
       if (postsRes.success && postsRes.data) {
         setScheduledCount(postsRes.data.count || postsRes.data.results?.length || 0);
+      }
+
+      // Fetch social sets and dispatch to store if not loaded
+      try {
+        const sets = await socialSetsApi.getSocialSets();
+        dispatch(setSocialSets(sets));
+        
+        // If there's no active social set in Redux, set the one that is active from DB, or the first one
+        const active = sets.find(s => s.isActive) || sets[0] || null;
+        if (active) {
+          dispatch(setActiveSocialSet(active));
+        }
+      } catch (err) {
+        console.error("Error loading social sets in header", err);
       }
     } catch (e) {
       console.error("Error loading header stats", e);
@@ -144,7 +164,14 @@ const Header = () => {
             onMouseLeave={handleMouseLeave}
           >
             <Button variant="ghost" className="flex items-center justify-center -space-x-3 hover:bg-transparent" onClick={() => navigate('/dashboard/integrations')}>
-              {activeAccounts.length > 0 ? (
+              {activeSocialSet && activeSocialSet.platforms.length > 0 ? (
+                activeSocialSet.platforms.slice(0, 3).map((platform, i) => (
+                  <Avatar key={platform.id} className="h-8 w-8 border-2 border-white transform transition-transform hover:-translate-y-1 hover:z-10 bg-gray-100" style={{ zIndex: 3 - i }}>
+                    <AvatarImage src={platform.avatarUrl || `https://ui-avatars.com/api/?name=${platform.name}&background=random`} alt={platform.name} className="object-cover" />
+                    <AvatarFallback>{platform.name.substring(0, 1)}</AvatarFallback>
+                  </Avatar>
+                ))
+              ) : activeAccounts.length > 0 ? (
                 activeAccounts.slice(0, 3).map((acc, i) => (
                   <Avatar key={acc.id} className="h-8 w-8 border-2 border-white transform transition-transform hover:-translate-y-1 hover:z-10 bg-gray-100" style={{ zIndex: 3 - i }}>
                     <AvatarImage src={acc.profile_image_url || `https://ui-avatars.com/api/?name=${acc.platform}&background=random`} alt={acc.platform} className="object-cover" />
@@ -165,7 +192,7 @@ const Header = () => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                <SocialSetShowcase />
+                <SocialSetShowcase activeAccounts={activeAccounts} />
               </div>
             )}
           </div>

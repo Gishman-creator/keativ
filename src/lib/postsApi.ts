@@ -3,7 +3,7 @@ import { api } from './api';
 export interface PostData {
   content: string;
   scheduled_time?: string;
-  social_set_id: string;
+  social_set_id?: string;
   platform_settings: {
     [platform: string]: {
       enabled: boolean;
@@ -20,7 +20,7 @@ export interface PostResponse {
   id: string;
   content: string;
   scheduled_time?: string;
-  social_set_id: string;
+  social_set_id?: string;
   platform_settings: {
     [platform: string]: {
       enabled: boolean;
@@ -40,7 +40,7 @@ export interface PostDraft {
   id: string;
   title?: string;
   content: string;
-  social_set_id: string;
+  social_set_id?: string;
   platform_settings: {
     [platform: string]: {
       enabled: boolean;

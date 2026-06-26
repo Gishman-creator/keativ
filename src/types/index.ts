@@ -27,6 +27,7 @@ export interface Platform {
   isConnected: boolean;
   accountName?: string;
   followers?: number;
+  avatarUrl?: string;
 }
 
 export interface Post {

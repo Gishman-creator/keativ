@@ -31,6 +31,17 @@ export const API_ENDPOINTS = {
     SCHEDULED_LIST: `${API_BASE_URL}/api/posts/scheduled/`,
     SCHEDULED_DETAIL: (id: string) => `${API_BASE_URL}/api/posts/scheduled/${id}/`,
     AI_CONTENT_SUGGESTIONS: `${API_BASE_URL}/api/posts/ai/content-suggestions/`,
+    // Queue and Evergreen Scheduling
+    QUEUE_LIST: `${API_BASE_URL}/api/posts/queue/`,
+    QUEUE_NEXT_SLOT: `${API_BASE_URL}/api/posts/queue/next-slot/`,
+    ADD_TO_QUEUE: (id: string) => `${API_BASE_URL}/api/posts/${id}/add-to-queue/`,
+    SCHEDULE_SLOTS: `${API_BASE_URL}/api/posts/schedule-slots/`,
+    SCHEDULE_SLOT_DETAIL: (id: string) => `${API_BASE_URL}/api/posts/schedule-slots/${id}/`,
+    BULK_SCHEDULE_SLOTS: `${API_BASE_URL}/api/posts/schedule-slots/bulk/`,
+    // Approval workflow
+    SUBMIT_APPROVAL: (id: string) => `${API_BASE_URL}/api/posts/${id}/submit-approval/`,
+    APPROVE: (id: string) => `${API_BASE_URL}/api/posts/${id}/approve/`,
+    REJECT: (id: string) => `${API_BASE_URL}/api/posts/${id}/reject/`,
   },
   
   // Analytics

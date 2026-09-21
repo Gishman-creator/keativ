@@ -37,13 +37,45 @@ export interface Post {
   image?: string;
   video?: string;
   scheduled_time: string;
-  status: "draft" | "scheduled" | "published" | "failed";
+  status:
+  | "draft"
+  | "pending_approval"
+  | "approved"
+  | "rejected"
+  | "scheduled"
+  | "publishing"
+  | "published"
+  | "failed"
+  | "cancelled";
   platform: string;
   post_type: "post" | "story" | "reel" | "video";
   social_account?: string;
   social_set?: string;
+  is_evergreen?: boolean;
+  recycle_interval_days?: number;
+  recycle_count?: number;
+  max_recycle_count?: number | null;
+  last_recycled_at?: string | null;
+  original_post?: string | null;
+  approval_reviewer?: string | null;
+  approval_reviewer_name?: string | null;
+  approval_feedback?: string;
+  submitted_for_approval_at?: string | null;
+  reviewed_at?: string | null;
+  can_edit?: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface PostingScheduleSlot {
+  id: string;
+  platform: string;
+  day_of_week: number;
+  day_name?: string;
+  time: string;
+  timezone: string;
+  is_active: boolean;
+  created_at?: string;
 }
 
 export interface SocialAccount {
@@ -684,7 +716,7 @@ class ApiClient {
       if (data) {
         (headers as Record<string, string>)["Content-Type"] = "application/json";
       }
-      
+
       const response = await fetch(url, {
         method: "DELETE",
         headers,
@@ -1124,7 +1156,7 @@ class ApiClient {
 
     // Filter out any null or undefined values
     const validIds = ids.filter(id => id != null);
-    
+
     if (validIds.length === 0) {
       console.error('No valid IDs provided for deletion');
       return {
@@ -1135,7 +1167,7 @@ class ApiClient {
 
     // Log the filtered IDs
     console.log('Filtered valid IDs:', validIds);
-    
+
     return api.deleteWithBody(API_ENDPOINTS.MEDIA.BULK_DELETE, { ids: validIds });
   }
 
@@ -1603,6 +1635,67 @@ export const postsApi = {
     api.put<ScheduledPost>(
       API_ENDPOINTS.POSTS.SCHEDULED_DETAIL(id),
       payload as Record<string, unknown>
+    ),
+
+  // Queue and Dynamic Scheduling
+  getQueue: async () =>
+    api.get<{ success: boolean; queue_count: number; queue: Post[] }>(
+      API_ENDPOINTS.POSTS.QUEUE_LIST
+    ),
+
+  getNextQueueSlot: async (platform?: string, after_time?: string) =>
+    api.post<{
+      success: boolean;
+      platform: string;
+      next_available_slot: string;
+    }>(API_ENDPOINTS.POSTS.QUEUE_NEXT_SLOT, { platform, after_time }),
+
+  addPostToQueue: async (postId: string) =>
+    api.post<{ success: boolean; message: string; post: Post }>(
+      API_ENDPOINTS.POSTS.ADD_TO_QUEUE(postId),
+      {}
+    ),
+
+  getScheduleSlots: async (platform?: string) => {
+    const url = platform
+      ? `${API_ENDPOINTS.POSTS.SCHEDULE_SLOTS}?platform=${platform}`
+      : API_ENDPOINTS.POSTS.SCHEDULE_SLOTS;
+    return api.get<PostingScheduleSlot[]>(url);
+  },
+
+  createScheduleSlot: async (data: Partial<PostingScheduleSlot>) =>
+    api.post<PostingScheduleSlot>(API_ENDPOINTS.POSTS.SCHEDULE_SLOTS, data),
+
+  bulkCreateScheduleSlots: async (data: {
+    days_of_week: number[];
+    times: string[];
+    platform?: string;
+    timezone?: string;
+  }) => api.post<{ success: boolean; message: string; created_count: number }>(
+    API_ENDPOINTS.POSTS.BULK_SCHEDULE_SLOTS,
+    data
+  ),
+
+  deleteScheduleSlot: async (id: string) =>
+    api.delete(API_ENDPOINTS.POSTS.SCHEDULE_SLOT_DETAIL(id)),
+
+  // Approval Workflow
+  submitForApproval: async (postId: string) =>
+    api.post<{ success: boolean; message: string; post: Post }>(
+      API_ENDPOINTS.POSTS.SUBMIT_APPROVAL(postId),
+      {}
+    ),
+
+  approvePost: async (postId: string) =>
+    api.post<{ success: boolean; message: string; post: Post }>(
+      API_ENDPOINTS.POSTS.APPROVE(postId),
+      {}
+    ),
+
+  rejectPost: async (postId: string, feedback?: string) =>
+    api.post<{ success: boolean; message: string; post: Post }>(
+      API_ENDPOINTS.POSTS.REJECT(postId),
+      { feedback }
     ),
 };
 

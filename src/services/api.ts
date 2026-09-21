@@ -12,9 +12,10 @@ const api = axios.create({
 // Request interceptor to add authentication token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('access_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Support standard DRF Token authentication
+      config.headers.Authorization = `Token ${token}`;
     }
     return config;
   },
@@ -35,21 +36,26 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
-          const response = await axios.post('/auth/token/refresh/', {
+          const response = await api.post('/auth/token/refresh/', {
             refresh: refreshToken,
           });
 
           const { access } = response.data;
-          localStorage.setItem('access_token', access);
-
-          // Retry the original request
-          return api(originalRequest);
+          if (access) {
+            localStorage.setItem('auth_token', access);
+            localStorage.setItem('access_token', access);
+            originalRequest.headers.Authorization = `Token ${access}`;
+            return api(originalRequest);
+          }
         }
       } catch {
-        // Refresh failed, redirect to login
+        // Refresh failed, clean up tokens
+        localStorage.removeItem('auth_token');
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
 

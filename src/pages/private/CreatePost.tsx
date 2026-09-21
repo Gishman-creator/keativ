@@ -10,7 +10,7 @@ import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Plus, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Loader2, Repeat, Clock, RefreshCw } from 'lucide-react';
 import { postsApi, socialAccountsApi, type SocialAccount, type PostCreateWithMedia } from '@/lib/api';
 import { socialSetsApi } from '@/lib/socialSetsApi';
 import { type SocialSet } from '@/types';
@@ -36,12 +36,45 @@ const CreatePost = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
+  // Queue & Evergreen Scheduling
+  const [useQueue, setUseQueue] = useState(false);
+  const [queueSlotISO, setQueueSlotISO] = useState<string>('');
+  const [loadingQueueSlot, setLoadingQueueSlot] = useState(false);
+  const [isEvergreen, setIsEvergreen] = useState(false);
+  const [recycleIntervalDays, setRecycleIntervalDays] = useState<number>(30);
+  const [maxRecycleCount, setMaxRecycleCount] = useState<number | undefined>(undefined);
+
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [socialSets, setSocialSets] = useState<SocialSet[]>([]);
   const [selectedBrandId, setSelectedBrandId] = useState<string>('main_brand');
   const [loading, setLoading] = useState(false);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [loadingBrands, setLoadingBrands] = useState(false);
+
+  // Fetch next queue slot when Queue mode is active
+  useEffect(() => {
+    if (!useQueue) return;
+    const fetchSlot = async () => {
+      setLoadingQueueSlot(true);
+      try {
+        const res = await postsApi.getNextQueueSlot(platform);
+        if (res.data?.next_available_slot) {
+          const slotIso = res.data.next_available_slot;
+          setQueueSlotISO(slotIso);
+          const dt = new Date(slotIso);
+          setScheduledDate(dt);
+          const h = dt.getHours().toString().padStart(2, '0');
+          const m = dt.getMinutes().toString().padStart(2, '0');
+          setScheduledTime(`${h}:${m}`);
+        }
+      } catch (err) {
+        console.error("Failed to fetch next queue slot:", err);
+      } finally {
+        setLoadingQueueSlot(false);
+      }
+    };
+    fetchSlot();
+  }, [useQueue, platform]);
 
   useEffect(() => {
     const loadAccountsAndBrands = async () => {
@@ -101,11 +134,12 @@ const CreatePost = () => {
     return dt.toISOString();
   }, [scheduledDate, scheduledTime]);
 
-  const canSubmit = content.trim().length > 0 && platform && scheduledISO;
+  const finalScheduledISO = (useQueue && queueSlotISO) ? queueSlotISO : scheduledISO;
+  const canSubmit = content.trim().length > 0 && platform && finalScheduledISO;
 
   const onSubmit = async () => {
-    if (!scheduledISO) {
-      toast.error('Please pick a valid date and time');
+    if (!finalScheduledISO) {
+      toast.error('Please pick a valid date and time or enable Queue');
       return;
     }
     setLoading(true);
@@ -119,9 +153,12 @@ const CreatePost = () => {
       media_url: mediaUrl || undefined,
       platform,
       post_type: postType,
-      scheduled_time: scheduledISO,
+      scheduled_time: finalScheduledISO,
       timezone,
       status: 'scheduled',
+      is_evergreen: isEvergreen,
+      recycle_interval_days: isEvergreen ? recycleIntervalDays : undefined,
+      max_recycle_count: isEvergreen ? (maxRecycleCount || null) : undefined,
     };
     if (socialAccountId) basePayload['social_account'] = socialAccountId;
     if (selectedBrandId && selectedBrandId !== 'main_brand') {
@@ -265,6 +302,122 @@ const CreatePost = () => {
               )}
             </div>
             <p className="md:col-span-2 text-xs text-muted-foreground">Choose either an image or a video file. Media URL is disabled when a file is selected.</p>
+          </div>
+
+          {/* Dynamic Queue & Evergreen Controls */}
+          <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="queue-checkbox"
+                  checked={useQueue}
+                  onChange={(e) => setUseQueue(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                />
+                <label htmlFor="queue-checkbox" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
+                  <Clock className="h-4 w-4 text-primary" />
+                  Add to Next Queue Slot
+                </label>
+              </div>
+
+              {useQueue && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/80 border rounded-md px-3 py-1.5 shadow-sm">
+                  {loadingQueueSlot ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Finding next available slot...</span>
+                    </>
+                  ) : queueSlotISO ? (
+                    <>
+                      <span className="font-semibold text-foreground">Auto-assigned:</span>
+                      <span>{format(new Date(queueSlotISO), "EEE, MMM d, yyyy 'at' h:mm a")}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          postsApi.getNextQueueSlot(platform).then((res) => {
+                            if (res.data?.next_available_slot) {
+                              setQueueSlotISO(res.data.next_available_slot);
+                              const dt = new Date(res.data.next_available_slot);
+                              setScheduledDate(dt);
+                              const h = dt.getHours().toString().padStart(2, '0');
+                              const m = dt.getMinutes().toString().padStart(2, '0');
+                              setScheduledTime(`${h}:${m}`);
+                            }
+                          });
+                        }}
+                        className="ml-1 text-primary hover:underline flex items-center gap-1"
+                        title="Refresh next slot"
+                      >
+                        <RefreshCw className="h-3 w-3" />
+                      </button>
+                    </>
+                  ) : (
+                    <span>No vacant slot found; using default</span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Evergreen Recycling Toggle & Config */}
+            <div className="border-t pt-3 space-y-3">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="evergreen-checkbox"
+                  checked={isEvergreen}
+                  onChange={(e) => setIsEvergreen(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                />
+                <label htmlFor="evergreen-checkbox" className="text-sm font-medium flex items-center gap-1.5 cursor-pointer">
+                  <Repeat className="h-4 w-4 text-emerald-600" />
+                  Evergreen Content (Auto-Recycle)
+                </label>
+              </div>
+
+              {isEvergreen && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-7">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Recycle Every</Label>
+                    <Select
+                      value={recycleIntervalDays.toString()}
+                      onValueChange={(val) => setRecycleIntervalDays(parseInt(val, 10))}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7">7 Days (Weekly)</SelectItem>
+                        <SelectItem value="14">14 Days (Bi-weekly)</SelectItem>
+                        <SelectItem value="30">30 Days (Monthly)</SelectItem>
+                        <SelectItem value="60">60 Days (2 Months)</SelectItem>
+                        <SelectItem value="90">90 Days (Quarterly)</SelectItem>
+                        <SelectItem value="180">180 Days (Half-Year)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Max Recycles</Label>
+                    <Select
+                      value={maxRecycleCount ? maxRecycleCount.toString() : "unlimited"}
+                      onValueChange={(val) => setMaxRecycleCount(val === "unlimited" ? undefined : parseInt(val, 10))}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unlimited">Unlimited (Continuous)</SelectItem>
+                        <SelectItem value="1">1 Time</SelectItem>
+                        <SelectItem value="3">3 Times</SelectItem>
+                        <SelectItem value="5">5 Times</SelectItem>
+                        <SelectItem value="10">10 Times</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

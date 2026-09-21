@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "http://68.211.120.41/api/:match*"
+      "destination": "https://smms-api-keativ.chilecentral.cloudapp.azure.com/api/:match*"
     },
     {
       "source": "/((?!api/).*)",

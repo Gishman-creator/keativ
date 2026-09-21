@@ -603,8 +603,11 @@ class ApiClient {
           statusText: response.statusText,
           data,
         });
+        const errorString = typeof data === 'string'
+          ? data
+          : (data?.error || data?.message || data?.detail || `HTTP ${response.status}: ${response.statusText}`);
         return {
-          error: data || `HTTP ${response.status}: ${response.statusText}`,
+          error: errorString,
           success: false,
           data: data, // Include the error details from backend
         };

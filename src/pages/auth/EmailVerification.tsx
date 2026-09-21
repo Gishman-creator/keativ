@@ -28,9 +28,13 @@ export function EmailVerification() {
             username: (response.data as { username?: string })?.username
           });
         } else {
+          const errData = (response.error || response.data) as any;
+          const errorMsg = typeof errData === 'string'
+            ? errData
+            : (errData?.error || errData?.message || errData?.detail || 'Email verification failed');
           setVerificationResult({
             success: false,
-            message: response.error || 'Email verification failed'
+            message: errorMsg
           });
         }
       } catch {

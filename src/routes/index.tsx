@@ -78,6 +78,7 @@ export const router = createBrowserRouter([
       { path: 'verify-email/:token', element: <EmailVerification /> },
       { path: 'reset-password/:token', element: <ResetPassword /> },
       { path: 'verification-pending', element: <VerificationPending /> },
+      { path: 'resend-verification', element: <VerificationPending /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
     ],
   },

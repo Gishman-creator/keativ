@@ -63,7 +63,11 @@ const Billing: React.FC = () => {
         if (tiersResponse.success && tiersResponse.data && Array.isArray(tiersResponse.data.tiers)) {
           setTiers(tiersResponse.data.tiers)
         } else {
-          setError(tiersResponse.error || "Failed to fetch subscription tiers.")
+          const errObj = tiersResponse.error as any;
+          const msg = typeof errObj === 'string'
+            ? errObj
+            : (errObj?.message || errObj?.error || "Failed to fetch subscription tiers.");
+          setError(msg);
         }
 
         // Handle user subscription response
@@ -85,11 +89,8 @@ const Billing: React.FC = () => {
     fetchBillingData()
   }, [])
 
-  // Hardcoded billing history data
-  const billingHistory = [
-    { id: "FLZ9810", date: "25 Dec 2023", amount: "$149.99", plan: "Professional Plan", status: "Success" },
-    { id: "FLZ9810", date: "05 Jul 2023", amount: "$149.99", plan: "Professional Plan", status: "Success" },
-  ]
+  // User billing history (empty for new users until payments are made)
+  const billingHistory: { id: string; date: string; amount: string; plan: string; status: string }[] = []
 
   const formatPrice = (monthly: number) => {
     return { price: monthly, period: "monthly" }

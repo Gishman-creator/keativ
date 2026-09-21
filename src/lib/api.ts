@@ -588,6 +588,15 @@ class ApiClient {
     return headers;
   }
 
+  private getFullUrl(url: string): string {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    const cleanBase = (this.baseURL || "").replace(/\/+$/, "");
+    const cleanPath = url.startsWith("/") ? url : `/${url}`;
+    return cleanBase ? `${cleanBase}${cleanPath}` : cleanPath;
+  }
+
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     try {
       const data = await response.json();
@@ -623,7 +632,7 @@ class ApiClient {
 
   async get<T>(url: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "GET",
         headers: this.getHeaders(),
         credentials: "include",
@@ -639,7 +648,7 @@ class ApiClient {
 
   async getPublic<T>(url: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "GET",
         headers: this.getHeaders(false), // Explicitly do not include auth headers
         credentials: "include",
@@ -658,7 +667,7 @@ class ApiClient {
     data?: Record<string, unknown>
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "POST",
         headers: this.getHeaders(),
         credentials: "include",
@@ -678,7 +687,7 @@ class ApiClient {
     data?: Record<string, unknown>
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "PUT",
         headers: this.getHeaders(),
         credentials: "include",
@@ -695,7 +704,7 @@ class ApiClient {
 
   async delete<T>(url: string): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "DELETE",
         headers: this.getHeaders(),
         credentials: "include",
@@ -720,7 +729,7 @@ class ApiClient {
         (headers as Record<string, string>)["Content-Type"] = "application/json";
       }
 
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "DELETE",
         headers,
         credentials: "include",
@@ -740,7 +749,7 @@ class ApiClient {
     data?: Record<string, unknown>
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "PATCH",
         headers: this.getHeaders(),
         credentials: "include",
@@ -758,7 +767,7 @@ class ApiClient {
   // Multipart helpers for file uploads
   async postForm<T>(url: string, form: FormData): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "POST",
         headers: this.getAuthHeaders(),
         credentials: "include",
@@ -772,7 +781,7 @@ class ApiClient {
 
   async putForm<T>(url: string, form: FormData): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.getFullUrl(url), {
         method: "PUT",
         headers: this.getAuthHeaders(),
         credentials: "include",

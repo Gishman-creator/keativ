@@ -2,7 +2,10 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Settings } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Plus, Settings, Instagram as InstagramIcon } from 'lucide-react';
 import { api, ApiResponse, TwitterAccount, SocialAccount, LinkedInAccount, FacebookAccount, TikTokAccount } from '@/lib/api';
 
 interface VerifyResp { success: boolean; message: string; account?: TwitterAccount }
@@ -30,6 +33,12 @@ const IntegrationsPage = () => {
   // Removed slackLoading placeholder (not needed with generic connect)
   const [genericLoading, setGenericLoading] = useState<string | null>(null);
 
+  // Instagram Connect Modal State
+  const [isInstagramDialogOpen, setIsInstagramDialogOpen] = useState<boolean>(false);
+  const [instagramUsername, setInstagramUsername] = useState<string>('');
+  const [instagramFollowers, setInstagramFollowers] = useState<string>('');
+  const [instagramSubmitting, setInstagramSubmitting] = useState<boolean>(false);
+
   useEffect(() => {
     // Check connection status
     const checkConnections = async () => {
@@ -50,11 +59,16 @@ const IntegrationsPage = () => {
       const facebookRes: ApiResponse<FacebookVerifyResp> = await api.verifyFacebookCredentials();
       setIsFacebookConnected(Boolean(facebookRes.success && facebookRes.data && facebookRes.data.account));
       
-      // Check Instagram from social accounts
+      // Check Instagram verification endpoint
       try {
-        const accountsRes = await api.get<SocialAccount[]>('/api/auth/social-accounts/');
-        if (accountsRes.success && accountsRes.data) {
-          setIsInstagramConnected(accountsRes.data.some(a => a.platform.toLowerCase() === 'instagram'));
+        const instaRes = await api.get<{ success: boolean; account?: any }>('/api/integrations/instagram/verify/');
+        if (instaRes.success && instaRes.data?.account) {
+          setIsInstagramConnected(true);
+        } else {
+          const accountsRes = await api.get<SocialAccount[]>('/api/auth/social-accounts/');
+          if (accountsRes.success && accountsRes.data) {
+            setIsInstagramConnected(accountsRes.data.some(a => a.platform.toLowerCase() === 'instagram'));
+          }
         }
       } catch {
         // Ignore
@@ -347,30 +361,37 @@ const IntegrationsPage = () => {
     }
   };
 
-  const handleConnectInstagram = async () => {
-    // In Meta Graph API, Instagram Business accounts connect through Facebook/Meta OAuth
-    setInstagramLoading(true);
+  const handleConnectInstagram = () => {
+    setIsInstagramDialogOpen(true);
+  };
+
+  const handleSaveInstagramHandle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!instagramUsername.trim()) return;
+    setInstagramSubmitting(true);
     try {
-      await handleConnectFacebook();
+      const res = await api.post<{ success: boolean; message?: string }>('/api/integrations/instagram/connect/', {
+        username: instagramUsername.trim(),
+        followers_count: parseInt(instagramFollowers.replace(/,/g, ''), 10) || 0,
+      });
+      if (res.success) {
+        setIsInstagramConnected(true);
+        setIsInstagramDialogOpen(false);
+        setInstagramUsername('');
+        setInstagramFollowers('');
+      }
+    } catch (err) {
+      console.error('Failed to connect Instagram handle:', err);
     } finally {
-      setInstagramLoading(false);
+      setInstagramSubmitting(false);
     }
   };
 
   const handleDisconnectInstagram = async () => {
     setInstagramLoading(true);
     try {
-      const accountsRes = await api.get<SocialAccount[]>('/api/auth/social-accounts/');
-      if (accountsRes.success && accountsRes.data) {
-        const instaAccount = accountsRes.data.find(account => account.platform.toLowerCase() === 'instagram');
-        if (instaAccount) {
-          const removeRes = await api.delete(`/api/auth/social-accounts/${instaAccount.id}/`);
-          if (removeRes.success) {
-            setIsInstagramConnected(false);
-            console.log('Instagram account disconnected successfully');
-          }
-        }
-      }
+      await api.post('/api/integrations/instagram/disconnect/', {});
+      setIsInstagramConnected(false);
     } catch (error) {
       console.error('Error disconnecting Instagram account:', error);
     } finally {
@@ -652,6 +673,89 @@ const IntegrationsPage = () => {
           </Card>
         ))}
       </div>
+
+      {/* Instagram Connect Modal */}
+      <Dialog open={isInstagramDialogOpen} onOpenChange={setIsInstagramDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl p-6">
+          <DialogHeader className="text-left space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-yellow-400 via-rose-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                <InstagramIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white">Connect Instagram</DialogTitle>
+                <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
+                  Choose how you want to connect your Instagram account
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-6 pt-2">
+            {/* Option 1: Connect by Handle */}
+            <form onSubmit={handleSaveInstagramHandle} className="space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/40">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-wider">Option 1: Connect by Handle</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 font-medium">Instant</span>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ig-username" className="text-xs font-medium text-slate-700 dark:text-slate-300">Instagram Handle (@username)</Label>
+                <Input
+                  id="ig-username"
+                  placeholder="@your_username"
+                  value={instagramUsername}
+                  onChange={(e) => setInstagramUsername(e.target.value)}
+                  required
+                  className="bg-white dark:bg-slate-900"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="ig-followers" className="text-xs font-medium text-slate-700 dark:text-slate-300">Follower Count</Label>
+                <Input
+                  id="ig-followers"
+                  type="number"
+                  placeholder="e.g. 1500"
+                  value={instagramFollowers}
+                  onChange={(e) => setInstagramFollowers(e.target.value)}
+                  className="bg-white dark:bg-slate-900"
+                />
+                <p className="text-[11px] text-slate-400">This will immediately update your dashboard follower metrics.</p>
+              </div>
+              <Button 
+                type="submit" 
+                disabled={instagramSubmitting || !instagramUsername.trim()}
+                className="w-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:opacity-90 text-white font-medium shadow-sm"
+              >
+                {instagramSubmitting ? 'Connecting...' : 'Connect Instagram Handle'}
+              </Button>
+            </form>
+
+            <div className="relative flex items-center justify-center">
+              <div className="border-t border-slate-200 dark:border-slate-800 w-full" />
+              <span className="bg-white dark:bg-slate-900 px-3 text-xs text-slate-400 uppercase font-medium">OR</span>
+            </div>
+
+            {/* Option 2: Log in with Meta */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/40 space-y-3">
+              <span className="text-xs font-semibold text-slate-900 dark:text-white uppercase tracking-wider">Option 2: Log in with Meta / Facebook</span>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Connect via Meta OAuth if you have an Instagram Creator or Business account linked to your Facebook Page.
+              </p>
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={() => {
+                  setIsInstagramDialogOpen(false);
+                  handleConnectFacebook();
+                }}
+                className="w-full border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/30"
+              >
+                Log in with Facebook / Meta
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

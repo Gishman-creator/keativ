@@ -1020,12 +1020,17 @@ class ApiClient {
   }
 
   async getFacebookAuthorizeUrl(): Promise<
-    ApiResponse<{ authorize_url: string }>
+    ApiResponse<{ authorize_url: string; authorization_url?: string }>
   > {
     // Use headless mode (redirect=false) for popup OAuth flow
-    return this.get<{ authorize_url: string }>(
+    const res = await this.get<{ authorize_url?: string; authorization_url?: string }>(
       `${API_ENDPOINTS.FACEBOOK_AUTHORIZE}?redirect=false`
     );
+    if (res.data) {
+      const url = res.data.authorize_url || res.data.authorization_url || "";
+      res.data.authorize_url = url;
+    }
+    return res as ApiResponse<{ authorize_url: string; authorization_url?: string }>;
   }
 
   async facebookCallback(params: {

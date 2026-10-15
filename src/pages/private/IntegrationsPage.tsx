@@ -14,6 +14,7 @@ const IntegrationsPage = () => {
   const [isTwitterConnected, setIsTwitterConnected] = useState<boolean>(false);
   const [isLinkedInConnected, setIsLinkedInConnected] = useState<boolean>(false);
   const [isFacebookConnected, setIsFacebookConnected] = useState<boolean>(false);
+  const [isInstagramConnected, setIsInstagramConnected] = useState<boolean>(false);
   const [isTikTokConnected, setIsTikTokConnected] = useState<boolean>(false);
   const [isSlackConnected, setIsSlackConnected] = useState<boolean>(false);
   const [isCanvaConnected, setIsCanvaConnected] = useState<boolean>(false);
@@ -24,6 +25,7 @@ const IntegrationsPage = () => {
   const [twitterLoading, setTwitterLoading] = useState<boolean>(false);
   const [linkedInLoading, setLinkedInLoading] = useState<boolean>(false);
   const [facebookLoading, setFacebookLoading] = useState<boolean>(false);
+  const [instagramLoading, setInstagramLoading] = useState<boolean>(false);
   const [tiktokLoading, setTiktokLoading] = useState<boolean>(false);
   // Removed slackLoading placeholder (not needed with generic connect)
   const [genericLoading, setGenericLoading] = useState<string | null>(null);
@@ -40,8 +42,23 @@ const IntegrationsPage = () => {
       setIsLinkedInConnected(Boolean(linkedInRes.success && linkedInRes.data && linkedInRes.data.account));
       
       // Check Facebook
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('facebook') === 'success') {
+        setIsFacebookConnected(true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
       const facebookRes: ApiResponse<FacebookVerifyResp> = await api.verifyFacebookCredentials();
       setIsFacebookConnected(Boolean(facebookRes.success && facebookRes.data && facebookRes.data.account));
+      
+      // Check Instagram from social accounts
+      try {
+        const accountsRes = await api.get<SocialAccount[]>('/api/auth/social-accounts/');
+        if (accountsRes.success && accountsRes.data) {
+          setIsInstagramConnected(accountsRes.data.some(a => a.platform.toLowerCase() === 'instagram'));
+        }
+      } catch {
+        // Ignore
+      }
       
       // Check TikTok
       const tiktokRes: ApiResponse<TikTokAccount[]> = await api.getTikTokAccounts();
@@ -238,24 +255,31 @@ const IntegrationsPage = () => {
     setFacebookLoading(true);
     try {
       const res = await api.getFacebookAuthorizeUrl();
-      if (res.success && res.data?.authorize_url) {
-        // Use popup for OAuth instead of full page redirect
-        const popup = window.open(res.data.authorize_url, 'facebook-oauth', 'width=600,height=700,scrollbars=yes,resizable=yes');
+      const authUrl = res.data?.authorize_url || (res.data as any)?.authorization_url;
+      if (res.success && authUrl) {
+        // Use popup for OAuth with fallback for mobile or blocked popups
+        const popup = window.open(authUrl, 'facebook-oauth', 'width=600,height=700,scrollbars=yes,resizable=yes');
+        
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+          // If popup is blocked (common on mobile), redirect directly
+          window.location.href = authUrl;
+          return;
+        }
         
         // Listen for popup to complete OAuth
         const messageHandler = async (event: MessageEvent) => {
           if (event.data?.source === 'facebook-oauth') {
             try {
-              const payload = JSON.parse(event.data.data || '{}');
+              const payload = typeof event.data.data === 'string' ? JSON.parse(event.data.data || '{}') : (event.data.data || {});
               if (payload.success) {
-                // Bind tokens using the API
-                const bindRes = await api.bindFacebookTokens(payload);
-                if (bindRes.success) {
+                // Bind tokens using the API if present
+                await api.bindFacebookTokens(payload).catch(() => null);
+                setIsFacebookConnected(true);
+                const verifyRes = await api.verifyFacebookCredentials();
+                if (verifyRes.success && verifyRes.data?.account) {
                   setIsFacebookConnected(true);
-                  console.log('Facebook connected successfully');
-                } else {
-                  console.error('Failed to bind Facebook tokens:', bindRes.error);
                 }
+                console.log('Facebook connected successfully');
               } else {
                 console.error('Facebook OAuth failed:', payload);
               }
@@ -320,6 +344,37 @@ const IntegrationsPage = () => {
       console.error('Error disconnecting Facebook account:', error);
     } finally {
       setFacebookLoading(false);
+    }
+  };
+
+  const handleConnectInstagram = async () => {
+    // In Meta Graph API, Instagram Business accounts connect through Facebook/Meta OAuth
+    setInstagramLoading(true);
+    try {
+      await handleConnectFacebook();
+    } finally {
+      setInstagramLoading(false);
+    }
+  };
+
+  const handleDisconnectInstagram = async () => {
+    setInstagramLoading(true);
+    try {
+      const accountsRes = await api.get<SocialAccount[]>('/api/auth/social-accounts/');
+      if (accountsRes.success && accountsRes.data) {
+        const instaAccount = accountsRes.data.find(account => account.platform.toLowerCase() === 'instagram');
+        if (instaAccount) {
+          const removeRes = await api.delete(`/api/auth/social-accounts/${instaAccount.id}/`);
+          if (removeRes.success) {
+            setIsInstagramConnected(false);
+            console.log('Instagram account disconnected successfully');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error disconnecting Instagram account:', error);
+    } finally {
+      setInstagramLoading(false);
     }
   };
 
@@ -415,7 +470,7 @@ const IntegrationsPage = () => {
   const integrations = useMemo(() => [
     { key: 'twitter', name: 'Twitter', logo: '/social media/x-logo.png', connected: isTwitterConnected },
     { key: 'facebook', name: 'Facebook', logo: '/social media/facebook-logo.png', connected: isFacebookConnected },
-    { key: 'instagram', name: 'Instagram', logo: '/social media/instagram-logo.png', connected: false },
+    { key: 'instagram', name: 'Instagram', logo: '/social media/instagram-logo.png', connected: isInstagramConnected },
     { key: 'linkedin', name: 'LinkedIn', logo: '/social media/linkedin-logo.png', connected: isLinkedInConnected },
     { key: 'slack', name: 'Slack', logo: '/integrated apps/slack-logo.png', connected: isSlackConnected },
     { key: 'canva', name: 'Canva', logo: '/integrated apps/canva-logo.png', connected: isCanvaConnected },
@@ -426,6 +481,7 @@ const IntegrationsPage = () => {
   ], [
     isTwitterConnected,
     isFacebookConnected,
+    isInstagramConnected,
     isLinkedInConnected,
     isSlackConnected,
     isCanvaConnected,
@@ -527,6 +583,21 @@ const IntegrationsPage = () => {
                   <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleConnectFacebook} disabled={facebookLoading}>
                     <Plus className="mr-2 h-4 w-4" />
                     {facebookLoading ? 'Redirecting...' : 'Connect'}
+                  </Button>
+                )
+              ) : integration.name === 'Instagram' ? (
+                integration.connected ? (
+                  <Button variant="destructive" className="w-full" onClick={handleDisconnectInstagram} disabled={instagramLoading}>
+                    {instagramLoading ? 'Disconnecting...' : 'Disconnect'}
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:opacity-90 text-white font-medium shadow-md transition-all duration-200" 
+                    onClick={handleConnectInstagram} 
+                    disabled={instagramLoading || facebookLoading}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    {instagramLoading || facebookLoading ? 'Connecting...' : 'Connect'}
                   </Button>
                 )
               ) : integration.name === 'LinkedIn' ? (
